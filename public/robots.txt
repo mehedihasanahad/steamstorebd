@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /checkout
+Disallow: /cart
+Disallow: /auth/
+Disallow: /bkash/
+
+Sitemap: /sitemap.xml
