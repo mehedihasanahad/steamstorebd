@@ -1,8 +1,8 @@
 @extends('layouts.storefront')
 
-@section('title', 'Buy Steam Gift Cards in Bangladesh | bKash Payment | Steam Store BD')
-@section('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. $5, $10, $20, $50, $100 USD. Instant code delivery to email. Genuine Steam codes at best BDT price.')
-@section('meta_keywords', 'steam gift card bangladesh, steam wallet bd, buy steam gift card bkash, steam gift card bd price 2025, steam wallet code bd, steam card 10 dollar bangladesh')
+@section('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh | bKash | Steam Store BD')
+@section('meta_description', 'Steam Store BD is Bangladesh\'s #1 Steam gift card store. Buy Steam Wallet codes with bKash — $5, $10, $20, $50, $100 USD. Instant delivery to email. Best BDT price. 100% genuine.')
+@section('meta_keywords', 'steam store bd, steam store bd, steam gift card bd, steam gift card bangladesh, steam wallet bangladesh, buy steam gift card bangladesh, steam gift card sell bd, steam gift card buy bangladesh, steam wallet top up bd, steam card bd price, steam wallet code bangladesh, steam gift card bd price 2025, steam wallet gift card bd, steam gift card bkash, steam gift card sell bangladesh')
 
 @push('schema')
 @php
@@ -48,12 +48,12 @@ $_schema = [
             </div>
 
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.1] mb-5" style="letter-spacing:-0.03em;">
-                Top Up Your Steam<br>
-                <span style="background:linear-gradient(90deg,#4B8FEF,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Wallet Instantly</span>
+                Buy Steam Gift Cards<br>
+                <span style="background:linear-gradient(90deg,#4B8FEF,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">in Bangladesh Instantly</span>
             </h1>
 
             <p class="text-lg text-gray-300 mb-8 leading-relaxed max-w-lg mx-auto">
-                Pay with <strong class="text-white">bKash</strong> — receive your gift card code <strong class="text-white">within minutes</strong>.
+                <strong class="text-white">Steam Store BD</strong> — pay with <strong class="text-white">bKash</strong> and receive your Steam gift card code <strong class="text-white">within minutes</strong>.
             </p>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -217,6 +217,50 @@ $_schema = [
                 <div class="text-gray-400 text-xs leading-relaxed">{{ $desc }}</div>
             </div>
             @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- ══ SEO CONTENT ══ --}}
+<section style="background:#F8FAFF; padding:64px 0; border-top:1px solid #E8EEF8;">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+            <h2 class="text-2xl md:text-3xl font-black mb-3" style="color:#071428;letter-spacing:-0.02em;">
+                Steam Store BD — Bangladesh's Most Trusted Steam Gift Card Store
+            </h2>
+            <p class="text-gray-500 max-w-2xl mx-auto text-sm leading-relaxed">
+                Your one-stop destination to <strong>buy Steam gift cards in Bangladesh</strong> and top up your <strong>Steam Store BD</strong> with bKash — fast, safe, and genuine.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl p-6" style="border:1px solid #E8EEF8; box-shadow:0 2px 8px rgba(7,20,40,0.04);">
+                <h3 class="font-bold text-base mb-3" style="color:#071428;">Buy Steam Gift Cards in Bangladesh</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Looking to <strong>buy a Steam gift card in Bangladesh</strong>? <strong>Steam Store BD</strong> is your most trusted <strong>Steam Store BD</strong> top-up solution. We offer instant digital delivery of genuine Steam codes — no waiting, no hassle. Pay securely with <strong>bKash</strong> and receive your code within minutes. Available denominations: $5, $10, $20, $50, and $100 USD — priced in BDT.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6" style="border:1px solid #E8EEF8; box-shadow:0 2px 8px rgba(7,20,40,0.04);">
+                <h3 class="font-bold text-base mb-3" style="color:#071428;">Steam Gift Card BD — Best BDT Price</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Get the best <strong>Steam gift card BD price</strong> in BDT. Whether you want to <strong>buy a Steam gift card</strong> for gaming or <strong>sell Steam gift card</strong> codes as gifts — <strong>Steam Store BD</strong> provides competitive BDT rates and instant delivery. All prices are transparent, with no hidden charges.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6" style="border:1px solid #E8EEF8; box-shadow:0 2px 8px rgba(7,20,40,0.04);">
+                <h3 class="font-bold text-base mb-3" style="color:#071428;">Why Choose Steam Store BD?</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    <strong>Steam Store BD</strong> is Bangladesh's #1 marketplace for <strong>Steam Wallet</strong> top-ups and <strong>Steam gift cards</strong>. We source all codes directly, ensuring 100% genuine <strong>Steam gift card</strong> codes. Every purchase is backed by our guarantee — if a code doesn't work, we replace it immediately. Trusted by 10,000+ Bangladeshi gamers.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl p-6" style="border:1px solid #E8EEF8; box-shadow:0 2px 8px rgba(7,20,40,0.04);">
+                <h3 class="font-bold text-base mb-3" style="color:#071428;">How to Buy Steam Gift Card BD with bKash</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">
+                    Buying a <strong>Steam wallet gift card in Bangladesh</strong> has never been easier. Select your <strong>Steam gift card</strong> denomination, add to cart, and pay with bKash. Your <strong>Steam wallet code</strong> is delivered instantly to your email. The fastest way to top up <strong>Steam wallet in Bangladesh</strong> — no bank card needed.
+                </p>
+            </div>
         </div>
     </div>
 </section>

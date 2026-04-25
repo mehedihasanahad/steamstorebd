@@ -1,7 +1,51 @@
 @extends('layouts.storefront')
 
-@section('title', $card->name . ' — Steam Store BD')
-@section('meta_description', 'Buy ' . $card->name . ' for ' . format_bdt($card->price_bdt) . '. Instant delivery via email. Pay with bKash.')
+@section('title', 'Buy ' . $card->name . ' in Bangladesh | Steam Gift Card BD — Steam Store BD')
+@section('meta_description', 'Buy ' . $card->name . ' in Bangladesh with bKash. Price: ' . format_bdt($card->price_bdt) . '. Instant Steam gift card code delivery to email. 100% genuine — Steam Store BD.')
+@section('meta_keywords', 'buy ' . strtolower($card->name) . ' bangladesh, ' . strtolower($card->name) . ' bkash, steam gift card bd, steam wallet code bangladesh, steam gift card sell bd')
+@section('og_type', 'product')
+
+@push('schema')
+@php
+$_cardSchema = [
+    '@context' => 'https://schema.org',
+    '@graph'   => [
+        [
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home',                    'item' => url('/')],
+                ['@type' => 'ListItem', 'position' => 2, 'name' => $card->category->name,     'item' => route('product', $card->category->slug)],
+                ['@type' => 'ListItem', 'position' => 3, 'name' => $card->name,               'item' => route('card.detail', $card->slug)],
+            ],
+        ],
+        [
+            '@type'       => 'Product',
+            'name'        => $card->name . ' — Bangladesh',
+            'description' => 'Buy ' . $card->name . ' in Bangladesh. Pay with bKash — instant Steam gift card code delivery. 100% genuine Steam code.',
+            'brand'       => ['@type' => 'Brand', 'name' => 'Steam'],
+            'url'         => route('card.detail', $card->slug),
+            'offers'      => [
+                '@type'          => 'Offer',
+                'priceCurrency'  => 'BDT',
+                'price'          => (string) $card->price_bdt,
+                'availability'   => $card->stock_count > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                'seller'         => ['@type' => 'Organization', 'name' => 'Steam Store BD', 'url' => url('/')],
+                'url'            => route('card.detail', $card->slug),
+            ],
+        ],
+        [
+            '@type'      => 'FAQPage',
+            'mainEntity' => [
+                ['@type' => 'Question', 'name' => 'When will I receive my ' . $card->name . ' code?',        'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Immediately after bKash payment confirmation — your Steam code appears on screen and is emailed within minutes.']],
+                ['@type' => 'Question', 'name' => 'Is ' . $card->name . ' a genuine Steam gift card code?', 'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Yes, all codes sold on Steam Store BD are 100% authentic Steam codes valid worldwide.']],
+                ['@type' => 'Question', 'name' => 'Can I pay for ' . $card->name . ' with bKash in Bangladesh?', 'acceptedAnswer' => ['@type' => 'Answer', 'text' => 'Yes! We use bKash Tokenized Checkout supporting all bKash accounts.']],
+            ],
+        ],
+    ],
+];
+@endphp
+<script type="application/ld+json">{!! json_encode($_cardSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -10,7 +54,7 @@
     <nav class="text-sm text-gray-400 mb-8 flex items-center gap-2">
         <a href="{{ route('home') }}" class="hover:text-brand-400">Home</a>
         <span>/</span>
-        <a href="{{ route('shop.category', $card->category->slug) }}" class="hover:text-brand-400">{{ $card->category->name }}</a>
+        <a href="{{ route('product', $card->category->slug) }}" class="hover:text-brand-400">{{ $card->category->name }}</a>
         <span>/</span>
         <span class="text-white">{{ $card->name }}</span>
     </nav>

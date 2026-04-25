@@ -10,7 +10,7 @@
         <div style="position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;height:100%;padding:3.5rem;">
             <div style="margin-bottom:3rem;">
                 <a href="{{ url('/') }}" style="display:inline-flex;align-items:center;gap:0.75rem;text-decoration:none;">
-                    <div style="width:48px;height:48px;background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🎮</div>
+                    <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="48" height="48" style="border-radius:12px;flex-shrink:0;">
                     <div>
                         <div style="font-weight:800;font-size:1.25rem;color:#fff;letter-spacing:-0.02em;">Steam Store BD</div>
                         <div style="font-size:0.75rem;color:#557AA0;">Official Gift Card Marketplace</div>
@@ -50,7 +50,7 @@
             {{-- Mobile logo --}}
             <div class="md:hidden" style="text-align:center;margin-bottom:2rem;">
                 <a href="{{ url('/') }}" style="display:inline-flex;align-items:center;gap:0.625rem;text-decoration:none;">
-                    <div style="width:40px;height:40px;background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">🎮</div>
+                    <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="40" height="40" style="border-radius:10px;flex-shrink:0;">
                     <span style="font-weight:800;font-size:1.125rem;color:#fff;">Steam Store BD</span>
                 </a>
             </div>

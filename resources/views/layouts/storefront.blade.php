@@ -4,26 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh with bKash')</title>
-    <meta name="description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. $5, $10, $20, $50, $100 USD denominations. Instant code delivery. 100% genuine Steam codes.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'steam gift card bangladesh, steam wallet bd, buy steam gift card bd, steam gift card bkash, steam wallet code bangladesh, steam card bd price')">
-    <meta name="robots" content="index, follow">
+    <title>@yield('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh | bKash')</title>
+    <meta name="description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. Steam Gift Card BD — $5, $10, $20, $50, $100 USD. Instant code delivery to email. 100% genuine Steam codes at best BDT price.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'steam store bd, steam store bd, steam gift card bd, steam gift card bangladesh, steam wallet bangladesh, buy steam gift card bangladesh, steam gift card sell bd, steam gift card buy bangladesh, steam wallet top up bd, steam card bd price, steam wallet code bangladesh, steam gift card bd price 2025, steam wallet gift card bd, steam gift card bkash')">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
     <link rel="canonical" href="{{ url()->current() }}">
+
+    {{-- Geo targeting: Bangladesh --}}
+    <meta name="geo.region" content="BD">
+    <meta name="geo.placename" content="Bangladesh">
+    <meta name="language" content="English">
+    <meta name="theme-color" content="#2563EB">
 
     {{-- Open Graph --}}
     <meta property="og:site_name" content="Steam Store BD">
     <meta property="og:title" content="@yield('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh')">
-    <meta property="og:description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. Instant code delivery. 100% genuine.')">
+    <meta property="og:description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. Instant code delivery. 100% genuine Steam codes at best BDT price.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:image" content="@yield('og_image', asset('images/og-steam-bd.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/hero-image.png'))">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Steam Store BD — Buy Steam Gift Cards in Bangladesh">
     <meta property="og:locale" content="en_US">
 
     {{-- Twitter Card --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh')">
-    <meta name="twitter:description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. Instant delivery.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/og-steam-bd.png'))">
+    <meta name="twitter:description" content="@yield('meta_description', 'Buy Steam Wallet gift cards in Bangladesh with bKash. Instant delivery. Best BDT price.')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/hero-image.png'))">
+    <meta name="twitter:image:alt" content="Steam Store BD — Steam Gift Cards Bangladesh">
 
     {{-- JSON-LD: Organization + WebSite --}}
     @php
@@ -31,22 +41,30 @@
         '@context' => 'https://schema.org',
         '@graph'   => [
             [
-                '@type'       => 'Organization',
-                '@id'         => url('/') . '/#organization',
-                'name'        => 'Steam Store BD',
-                'url'         => url('/'),
-                'logo'        => ['@type' => 'ImageObject', 'url' => asset('images/og-steam-bd.png')],
-                'description' => "Bangladesh's trusted marketplace for Steam Wallet gift cards. Instant delivery with bKash payment.",
-                'areaServed'  => ['@type' => 'Country', 'name' => 'Bangladesh'],
-                'contactPoint'=> ['@type' => 'ContactPoint', 'contactType' => 'customer support', 'availableLanguage' => ['English', 'Bengali']],
+                '@type'           => 'Organization',
+                '@id'             => url('/') . '/#organization',
+                'name'            => 'Steam Store BD',
+                'alternateName'   => ['Steam Store BD', 'Steam Gift Card BD'],
+                'url'             => url('/'),
+                'logo'            => ['@type' => 'ImageObject', 'url' => asset('images/logo.svg'), 'width' => 48, 'height' => 48],
+                'description'     => "Bangladesh's #1 trusted marketplace for Steam Wallet gift cards and Steam Store gift cards. Buy Steam gift cards in Bangladesh with bKash. Instant delivery.",
+                'areaServed'      => ['@type' => 'Country', 'name' => 'Bangladesh'],
+                'contactPoint'    => ['@type' => 'ContactPoint', 'contactType' => 'customer support', 'availableLanguage' => ['English', 'Bengali']],
+                'sameAs'          => [],
             ],
             [
-                '@type'       => 'WebSite',
-                '@id'         => url('/') . '/#website',
-                'url'         => url('/'),
-                'name'        => 'Steam Store BD',
-                'description' => 'Buy Steam gift cards in Bangladesh with bKash. Instant delivery.',
-                'publisher'   => ['@id' => url('/') . '/#organization'],
+                '@type'           => 'WebSite',
+                '@id'             => url('/') . '/#website',
+                'url'             => url('/'),
+                'name'            => 'Steam Store BD',
+                'alternateName'   => 'Steam Store BD',
+                'description'     => 'Buy Steam gift cards in Bangladesh with bKash. Instant code delivery. Best BDT price.',
+                'publisher'       => ['@id' => url('/') . '/#organization'],
+                'potentialAction' => [
+                    '@type'       => 'SearchAction',
+                    'target'      => ['@type' => 'EntryPoint', 'urlTemplate' => url('/') . '/?s={search_term_string}'],
+                    'query-input' => 'required name=search_term_string',
+                ],
             ],
         ],
     ];
@@ -55,8 +73,8 @@
 
     @stack('schema')
 
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='url(%23g)'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232563EB'/><stop offset='1' stop-color='%231D4ED8'/></linearGradient></defs><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='36'>🎮</text></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='url(%23g)'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%232563EB'/><stop offset='1' stop-color='%231D4ED8'/></linearGradient></defs><text x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-size='36'>🎮</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.svg') }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -198,7 +216,7 @@
 
                 {{-- Logo --}}
                 <a href="{{ route('home') }}" class="flex items-center gap-2.5 group">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0 shadow-brand-glow" style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">🎮</div>
+                    <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="36" height="36" class="w-9 h-9 flex-shrink-0 shadow-brand-glow" style="border-radius:9px;">
                     <div class="leading-tight">
                         <div class="font-extrabold text-base text-white tracking-tight leading-none">Steam Store <span class="text-brand-400">BD</span></div>
                         <div class="text-[10px] text-gray-500 font-medium leading-none mt-0.5">Gift Cards</div>
@@ -378,7 +396,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div>
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5 mb-4">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0" style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">🎮</div>
+                        <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="36" height="36" class="w-9 h-9 flex-shrink-0" style="border-radius:9px;">
                         <div class="leading-tight">
                             <div class="font-extrabold text-base text-white leading-none">Steam Store <span class="text-brand-400">BD</span></div>
                             <div class="text-[10px] text-gray-500 font-medium leading-none mt-0.5">Gift Cards</div>
