@@ -10,9 +10,7 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'USD Cards', 'slug' => 'usd-cards', 'description' => 'Steam gift cards in US Dollar denominations', 'sort_order' => 1],
-            ['name' => 'BDT Cards', 'slug' => 'bdt-cards', 'description' => 'Steam gift cards in Bangladeshi Taka', 'sort_order' => 2],
-            ['name' => 'Gift Sets', 'slug' => 'gift-sets', 'description' => 'Special Steam gift card bundles', 'sort_order' => 3],
+            ['name' => 'USD Cards', 'slug' => 'usd-cards', 'description' => 'Steam gift cards in US Dollar denominations', 'sort_order' => 1]
         ];
 
         foreach ($categories as $category) {
