@@ -59,7 +59,7 @@
                             <h3 class="font-bold text-sm" style="color:#071428;">{{ $item['gift_card']->name }}</h3>
                             <div class="flex items-center gap-3 mt-1">
                                 <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#EEF4FF;color:#2563EB;">
-                                    ${{ number_format($item['gift_card']->denomination_usd, 0) }} USD
+                                    {{ format_card_denomination($item['gift_card']->denomination, $item['gift_card']->denomination_currency) }}
                                 </span>
                                 <span class="text-xs text-gray-400">Qty: {{ $item['quantity'] }}</span>
                             </div>

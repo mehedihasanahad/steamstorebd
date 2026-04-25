@@ -12,7 +12,8 @@ class GiftCard extends Model
         'category_id',
         'name',
         'slug',
-        'denomination_usd',
+        'denomination',
+        'denomination_currency',
         'denomination_bdt',
         'price_bdt',
         'description',
@@ -26,7 +27,7 @@ class GiftCard extends Model
     protected function casts(): array
     {
         return [
-            'denomination_usd' => 'decimal:2',
+            'denomination' => 'decimal:2',
             'denomination_bdt' => 'decimal:2',
             'price_bdt' => 'decimal:2',
             'is_active' => 'boolean',

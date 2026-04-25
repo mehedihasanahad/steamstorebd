@@ -9,7 +9,7 @@
              class="w-full h-full object-cover">
         {{-- Denomination badge --}}
         <div class="absolute top-3 right-3 bg-brand-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-            ${{ number_format($card->denomination_usd, 0) }} USD
+            {{ format_card_denomination($card->denomination, $card->denomination_currency) }}
         </div>
         {{-- Optional badge --}}
         @if($card->badge_text)
@@ -27,7 +27,7 @@
         </div>
         {{-- Denomination badge --}}
         <div class="absolute top-3 right-3 bg-brand-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-            ${{ number_format($card->denomination_usd, 0) }} USD
+            {{ format_card_denomination($card->denomination, $card->denomination_currency) }}
         </div>
         {{-- Optional badge --}}
         @if($card->badge_text)

@@ -17,9 +17,9 @@ class GiftCardSeeder extends Seeder
         $admin = User::where('is_admin', true)->first();
 
         $cards = [
-            ['name' => 'Steam $5 Gift Card', 'slug' => 'steam-5-usd', 'denomination_usd' => 5, 'denomination_bdt' => 600, 'price_bdt' => 750, 'category_id' => $usdCategory->id, 'badge_text' => null, 'sort_order' => 1],
-            ['name' => 'Steam $10 Gift Card', 'slug' => 'steam-10-usd', 'denomination_usd' => 10, 'denomination_bdt' => 1200, 'price_bdt' => 1450, 'category_id' => $usdCategory->id, 'badge_text' => 'Popular', 'sort_order' => 2],
-            ['name' => 'Steam $20 Gift Card', 'slug' => 'steam-20-usd', 'denomination_usd' => 20, 'denomination_bdt' => 2400, 'price_bdt' => 2800, 'category_id' => $usdCategory->id, 'badge_text' => 'Best Value', 'sort_order' => 3]
+            ['name' => 'Steam $5 Gift Card',  'slug' => 'steam-5-usd',  'denomination' => 5,  'denomination_currency' => 'USD', 'denomination_bdt' => 600,  'price_bdt' => 750,  'category_id' => $usdCategory->id, 'badge_text' => null,         'sort_order' => 1],
+            ['name' => 'Steam $10 Gift Card', 'slug' => 'steam-10-usd', 'denomination' => 10, 'denomination_currency' => 'USD', 'denomination_bdt' => 1200, 'price_bdt' => 1450, 'category_id' => $usdCategory->id, 'badge_text' => 'Popular',      'sort_order' => 2],
+            ['name' => 'Steam $20 Gift Card', 'slug' => 'steam-20-usd', 'denomination' => 20, 'denomination_currency' => 'USD', 'denomination_bdt' => 2400, 'price_bdt' => 2800, 'category_id' => $usdCategory->id, 'badge_text' => 'Best Value',   'sort_order' => 3]
         ];
 
         foreach ($cards as $cardData) {

@@ -101,9 +101,9 @@ $_schema = [
             @php
                 $cards = $category->giftCards->where('is_active', true);
                 $minPrice = $cards->min('price_bdt');
-                $maxDenom = $cards->max('denomination_usd');
+                $maxDenom = $cards->max('denomination');
                 $inStockCount = $cards->where('stock_count', '>', 0)->count();
-                $denomLabels = $cards->take(5)->map(fn($c) => '$'.number_format($c->denomination_usd,0))->implode(', ');
+                $denomLabels = $cards->take(5)->map(fn($c) => format_card_denomination($c->denomination, $c->denomination_currency))->implode(', ');
             @endphp
             <a href="{{ route('product', $category->slug) }}"
                class="group block bg-white rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl"

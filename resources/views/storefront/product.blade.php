@@ -113,7 +113,7 @@
              x-init="
                 $store.product.denominations = @js($denominations->map(fn($d) => [
                     'id'    => $d->id,
-                    'usd'   => number_format($d->denomination_usd, 0) . ' USD',
+                    'denom' => format_card_denomination($d->denomination, $d->denomination_currency),
                     'bdt'   => number_format($d->denomination_bdt, 0) . ' BDT',
                     'price' => $d->price_bdt,
                     'stock' => $d->stock_count,
@@ -153,7 +153,7 @@
                             {{ $denom->stock_count === 0 ? 'disabled' : '' }}
                             style="{{ $denom->stock_count === 0 ? 'opacity:0.45;cursor:not-allowed;' : '' }}"
                         >
-                            <div class="font-bold text-sm" style="color:#071428;">${{ number_format($denom->denomination_usd, 0) }} USD</div>
+                            <div class="font-bold text-sm" style="color:#071428;">{{ format_card_denomination($denom->denomination, $denom->denomination_currency) }}</div>
                             <div class="text-brand-500 font-semibold text-sm mt-0.5">৳ {{ number_format($denom->price_bdt, 0) }}</div>
                             @if($denom->stock_count === 0)
                             <div class="text-xs text-red-400 mt-1">Out of stock</div>
@@ -210,7 +210,7 @@
                         </div>
                         <div class="text-right">
                             <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Card value</div>
-                            <div class="text-sm font-bold text-brand-500 mt-0.5" x-text="$store.product.current?.usd ?? ''"></div>
+                            <div class="text-sm font-bold text-brand-500 mt-0.5" x-text="$store.product.current?.denom ?? ''"></div>
                         </div>
                     </div>
                 </div>

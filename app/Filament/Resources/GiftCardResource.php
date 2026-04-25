@@ -43,7 +43,16 @@ class GiftCardResource extends Resource
             ])->columns(2),
 
             Forms\Components\Section::make('Pricing')->schema([
-                Forms\Components\TextInput::make('denomination_usd')->numeric()->required()->prefix('$'),
+                Forms\Components\TextInput::make('denomination')
+                    ->numeric()
+                    ->required()
+                    ->label('Denomination Amount'),
+                Forms\Components\TextInput::make('denomination_currency')
+                    ->required()
+                    ->default('USD')
+                    ->label('Denomination Currency')
+                    ->placeholder('USD, INR, EUR, GBP …')
+                    ->maxLength(10),
                 Forms\Components\TextInput::make('denomination_bdt')->numeric()->required()->prefix('৳'),
                 Forms\Components\TextInput::make('price_bdt')->numeric()->required()->prefix('৳'),
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
@@ -62,7 +71,9 @@ class GiftCardResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('category.name')->badge(),
-                Tables\Columns\TextColumn::make('denomination_usd')->money('USD')->prefix('$'),
+                Tables\Columns\TextColumn::make('denomination')
+                    ->label('Denomination')
+                    ->formatStateUsing(fn($record) => format_card_denomination($record->denomination, $record->denomination_currency)),
                 Tables\Columns\TextColumn::make('price_bdt')->formatStateUsing(fn($state) => format_bdt($state)),
                 Tables\Columns\BadgeColumn::make('stock_count')
                     ->label('Stock')

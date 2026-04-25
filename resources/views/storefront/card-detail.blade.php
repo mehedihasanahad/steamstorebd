@@ -24,8 +24,8 @@
                 <div class="relative text-center">
                     <div class="text-8xl mb-4">🎮</div>
                     <div class="text-brand-400 font-bold text-3xl mb-2">STEAM</div>
-                    <div class="text-white font-bold text-4xl">{{ '$' . number_format($card->denomination_usd, 0) }}</div>
-                    <div class="text-gray-300 text-lg mt-1">USD Gift Card</div>
+                    <div class="text-white font-bold text-4xl">{{ format_card_denomination($card->denomination, $card->denomination_currency) }}</div>
+                    <div class="text-gray-300 text-lg mt-1">{{ $card->denomination_currency }} Gift Card</div>
                 </div>
             </div>
         </div>
