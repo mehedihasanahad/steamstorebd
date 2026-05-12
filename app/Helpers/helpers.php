@@ -17,7 +17,7 @@ if (! function_exists('site_setting')) {
 if (! function_exists('format_card_denomination')) {
     function format_card_denomination(float|int|string $amount, string $currency = 'USD'): string
     {
-        return number_format((float) $amount, 0) . ' ' . $currency;
+        return number_format((float) $amount, 2) . ' ' . $currency;
     }
 }
 
