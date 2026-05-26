@@ -362,7 +362,7 @@ $_schema = [
                         @endfor
                     </div>
                     <div style="font-size:12px; font-weight:700; color:#ffffff;">Excellent</div>
-                    <div style="font-size:11px; color:#557AA0;">{{ $reviews->count() }}+ verified reviews</div>
+                    {{-- <div style="font-size:11px; color:#557AA0;">{{ $reviews->count() }}+ verified reviews</div> --}}
                 </div>
             </div>
         </div>
