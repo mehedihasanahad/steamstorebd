@@ -271,10 +271,10 @@
 
                 {{-- Desktop Nav --}}
                 <div class="hidden md:flex items-center gap-7">
-                    <a href="{{ route('home') }}"          class="text-gray-300 hover:text-brand-400 transition-colors duration-150 text-sm font-medium">Home</a>
-                    <a href="{{ route('how-to-redeem') }}" class="text-gray-300 hover:text-brand-400 transition-colors duration-150 text-sm font-medium">How to Redeem</a>
-                    <a href="{{ route('faq') }}"           class="text-gray-300 hover:text-brand-400 transition-colors duration-150 text-sm font-medium">FAQ</a>
-                    <a href="{{ route('contact') }}"       class="text-gray-300 hover:text-brand-400 transition-colors duration-150 text-sm font-medium">Contact</a>
+                    <a href="{{ route('home') }}"          class="{{ request()->routeIs('home') ? 'text-brand-400 font-semibold' : 'text-gray-300 hover:text-brand-400 font-medium' }} transition-colors duration-150 text-sm">Home</a>
+                    <a href="{{ route('how-to-redeem') }}" class="{{ request()->routeIs('how-to-redeem') ? 'text-brand-400 font-semibold' : 'text-gray-300 hover:text-brand-400 font-medium' }} transition-colors duration-150 text-sm">How to Redeem</a>
+                    <a href="{{ route('faq') }}"           class="{{ request()->routeIs('faq') ? 'text-brand-400 font-semibold' : 'text-gray-300 hover:text-brand-400 font-medium' }} transition-colors duration-150 text-sm">FAQ</a>
+                    <a href="{{ route('contact') }}"       class="{{ request()->routeIs('contact') ? 'text-brand-400 font-semibold' : 'text-gray-300 hover:text-brand-400 font-medium' }} transition-colors duration-150 text-sm">Contact</a>
                 </div>
 
                 {{-- Right Actions --}}
@@ -370,10 +370,10 @@
         {{-- Mobile Menu --}}
         <div x-show="mobileOpen" x-cloak class="md:hidden border-t border-gray-800" style="background: #071428;">
             <div class="px-4 py-4 space-y-1">
-                <a href="{{ route('home') }}"          class="flex items-center gap-2 text-gray-300 hover:text-brand-400 hover:bg-gray-800 px-3 py-2.5 rounded-lg transition-colors text-sm">Home</a>
-                <a href="{{ route('how-to-redeem') }}" class="flex items-center gap-2 text-gray-300 hover:text-brand-400 hover:bg-gray-800 px-3 py-2.5 rounded-lg transition-colors text-sm">How to Redeem</a>
-                <a href="{{ route('faq') }}"           class="flex items-center gap-2 text-gray-300 hover:text-brand-400 hover:bg-gray-800 px-3 py-2.5 rounded-lg transition-colors text-sm">FAQ</a>
-                <a href="{{ route('contact') }}"       class="flex items-center gap-2 text-gray-300 hover:text-brand-400 hover:bg-gray-800 px-3 py-2.5 rounded-lg transition-colors text-sm">Contact</a>
+                <a href="{{ route('home') }}"          class="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm {{ request()->routeIs('home') ? 'text-brand-400 font-semibold bg-brand-500/10' : 'text-gray-300 hover:text-brand-400 hover:bg-gray-800' }}">Home</a>
+                <a href="{{ route('how-to-redeem') }}" class="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm {{ request()->routeIs('how-to-redeem') ? 'text-brand-400 font-semibold bg-brand-500/10' : 'text-gray-300 hover:text-brand-400 hover:bg-gray-800' }}">How to Redeem</a>
+                <a href="{{ route('faq') }}"           class="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm {{ request()->routeIs('faq') ? 'text-brand-400 font-semibold bg-brand-500/10' : 'text-gray-300 hover:text-brand-400 hover:bg-gray-800' }}">FAQ</a>
+                <a href="{{ route('contact') }}"       class="flex items-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm {{ request()->routeIs('contact') ? 'text-brand-400 font-semibold bg-brand-500/10' : 'text-gray-300 hover:text-brand-400 hover:bg-gray-800' }}">Contact</a>
                 @auth
                 {{-- Mobile user card --}}
                 <div class="rounded-xl p-3 mb-1" style="background:rgba(37,99,235,0.06); border:1px solid rgba(37,99,235,0.15);">
