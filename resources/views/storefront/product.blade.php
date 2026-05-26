@@ -215,6 +215,47 @@
                     </div>
                 </div>
 
+                {{-- Delivery Method --}}
+                <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid #DBEAFE; box-shadow:0 2px 12px rgba(37,99,235,0.08);">
+                    <div class="flex items-center gap-2 px-4 py-2.5" style="background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);">
+                        <svg class="w-3.5 h-3.5 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
+                        <span class="text-white text-xs font-bold uppercase tracking-widest">Instant Digital Delivery</span>
+                    </div>
+                    <div class="grid grid-cols-3 divide-x" style="background:#FAFCFF; divide-color:#DBEAFE;">
+                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 style="background:linear-gradient(135deg,#EEF4FF,#DBEAFE);">
+                                <svg class="w-4 h-4" style="color:#2563EB;" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
+                            </div>
+                            <p class="text-xs font-bold leading-tight" style="color:#071428;">Email</p>
+                            <p class="text-[10px] text-gray-400 leading-tight">Sent to your inbox</p>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 style="background:linear-gradient(135deg,#EEF4FF,#DBEAFE);">
+                                <svg class="w-4 h-4" style="color:#2563EB;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
+                                </svg>
+                            </div>
+                            <p class="text-xs font-bold leading-tight" style="color:#071428;">Order Page</p>
+                            <p class="text-[10px] text-gray-400 leading-tight">Always in account</p>
+                        </div>
+                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
+                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);">
+                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <p class="text-xs font-bold leading-tight text-green-600">Instant</p>
+                            <p class="text-[10px] text-gray-400 leading-tight">After payment</p>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Action Buttons --}}
                 @if($denominations->isNotEmpty())
                 <div class="mb-4"
@@ -263,7 +304,7 @@
                 {{-- How to redeem --}}
                 <div class="mt-6 pt-5" style="border-top:1px solid #EEF2FF;">
                     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">How to Redeem</p>
-                    <ol class="space-y-1.5">
+                    <ol class="space-y-1.5 mb-3">
                         @foreach([
                             'Open Steam → Account Details → Redeem a Gift Card',
                             'Enter your code and click Continue',
@@ -275,6 +316,10 @@
                         </li>
                         @endforeach
                     </ol>
+                    <a href="{{ route('how-to-redeem') }}"
+                       class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-semibold transition-colors">
+                        Full step-by-step guide →
+                    </a>
                 </div>
             </div>
         </div>

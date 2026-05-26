@@ -18,6 +18,7 @@ Route::get('/', [StorefrontController::class, 'home'])->name('home');
 Route::get('/product/{categorySlug}', [StorefrontController::class, 'product'])->name('product');
 Route::get('/cards/{slug}', [StorefrontController::class, 'cardDetail'])->name('card.detail');
 Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');
+Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name('how-to-redeem');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
 Route::post('/contact', [StorefrontController::class, 'contactSubmit'])->name('contact.submit');
 
@@ -29,6 +30,7 @@ Route::get('/shop/{any}', fn() => redirect()->route('home'))->name('shop.categor
 Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/cart', [CheckoutController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [CheckoutController::class, 'addToCart'])->name('cart.add');
+    Route::post('/cart/update-quantity', [CheckoutController::class, 'updateQuantity'])->name('cart.update-quantity');
     Route::delete('/cart/{giftCardId}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('/checkout/success/{orderNumber}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/pending/{orderNumber}', [CheckoutController::class, 'pending'])->name('checkout.pending');

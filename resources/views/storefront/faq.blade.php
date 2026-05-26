@@ -16,7 +16,7 @@ $_faqSchema = [
         ['@type'=>'Question','name'=>'How quickly will I receive my Steam gift card code?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Immediately! As soon as your bKash payment is confirmed, your code is displayed on the screen and emailed to your registered email address within minutes.']],
         ['@type'=>'Question','name'=>'Are the Steam gift card codes genuine?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Yes. All gift card codes sold on Steam Store BD are 100% authentic Steam codes. They are valid worldwide and can be redeemed directly on Steam.']],
         ['@type'=>'Question','name'=>'What Steam gift card denominations are available in Bangladesh?','acceptedAnswer'=>['@type'=>'Answer','text'=>'We offer Steam gift cards in various USD denominations ($5, $10, $20, $50, $100) priced in BDT, as well as BDT denominations for local purchases.']],
-        ['@type'=>'Question','name'=>'Can I buy multiple Steam cards at once?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Yes, you can add up to 5 of the same denomination in a single order.']],
+        ['@type'=>'Question','name'=>'Can I buy multiple Steam cards at once?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Yes, you can buy multiple cards in a single order.']],
         ['@type'=>'Question','name'=>'My Steam code does not work. What should I do?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Please contact us with your order number and a screenshot of the error message on Steam. We guarantee all our codes and will resolve the issue promptly.']],
         ['@type'=>'Question','name'=>'Do you offer refunds on Steam gift cards?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Since gift card codes are digital products delivered instantly, we generally cannot offer refunds once a code has been revealed. However, if a code is defective, we will replace it.']],
         ['@type'=>'Question','name'=>'How do I redeem a Steam gift card in Bangladesh?','acceptedAnswer'=>['@type'=>'Answer','text'=>'Open Steam, go to Account Details, click Redeem a Gift Card, enter your code and click Continue. The funds are added instantly to your Steam Wallet and can be used worldwide.']],
@@ -36,11 +36,11 @@ $_faqSchema = [
     <div x-data="{ open: null }" class="space-y-3">
         @foreach([
             ['q' => 'What is Steam Store BD?', 'a' => 'Steam Store BD is a trusted digital marketplace for Steam gift cards in Bangladesh. We offer instant delivery of authentic Steam gift card codes via email, with secure bKash payment.'],
-            ['q' => 'How do I pay for my order?', 'a' => 'We accept payment via bKash Tokenized Checkout. Simply enter your details, click "Pay with bKash", and complete payment in the bKash app. Safe and instant.'],
+            ['q' => 'How do I pay for my order?', 'a' => 'We accept payment via BKash/Nagad. Simply enter your details, click "Pay with bKash", and complete payment in the bKash app. Safe and instant.'],
             ['q' => 'How quickly will I receive my gift card code?', 'a' => 'Immediately! As soon as your bKash payment is confirmed, your code is displayed on the screen and emailed to your registered email address within minutes.'],
             ['q' => 'Are the gift card codes genuine?', 'a' => 'Yes. All gift card codes sold on Steam Store BD are 100% authentic Steam codes. They are valid worldwide and can be redeemed directly on Steam.'],
             ['q' => 'What denominations do you offer?', 'a' => 'We offer Steam gift cards in various USD denominations ($5, $10, $20, $50, $100) priced in BDT, as well as BDT denominations for local purchases.'],
-            ['q' => 'Can I buy multiple cards at once?', 'a' => 'Yes, you can add up to 5 of the same denomination in a single order.'],
+            ['q' => 'Can I buy multiple cards at once?', 'a' => 'Yes, you can buy multiple cards in a single order.'],
             ['q' => 'I entered the wrong email. What do I do?', 'a' => 'Contact us immediately via our contact page or WhatsApp. Provide your order number and the correct email address, and we\'ll resend your codes.'],
             ['q' => 'My code doesn\'t work. What should I do?', 'a' => 'Please contact us with your order number and a screenshot of the error message on Steam. We guarantee all our codes and will resolve the issue promptly.'],
             ['q' => 'Do you offer refunds?', 'a' => 'Since gift card codes are digital products delivered instantly, we generally cannot offer refunds once a code has been revealed. However, if a code is defective, we will replace it.'],

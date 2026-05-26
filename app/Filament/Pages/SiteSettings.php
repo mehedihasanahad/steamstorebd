@@ -30,12 +30,17 @@ class SiteSettings extends Page implements HasForms
             'payment_bkash_online_enabled',
             'payment_bkash_send_money_enabled',
             'payment_nagad_send_money_enabled',
+            'whatsapp_chat_enabled', 'whatsapp_chat_number', 'whatsapp_chat_message',
+            'messenger_chat_enabled', 'messenger_page_username', 'messenger_page_id', 'messenger_use_plugin',
         ];
 
         $defaults = [
             'payment_bkash_online_enabled'      => true,
             'payment_bkash_send_money_enabled'  => false,
             'payment_nagad_send_money_enabled'  => false,
+            'whatsapp_chat_enabled'             => false,
+            'messenger_chat_enabled'            => false,
+            'messenger_use_plugin'              => false,
         ];
 
         $this->form->fill(
@@ -65,6 +70,33 @@ class SiteSettings extends Page implements HasForms
                     Forms\Components\Textarea::make('announcement_bar_text')->label('Announcement Text')->rows(2),
                     Forms\Components\Toggle::make('announcement_bar_active')->label('Active'),
                 ]),
+
+                Forms\Components\Section::make('Chat & Messaging')
+                    ->description('Floating chat buttons shown to visitors on every page.')
+                    ->schema([
+                        Forms\Components\Toggle::make('whatsapp_chat_enabled')
+                            ->label('Enable WhatsApp Chat Button')
+                            ->helperText('Shows a floating WhatsApp button on every page.'),
+                        Forms\Components\TextInput::make('whatsapp_chat_number')
+                            ->label('WhatsApp Number')
+                            ->placeholder('8801XXXXXXXXX')
+                            ->helperText('International format without + or spaces (e.g. 8801711223344).'),
+                        Forms\Components\TextInput::make('whatsapp_chat_message')
+                            ->label('Default WhatsApp Message')
+                            ->placeholder('Hello! I want to buy a Steam gift card.')
+                            ->helperText('Pre-filled message when user opens the WhatsApp link.'),
+
+                        Forms\Components\Toggle::make('messenger_chat_enabled')
+                            ->label('Enable Messenger Chat Button'),
+                        Forms\Components\TextInput::make('messenger_page_username')
+                            ->label('Facebook Page Username')
+                            ->placeholder('YourPageName')
+                            ->helperText('Used for the m.me/YourPageName link button.'),
+                        Forms\Components\TextInput::make('messenger_page_id')
+                            ->label('Facebook Page ID')
+                            ->placeholder('123456789012345')
+                            ->helperText('Optional — for reference only.'),
+                    ])->columns(1),
 
                 Forms\Components\Section::make('Payment Methods')
                     ->description('Enable or disable payment options shown at checkout. Credentials are configured in .env.')
@@ -98,6 +130,13 @@ class SiteSettings extends Page implements HasForms
             'payment_bkash_online_enabled'     => 'payment',
             'payment_bkash_send_money_enabled' => 'payment',
             'payment_nagad_send_money_enabled' => 'payment',
+            'whatsapp_chat_enabled'            => 'chat',
+            'whatsapp_chat_number'             => 'chat',
+            'whatsapp_chat_message'            => 'chat',
+            'messenger_chat_enabled'           => 'chat',
+            'messenger_page_username'          => 'chat',
+            'messenger_page_id'                => 'chat',
+            'messenger_use_plugin'             => 'chat',
         ];
 
         foreach ($data as $key => $value) {

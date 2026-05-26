@@ -84,6 +84,31 @@ class CheckoutController extends Controller
         return back()->with('success', 'Added to cart!');
     }
 
+    public function updateQuantity(Request $request)
+    {
+        $request->validate([
+            'gift_card_id' => ['required', 'exists:gift_cards,id'],
+            'quantity'     => ['required', 'integer', 'min:1', 'max:10'],
+        ]);
+
+        $giftCard = GiftCard::findOrFail($request->gift_card_id);
+
+        if ($giftCard->stock_count < $request->quantity) {
+            return response()->json(['error' => 'Only ' . $giftCard->stock_count . ' available in stock.'], 422);
+        }
+
+        $cart = Session::get('cart', []);
+
+        if (! isset($cart[$giftCard->id])) {
+            return response()->json(['error' => 'Item not in cart.'], 404);
+        }
+
+        $cart[$giftCard->id]['quantity'] = (int) $request->quantity;
+        Session::put('cart', $cart);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function removeFromCart(Request $request, int $giftCardId)
     {
         $cart = Session::get('cart', []);

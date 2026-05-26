@@ -89,6 +89,18 @@
         </ol>
     </div>
 
+    {{-- Review CTA --}}
+    <div style="background: linear-gradient(135deg, #071428 0%, #0E1F35 100%); border: 1px solid rgba(37,99,235,0.3); border-radius: 16px; padding: 28px 24px; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 28px; margin-bottom: 10px;">⭐⭐⭐⭐⭐</div>
+        <h3 style="color: #ffffff; font-size: 17px; font-weight: 700; margin-bottom: 8px;">Happy with your purchase?</h3>
+        <p style="color: #9BB5D5; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">Your review helps other Bangladeshi gamers trust us. It only takes 30 seconds!</p>
+        <a href="{{ route('orders.show', $order->order_number) }}"
+           style="display: inline-block; background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 13px 32px; border-radius: 10px; letter-spacing: 0.02em;">
+            ✍️ Leave a Review
+        </a>
+        <p style="color: #557AA0; font-size: 11px; margin-top: 12px;">Takes less than a minute. Every review makes a real difference.</p>
+    </div>
+
     <div class="footer">
         <p>Need help? <a href="{{ route('contact') }}">Contact our support</a></p>
         <p style="margin-top: 8px;">Steam Store BD — <a href="{{ route('home') }}">steamstorebd.com</a></p>

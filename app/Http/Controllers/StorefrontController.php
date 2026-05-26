@@ -62,6 +62,11 @@ class StorefrontController extends Controller
         return view('storefront.faq');
     }
 
+    public function howToRedeem()
+    {
+        return view('storefront.how-to-redeem');
+    }
+
     public function contact()
     {
         return view('storefront.contact');

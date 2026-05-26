@@ -25,6 +25,11 @@ Your payment was confirmed and your Steam gift card codes are ready!
 @endforeach
 Total: ৳ {{ number_format($order->total_bdt, 0, '.', ',') }}
 
+=== LEAVE A REVIEW ===
+Happy with your purchase? Your review helps other Bangladeshi gamers trust us!
+Leave a review here (takes 30 seconds):
+{{ route('orders.show', $order->order_number) }}
+
 Need help? Visit {{ route('contact') }}
 
 Steam Store BD is not affiliated with Valve Corporation.
