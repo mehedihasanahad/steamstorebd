@@ -74,5 +74,72 @@
             <span class="text-brand-400">{{ format_bdt($order->total_bdt) }}</span>
         </div>
     </div>
+
+    {{-- ── Review form (paid/completed orders, no review yet) ── --}}
+    @if($order->isPaid())
+    @php $alreadyReviewed = $order->reviews()->where('user_id', auth()->id())->exists(); @endphp
+    <div class="mt-6 rounded-2xl border p-6
+        {{ $alreadyReviewed ? 'border-green-500/20' : 'border-brand-500/20' }}"
+         style="background:rgba(37,99,235,0.04);">
+
+        @if($alreadyReviewed)
+            <div class="flex items-center gap-3 text-green-400">
+                <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                <span class="font-semibold text-sm">Thank you! Your review has been submitted and is pending approval.</span>
+            </div>
+        @else
+            <h3 class="font-bold text-white text-base mb-1">Leave a Review</h3>
+            <p class="text-gray-400 text-xs mb-5">Share your experience — it helps other Bangladeshi gamers!</p>
+
+            <form action="{{ route('reviews.store', $order->order_number) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                @csrf
+
+                {{-- Star rating --}}
+                <div x-data="{ rating: 5 }">
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Rating</label>
+                    <div class="flex gap-1.5">
+                        @for($i = 1; $i <= 5; $i++)
+                        <button type="button"
+                                @click="rating = {{ $i }}"
+                                class="text-2xl leading-none transition-transform hover:scale-110 focus:outline-none">
+                            <span :class="rating >= {{ $i }} ? 'opacity-100' : 'opacity-25'">⭐</span>
+                        </button>
+                        @endfor
+                    </div>
+                    <input type="hidden" name="rating" :value="rating">
+                </div>
+
+                {{-- Comment --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Review</label>
+                    <textarea name="comment" rows="3" required minlength="10" maxlength="1000"
+                              placeholder="How was your experience? Did you receive your code quickly?"
+                              class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-brand-500 resize-none">{{ old('comment') }}</textarea>
+                    @error('comment') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                {{-- Optional screenshot --}}
+                <div>
+                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                        Screenshot (optional)
+                        <span class="text-gray-600 font-normal normal-case ml-1">Steam redemption, chat proof, etc. Max 5 MB.</span>
+                    </label>
+                    <input type="file" name="screenshot" accept="image/*"
+                           class="block w-full text-sm text-gray-400
+                                  file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                                  file:text-xs file:font-semibold file:text-white
+                                  file:cursor-pointer"
+                           style="file:background:linear-gradient(135deg,#2563EB,#1D4ED8);">
+                    @error('screenshot') <p class="text-red-400 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <button type="submit"
+                        class="btn-brand px-6 py-2.5 rounded-xl text-sm font-semibold">
+                    Submit Review
+                </button>
+            </form>
+        @endif
+    </div>
+    @endif
 </div>
 @endsection

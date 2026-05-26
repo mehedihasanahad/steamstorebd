@@ -201,6 +201,248 @@ $_schema = [
     </div>
 </section>
 
+{{-- ══ REVIEWS ══ --}}
+@if($reviews->isNotEmpty())
+@push('styles')
+<style>
+/* ── Review carousel ── */
+.rv-viewport { overflow: hidden; position: relative; }
+.rv-viewport::before,
+.rv-viewport::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 120px;
+    z-index: 2;
+    pointer-events: none;
+}
+.rv-viewport::before { left: 0;  background: linear-gradient(to right, #040D1A, transparent); }
+.rv-viewport::after  { right: 0; background: linear-gradient(to left,  #040D1A, transparent); }
+
+.rv-track {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 16px;
+    width: max-content;
+    padding: 6px 16px 18px;
+    animation: rvScroll 55s linear infinite;
+}
+.rv-track:hover { animation-play-state: paused; }
+
+@keyframes rvScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* Dark navy card — matches site theme */
+.rv-card {
+    width: 290px;
+    flex: 0 0 290px;
+    background: #0E1F35;
+    border: 1px solid rgba(37,99,235,0.18);
+    border-radius: 16px;
+    padding: 20px 22px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+}
+.rv-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(37,99,235,0.45);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(37,99,235,0.12);
+}
+
+/* Quote mark */
+.rv-quote {
+    font-size: 48px;
+    line-height: 1;
+    color: #2563EB;
+    font-family: Georgia, serif;
+    margin-bottom: -6px;
+    opacity: 0.4;
+    user-select: none;
+}
+
+/* Stars row */
+.rv-stars-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.rv-stars { display: flex; gap: 2px; }
+
+/* Platform badge — dark theme */
+.rv-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 9px; border-radius: 999px;
+    white-space: nowrap; letter-spacing: 0.02em;
+}
+.rv-badge-whatsapp  { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.rv-badge-messenger { background: rgba(59,130,246,0.12); color: #7CB3F5; border: 1px solid rgba(59,130,246,0.25); }
+.rv-badge-steam     { background: rgba(255,255,255,0.06); color: #9BB5D5; border: 1px solid rgba(255,255,255,0.1); }
+.rv-badge-website   { background: rgba(37,99,235,0.12);  color: #7CB3F5; border: 1px solid rgba(37,99,235,0.25); }
+
+/* Screenshot */
+.rv-shot { display: block; border-radius: 10px; overflow: hidden; border: 1px solid rgba(37,99,235,0.15); text-decoration: none; margin-bottom: 12px; }
+.rv-shot img { width: 100%; height: 140px; object-fit: cover; object-position: top; display: block; }
+.rv-shot-label { text-align: center; padding: 4px; font-size: 9px; color: #557AA0; background: rgba(0,0,0,0.3); }
+
+/* Comment */
+.rv-comment { color: #9BB5D5; font-size: 13px; line-height: 1.65; flex: 1; margin-bottom: 14px; }
+
+/* Divider */
+.rv-divider { height: 1px; background: rgba(37,99,235,0.1); margin-bottom: 12px; }
+
+/* Footer */
+.rv-footer { display: flex; align-items: center; justify-content: space-between; }
+.rv-reviewer { display: flex; align-items: center; gap: 9px; }
+.rv-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #2563EB, #1D4ED8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff; flex-shrink: 0;
+}
+.rv-name { color: #ffffff; font-size: 13px; font-weight: 700; line-height: 1; }
+.rv-date { color: #557AA0; font-size: 11px; margin-top: 2px; }
+
+/* Verified badge — dark theme */
+.rv-verified {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 7px; border-radius: 999px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #4ade80;
+    white-space: nowrap;
+}
+
+/* Score block — dark theme */
+.rv-score-block {
+    display: flex; align-items: center; gap: 16px;
+    background: #0E1F35;
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: 14px;
+    padding: 16px 22px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+</style>
+@endpush
+
+@php $doubled = $reviews->concat($reviews); @endphp
+
+<section style="background:#071428; padding:80px 0 88px; position:relative; overflow:hidden;">
+    <div style="position:absolute;top:-100px;right:-80px;width:480px;height:480px;background:radial-gradient(circle,rgba(37,99,235,0.09) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-60px;left:-60px;width:320px;height:320px;background:radial-gradient(circle,rgba(37,99,235,0.06) 0%,transparent 70%);pointer-events:none;"></div>
+
+    {{-- ── Header ── --}}
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-8">
+
+            {{-- Left: text --}}
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.18em] mb-3" style="color:#4B8FEF;">
+                    Customer Reviews
+                </p>
+                <h2 class="text-3xl md:text-4xl font-black text-white mb-2" style="letter-spacing:-0.025em;">
+                    Trusted by Bangladeshi<br>Gamers Every Day
+                </h2>
+                <p class="text-sm" style="color:#557AA0;">Every review below is from a real purchase. No fakes, no bots.</p>
+            </div>
+
+            {{-- Right: score block --}}
+            <div class="rv-score-block flex-shrink-0">
+                <div class="text-center" style="padding-right:16px; border-right:1px solid rgba(37,99,235,0.15);">
+                    <div style="font-size:40px; font-weight:900; color:#ffffff; line-height:1;">5.0</div>
+                    <div style="font-size:11px; color:#557AA0; margin-top:3px;">out of 5</div>
+                </div>
+                <div>
+                    <div style="display:flex; gap:3px; margin-bottom:5px;">
+                        @for($i = 1; $i <= 5; $i++)
+                        <svg width="22" height="22" fill="#FBBF24" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                        @endfor
+                    </div>
+                    <div style="font-size:12px; font-weight:700; color:#ffffff;">Excellent</div>
+                    <div style="font-size:11px; color:#557AA0;">{{ $reviews->count() }}+ verified reviews</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Carousel ── --}}
+    <div class="rv-viewport">
+        <div class="rv-track">
+            @foreach($doubled as $review)
+            <div class="rv-card">
+
+                {{-- Stars + platform --}}
+                <div class="rv-stars-row">
+                    <div class="rv-stars">
+                        @for($i = 1; $i <= 5; $i++)
+                        <svg width="18" height="18" fill="{{ $i <= $review->rating ? '#FBBF24' : 'rgba(255,255,255,0.12)' }}" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        @endfor
+                    </div>
+                    <span class="rv-badge
+                        @if($review->platform === 'whatsapp') rv-badge-whatsapp
+                        @elseif($review->platform === 'messenger') rv-badge-messenger
+                        @elseif($review->platform === 'steam') rv-badge-steam
+                        @else rv-badge-website
+                        @endif">
+                        @if($review->platform === 'whatsapp') 📱 WhatsApp
+                        @elseif($review->platform === 'messenger') 💬 Messenger
+                        @elseif($review->platform === 'steam') 🎮 Steam
+                        @else 🌐 Website
+                        @endif
+                    </span>
+                </div>
+
+                {{-- Screenshot --}}
+                @if($review->screenshot_path)
+                <a href="{{ asset('storage/' . $review->screenshot_path) }}" target="_blank" rel="noopener" class="rv-shot">
+                    <img src="{{ asset('storage/' . $review->screenshot_path) }}" alt="Customer proof" loading="lazy">
+                    <div class="rv-shot-label">Tap to view full screenshot</div>
+                </a>
+                @endif
+
+                {{-- Quote + comment --}}
+                <div class="rv-quote">"</div>
+                <p class="rv-comment">{{ $review->comment }}"</p>
+
+                <div class="rv-divider"></div>
+
+                {{-- Footer --}}
+                <div class="rv-footer">
+                    <div class="rv-reviewer">
+                        <div class="rv-avatar">{{ strtoupper(substr($review->displayName(), 0, 1)) }}</div>
+                        <div>
+                            <div class="rv-name">{{ $review->displayName() }}</div>
+                            <div class="rv-date">{{ $review->created_at->format('d M Y') }}</div>
+                        </div>
+                    </div>
+                    @if($review->is_verified_purchase)
+                    <div class="rv-verified">
+                        <svg width="9" height="9" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        Verified
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- CTA --}}
+    <div class="text-center mt-12">
+        <a href="#products"
+           class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white text-sm transition-all duration-200 hover:opacity-90"
+           style="background:linear-gradient(135deg,#2563EB,#1D4ED8);box-shadow:0 0 28px rgba(37,99,235,0.4);">
+            🛒 Shop Now — Join {{ $reviews->count() }}+ Happy Customers
+        </a>
+    </div>
+</section>
+@endif
+
 {{-- ══ TRUST SECTION ══ --}}
 <section style="background:#071428; padding:56px 0;">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">

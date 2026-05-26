@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,7 +23,13 @@ class StorefrontController extends Controller
             ->values()
         );
 
-        return view('storefront.home', compact('categories'));
+        $reviews = Review::approved()
+                ->orderBy('sort_order')
+                ->orderByDesc('created_at')
+                ->limit(12)
+                ->get();
+
+        return view('storefront.home', compact('categories', 'reviews'));
     }
 
     public function product(string $categorySlug)

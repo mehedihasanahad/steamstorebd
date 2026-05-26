@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BkashController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderLookupController;
@@ -59,6 +60,7 @@ Route::middleware('throttle:10,1')->group(function () {
 // Order detail (auth)
 Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/orders/{orderNumber}', [OrderLookupController::class, 'show'])->name('orders.show');
+    Route::post('/orders/{orderNumber}/review', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
 });
 
 // Google OAuth
