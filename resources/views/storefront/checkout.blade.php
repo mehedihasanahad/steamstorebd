@@ -230,8 +230,8 @@
 
                         <span x-show="!loading">
                             <span x-show="paymentMethod === 'bkash_online'">Pay with bKash →</span>
-                            <span x-show="paymentMethod === 'bkash_send_money'" x-cloak>Place Order (bKash Send Money) →</span>
-                            <span x-show="paymentMethod === 'nagad_send_money'" x-cloak>Place Order (Nagad Send Money) →</span>
+                            <span x-show="paymentMethod === 'bkash_send_money'" x-cloak>Place Order</span>
+                            <span x-show="paymentMethod === 'nagad_send_money'" x-cloak>Place Order</span>
                         </span>
                         <span x-show="loading" x-cloak class="flex items-center gap-2">
                             <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">

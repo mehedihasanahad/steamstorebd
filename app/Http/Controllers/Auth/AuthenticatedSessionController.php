@@ -28,7 +28,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // If no specific page was intended but cart has items, continue to checkout
+        if (! $request->session()->has('url.intended') && ! empty($request->session()->get('cart'))) {
+            return redirect()->route('checkout');
+        }
+
+        return redirect()->intended(route('home'));
     }
 
     /**

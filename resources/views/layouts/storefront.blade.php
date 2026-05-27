@@ -342,8 +342,13 @@
                             </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}"
+                        <a href="{{ route('register') }}"
                            class="text-sm font-medium text-gray-300 hover:text-white border border-gray-700 hover:border-brand-500/50 px-4 py-1.5 rounded-lg transition-all duration-150">
+                            Register
+                        </a>
+                        <a href="{{ route('login') }}"
+                           class="text-sm font-semibold text-white px-4 py-1.5 rounded-lg transition-all duration-150"
+                           style="background:rgba(37,99,235,0.15); border:1px solid rgba(37,99,235,0.4);">
                             Sign In
                         </a>
                     @endauth
@@ -406,7 +411,17 @@
                     </div>
                 </div>
                 @endauth
-                <div class="pt-2 border-t border-gray-800 mt-2">
+                <div class="pt-2 border-t border-gray-800 mt-2 space-y-2">
+                    @guest
+                    <div class="grid grid-cols-2 gap-2">
+                        <a href="{{ route('register') }}" class="block text-center font-semibold py-2.5 px-4 rounded-xl text-sm text-gray-300 border border-gray-700">
+                            Register
+                        </a>
+                        <a href="{{ route('login') }}" class="block text-center font-semibold py-2.5 px-4 rounded-xl text-sm text-white" style="background:rgba(37,99,235,0.2); border:1px solid rgba(37,99,235,0.4);">
+                            Sign In
+                        </a>
+                    </div>
+                    @endguest
                     <a href="{{ route('cart') }}" class="block btn-brand text-center font-semibold py-2.5 px-4 rounded-xl text-sm">
                         🛒 Cart @if($cartCount > 0) ({{ $cartCount }})@endif
                     </a>
@@ -505,7 +520,7 @@
         $msUser = site_setting('messenger_page_username', '');
     @endphp
 
-    @if(($waOn && $waNum) || ($msOn && $msUser))
+    @if($waOn && $waNum || $msOn && $msUser)
     <div class="fixed bottom-6 right-5 z-[9999] flex flex-col items-end gap-3">
 
         @if($msOn && $msUser)

@@ -102,6 +102,8 @@
             margin-top: 0.35rem;
         }
 
+        [x-cloak] { display: none !important; }
+
         .left-panel-orb {
             position: absolute;
             border-radius: 50%;
@@ -124,5 +126,6 @@
 </head>
 <body class="antialiased" style="background:#040D1A; min-height:100vh;">
     {{ $slot }}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>

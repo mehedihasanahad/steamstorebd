@@ -121,11 +121,20 @@
                 <div style="display:flex;align-items:center;gap:0.5rem;">
                     <input id="remember_me" name="remember" type="checkbox"
                            style="width:16px;height:16px;accent-color:#2563EB;cursor:pointer;">
-                    <label for="remember_me" style="font-size:0.8125rem;color:#7898BB;cursor:pointer;">Remember me for 30 days</label>
+                    <label for="remember_me" style="font-size:0.8125rem;color:#7898BB;cursor:pointer;">Remember me</label>
                 </div>
 
                 <button type="submit" class="auth-btn">Sign in to account</button>
             </form>
+
+            {{-- Register link --}}
+            <p style="text-align:center;font-size:0.875rem;color:#557AA0;margin-top:1.5rem;">
+                Don't have an account?
+                <a href="{{ route('register') }}" style="color:#4B8FEF;font-weight:600;text-decoration:none;"
+                   onmouseover="this.style.color='#7CB3F5'" onmouseout="this.style.color='#4B8FEF'">
+                    Create one
+                </a>
+            </p>
 
             {{-- Back to store --}}
             <a href="{{ url('/') }}" style="display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.75rem 1.5rem;margin-top:1.25rem;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:0.75rem;color:#4B8FEF;font-size:0.875rem;font-weight:500;text-decoration:none;" onmouseover="this.style.background='rgba(37,99,235,0.15)'" onmouseout="this.style.background='rgba(37,99,235,0.08)'">
