@@ -93,6 +93,8 @@
             <form method="POST" action="{{ route('register') }}"
                   x-data="{
                       pw: '',
+                      showPw: false,
+                      showPwConfirm: false,
                       get len()  { return this.pw.length >= 8; },
                       get upp()  { return /[A-Z]/.test(this.pw); },
                       get num()  { return /[0-9]/.test(this.pw); },
@@ -135,13 +137,27 @@
                 {{-- Password --}}
                 <div>
                     <label for="password" class="auth-label">Password</label>
-                    <input id="password" name="password" type="password"
-                           required autocomplete="new-password"
-                           placeholder="Min 8 chars, uppercase, number, symbol"
-                           class="auth-input"
-                           x-model="pw"
-                           onfocus="this.style.borderColor='rgba(37,99,235,0.6)'"
-                           onblur="this.style.borderColor='rgba(85,122,160,0.25)'">
+                    <div style="position:relative;">
+                        <input id="password" name="password" :type="showPw ? 'text' : 'password'"
+                               required autocomplete="new-password"
+                               placeholder="Min 8 chars, uppercase, number, symbol"
+                               class="auth-input"
+                               style="padding-right:2.75rem;"
+                               x-model="pw"
+                               onfocus="this.style.borderColor='rgba(37,99,235,0.6)'"
+                               onblur="this.style.borderColor='rgba(85,122,160,0.25)'">
+                        <button type="button" @click="showPw = !showPw"
+                                style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;"
+                                :style="{ color: showPw ? '#4B8FEF' : '#557AA0' }">
+                            <svg x-show="!showPw" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <svg x-show="showPw" x-cloak width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
 
                     {{-- Strength indicator --}}
                     <div x-show="pw.length > 0" x-cloak style="margin-top:0.75rem;">
@@ -186,12 +202,26 @@
                 {{-- Confirm Password --}}
                 <div>
                     <label for="password_confirmation" class="auth-label">Confirm Password</label>
-                    <input id="password_confirmation" name="password_confirmation" type="password"
-                           required autocomplete="new-password"
-                           placeholder="Re-enter your password"
-                           class="auth-input"
-                           onfocus="this.style.borderColor='rgba(37,99,235,0.6)'"
-                           onblur="this.style.borderColor='rgba(85,122,160,0.25)'">
+                    <div style="position:relative;">
+                        <input id="password_confirmation" name="password_confirmation" :type="showPwConfirm ? 'text' : 'password'"
+                               required autocomplete="new-password"
+                               placeholder="Re-enter your password"
+                               class="auth-input"
+                               style="padding-right:2.75rem;"
+                               onfocus="this.style.borderColor='rgba(37,99,235,0.6)'"
+                               onblur="this.style.borderColor='rgba(85,122,160,0.25)'">
+                        <button type="button" @click="showPwConfirm = !showPwConfirm"
+                                style="position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;"
+                                :style="{ color: showPwConfirm ? '#4B8FEF' : '#557AA0' }">
+                            <svg x-show="!showPwConfirm" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                            <svg x-show="showPwConfirm" x-cloak width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                            </svg>
+                        </button>
+                    </div>
                     @error('password_confirmation')
                         <p class="auth-error">{{ $message }}</p>
                     @enderror
