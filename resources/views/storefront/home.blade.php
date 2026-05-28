@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'Steam Store BD — Buy Steam Gift Cards in Bangladesh | bKash | Steam Store BD')
+@section('title', 'Buy Steam Gift Cards in Bangladesh | bKash — Steam Store BD')
 @section('meta_description', 'Steam Store BD is Bangladesh\'s #1 Steam gift card store. Buy Steam Wallet codes with bKash — $5, $10, $20, $50, $100 USD. Instant delivery to email. Best BDT price. 100% genuine.')
 @section('meta_keywords', 'steam store bd, steam store bd, steam gift card bd, steam gift card bangladesh, steam wallet bangladesh, buy steam gift card bangladesh, steam gift card sell bd, steam gift card buy bangladesh, steam wallet top up bd, steam card bd price, steam wallet code bangladesh, steam gift card bd price 2025, steam wallet gift card bd, steam gift card bkash, steam gift card sell bangladesh')
 
@@ -437,7 +437,7 @@ $_schema = [
         <a href="#products"
            class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-white text-sm transition-all duration-200 hover:opacity-90"
            style="background:linear-gradient(135deg,#2563EB,#1D4ED8);box-shadow:0 0 28px rgba(37,99,235,0.4);">
-            🛒 Shop Now — Join {{ $reviews->count() }}+ Happy Customers
+            🛒 Shop Now
         </a>
     </div>
 </section>

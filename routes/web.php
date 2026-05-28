@@ -12,6 +12,23 @@ use Illuminate\Support\Facades\Route;
 
 // SEO
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/robots.txt', function () {
+    $lines = [
+        'User-agent: *',
+        'Disallow: /admin',
+        'Disallow: /admin/',
+        'Disallow: /dashboard',
+        'Disallow: /profile',
+        'Disallow: /checkout',
+        'Disallow: /cart',
+        'Disallow: /auth/',
+        'Disallow: /bkash/',
+        '',
+        'Sitemap: ' . url('/sitemap.xml'),
+    ];
+    return response(implode("\n", $lines), 200)
+        ->header('Content-Type', 'text/plain');
+});
 
 // Storefront
 Route::get('/', [StorefrontController::class, 'home'])->name('home');

@@ -9,6 +9,12 @@
     </url>
 
     <url>
+        <loc>{{ route('how-to-redeem') }}</loc>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+
+    <url>
         <loc>{{ route('faq') }}</loc>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>

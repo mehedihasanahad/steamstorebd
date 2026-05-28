@@ -85,159 +85,17 @@
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('images/logo.svg') }}">
 
+    {{-- Resource hints: preconnect before any external requests ──────────── --}}
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    {{-- Google Fonts ── kept as <link> (faster than @import in CSS) ── --}}
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-                    },
-                    colors: {
-                        /* ── Brand blue palette ── */
-                        brand: {
-                            50:  '#EEF4FF',
-                            100: '#D9E8FF',
-                            200: '#B3CFFF',
-                            300: '#7AAFF5',
-                            400: '#4B8FEF',
-                            500: '#2563EB',   /* primary CTA */
-                            600: '#1D4ED8',
-                            700: '#1E40AF',
-                            800: '#1E3A8A',
-                            900: '#1E3074',
-                        },
-                        /* ── Navy surface palette (overrides gray to blue-tinted) ── */
-                        gray: {
-                            50:  '#EEF4FF',
-                            100: '#D4E0F5',
-                            200: '#9BB5D5',
-                            300: '#7898BB',
-                            400: '#557AA0',
-                            500: '#3A5E80',
-                            600: '#214263',
-                            700: '#152E4F',
-                            800: '#0E1F35',
-                            900: '#071428',
-                            950: '#040D1A',
-                        },
-                        'bkash-pink': '#E2136E',
-                    },
-                    boxShadow: {
-                        'brand-glow': '0 0 24px rgba(37,99,235,0.45)',
-                        'brand-glow-lg': '0 0 48px rgba(37,99,235,0.35)',
-                        'card': '0 4px 24px rgba(0,0,0,0.4)',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0px)' },
-                            '50%': { transform: 'translateY(-12px)' },
-                        },
-                        'pulse-slow': {
-                            '0%, 100%': { opacity: '0.6' },
-                            '50%': { opacity: '1' },
-                        }
-                    },
-                    animation: {
-                        float: 'float 3s ease-in-out infinite',
-                        'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        :root {
-            --brand-blue: #2563EB;
-            --brand-blue-dark: #1D4ED8;
-            --brand-navy: #071428;
-            --brand-body: #040D1A;
-        }
-        body { background-color: var(--brand-body); font-family: 'Inter', sans-serif; }
-
-        /* ── Gradient helpers ── */
-        .card-gradient   { background: linear-gradient(135deg, #071428 0%, #0D2040 100%); }
-        .hero-gradient   { background: linear-gradient(135deg, #071428 0%, #040D1A 80%); }
-        .surface         { background: #071428; }
-        .surface-2       { background: #0E1F35; }
-
-        /* ── Brand button ── */
-        .btn-brand {
-            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-            color: #fff !important;
-            transition: all 0.2s ease;
-        }
-        .btn-brand:hover {
-            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-            box-shadow: 0 0 24px rgba(37,99,235,0.5);
-        }
-        /* keep old alias for backwards compat */
-        .btn-steam { background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%); color: #fff !important; }
-        .btn-steam:hover { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); box-shadow: 0 0 24px rgba(37,99,235,0.5); }
-
-        /* ── Shadow alias ── */
-        .shadow-steam-glow { box-shadow: 0 0 24px rgba(37,99,235,0.45); }
-
-        /* ── Scrollbar ── */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        [x-cloak] { display: none !important; }
-
-        /* ── Floating Chat Buttons ── */
-        .chat-float-btn {
-            width: 56px; height: 56px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            position: relative; cursor: pointer; text-decoration: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.45);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .chat-float-btn:hover { transform: scale(1.1); }
-        .chat-float-btn::before {
-            content: ''; position: absolute; inset: -4px; border-radius: 50%;
-            animation: chatPulse 2.5s ease-out infinite;
-        }
-        @keyframes chatPulse {
-            0%   { transform: scale(1); opacity: 0.75; }
-            70%  { transform: scale(1.38); opacity: 0; }
-            100% { transform: scale(1.38); opacity: 0; }
-        }
-        .wa-float   { background: #25D366; }
-        .wa-float:hover  { box-shadow: 0 6px 28px rgba(37,211,102,0.55); }
-        .wa-float::before  { border: 2px solid rgba(37,211,102,0.65); }
-        .ms-float   { background: linear-gradient(135deg,#0099FF 0%,#A033FF 100%); }
-        .ms-float:hover  { box-shadow: 0 6px 28px rgba(0,153,255,0.5); }
-        .ms-float::before  { border: 2px solid rgba(0,153,255,0.65); }
-        .chat-tip {
-            position: absolute; right: calc(100% + 12px); top: 50%; transform: translateY(-50%);
-            background: rgba(14,31,53,0.97); color: #e2e8f0;
-            border: 1px solid rgba(37,99,235,0.25); border-radius: 8px;
-            padding: 5px 12px; font-size: 13px; font-weight: 500;
-            white-space: nowrap; pointer-events: none;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-        }
-        .chat-tip::after {
-            content: ''; position: absolute; left: 100%; top: 50%; transform: translateY(-50%);
-            border: 5px solid transparent; border-left-color: rgba(14,31,53,0.97);
-        }
-
-        /* ── Decorative grid ── */
-        .grid-bg {
-            background-image: linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
-            background-size: 48px 48px;
-        }
-        /* ── Animated orb ── */
-        .orb {
-            border-radius: 50%;
-            filter: blur(80px);
-            position: absolute;
-            pointer-events: none;
-        }
-    </style>
+    {{-- Compiled storefront CSS (Tailwind + custom classes) ── --}}
+    @vite(['resources/css/storefront.css'])
     @stack('styles')
 </head>
 <body class="text-gray-900 font-sans antialiased" style="background:#FFFFFF;">
