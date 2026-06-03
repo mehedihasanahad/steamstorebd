@@ -54,7 +54,13 @@ class GiftCardResource extends Resource
                     ->placeholder('USD, INR, EUR, GBP …')
                     ->maxLength(10),
                 Forms\Components\TextInput::make('denomination_bdt')->numeric()->required()->prefix('৳'),
-                Forms\Components\TextInput::make('price_bdt')->numeric()->required()->prefix('৳'),
+                Forms\Components\TextInput::make('buy_price_bdt')
+                    ->numeric()
+                    ->nullable()
+                    ->prefix('৳')
+                    ->label('Buy Price (Cost)')
+                    ->helperText('Your purchase cost — used to calculate profit'),
+                Forms\Components\TextInput::make('price_bdt')->numeric()->required()->prefix('৳')->label('Sell Price'),
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             ])->columns(2),
 
@@ -74,7 +80,18 @@ class GiftCardResource extends Resource
                 Tables\Columns\TextColumn::make('denomination')
                     ->label('Denomination')
                     ->formatStateUsing(fn($record) => format_card_denomination($record->denomination, $record->denomination_currency)),
-                Tables\Columns\TextColumn::make('price_bdt')->formatStateUsing(fn($state) => format_bdt($state)),
+                Tables\Columns\TextColumn::make('buy_price_bdt')
+                    ->label('Buy Price')
+                    ->formatStateUsing(fn($state) => $state ? format_bdt($state) : '—'),
+                Tables\Columns\TextColumn::make('price_bdt')
+                    ->label('Sell Price')
+                    ->formatStateUsing(fn($state) => format_bdt($state)),
+                Tables\Columns\TextColumn::make('profit_margin')
+                    ->label('Margin')
+                    ->getStateUsing(fn($record) => $record->buy_price_bdt
+                        ? format_bdt($record->price_bdt - $record->buy_price_bdt)
+                        : '—')
+                    ->color(fn($record) => $record->buy_price_bdt && ($record->price_bdt - $record->buy_price_bdt) > 0 ? 'success' : 'gray'),
                 Tables\Columns\BadgeColumn::make('stock_count')
                     ->label('Stock')
                     ->color(fn($state) => $state > 5 ? 'success' : ($state > 0 ? 'warning' : 'danger')),

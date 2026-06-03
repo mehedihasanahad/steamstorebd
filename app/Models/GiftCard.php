@@ -15,6 +15,7 @@ class GiftCard extends Model
         'denomination',
         'denomination_currency',
         'denomination_bdt',
+        'buy_price_bdt',
         'price_bdt',
         'description',
         'badge_text',
@@ -29,6 +30,7 @@ class GiftCard extends Model
         return [
             'denomination' => 'decimal:2',
             'denomination_bdt' => 'decimal:2',
+            'buy_price_bdt' => 'decimal:2',
             'price_bdt' => 'decimal:2',
             'is_active' => 'boolean',
             'sort_order' => 'integer',

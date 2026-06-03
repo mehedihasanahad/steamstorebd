@@ -7,6 +7,7 @@ use App\Models\GiftCardCode;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\DB;
 
 class StatsOverviewWidget extends BaseWidget
 {
@@ -16,7 +17,11 @@ class StatsOverviewWidget extends BaseWidget
             ->whereIn('status', ['paid', 'completed'])
             ->sum('total_bdt');
 
+        $totalRevenue = Order::whereIn('status', ['paid', 'completed'])->sum('total_bdt');
+
         $todayOrders = Order::whereDate('created_at', today())->count();
+
+        $totalOrders = Order::count();
 
         $totalStock = GiftCardCode::available()->count();
 
@@ -24,16 +29,51 @@ class StatsOverviewWidget extends BaseWidget
 
         $totalSold = GiftCardCode::sold()->count();
 
+        $profitQuery = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('gift_cards', 'order_items.gift_card_id', '=', 'gift_cards.id')
+            ->whereIn('orders.status', ['paid', 'completed'])
+            ->whereNotNull('gift_cards.buy_price_bdt');
+
+        $totalProfit = (clone $profitQuery)
+            ->selectRaw('SUM((order_items.unit_price_bdt - gift_cards.buy_price_bdt) * order_items.quantity) as profit')
+            ->value('profit') ?? 0;
+
+        $todayProfit = (clone $profitQuery)
+            ->whereDate('orders.created_at', today())
+            ->selectRaw('SUM((order_items.unit_price_bdt - gift_cards.buy_price_bdt) * order_items.quantity) as profit')
+            ->value('profit') ?? 0;
+
         return [
             Stat::make("Today's Revenue", format_bdt($todayRevenue))
                 ->description('Confirmed payments today')
                 ->color('success')
                 ->icon('heroicon-o-banknotes'),
 
+            Stat::make("Today's Profit", format_bdt($todayProfit))
+                ->description('Revenue minus buy cost today')
+                ->color($todayProfit > 0 ? 'success' : 'gray')
+                ->icon('heroicon-o-arrow-trending-up'),
+
             Stat::make("Today's Orders", $todayOrders)
                 ->description('Orders placed today')
                 ->color('primary')
                 ->icon('heroicon-o-shopping-cart'),
+
+            Stat::make('Total Revenue', format_bdt($totalRevenue))
+                ->description('All-time confirmed revenue')
+                ->color('success')
+                ->icon('heroicon-o-banknotes'),
+
+            Stat::make('Total Profit', format_bdt($totalProfit))
+                ->description('All-time revenue minus buy cost')
+                ->color($totalProfit > 0 ? 'success' : 'gray')
+                ->icon('heroicon-o-currency-dollar'),
+
+            Stat::make('Total Orders', $totalOrders)
+                ->description('All-time orders placed')
+                ->color('primary')
+                ->icon('heroicon-o-clipboard-document-list'),
 
             Stat::make('Total Stock', $totalStock . ' codes')
                 ->description('Available gift card codes')
