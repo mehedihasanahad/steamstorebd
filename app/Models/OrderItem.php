@@ -13,6 +13,7 @@ class OrderItem extends Model
         'gift_card_id',
         'quantity',
         'unit_price_bdt',
+        'buy_price_bdt',
         'subtotal_bdt',
     ];
 
@@ -20,6 +21,7 @@ class OrderItem extends Model
     {
         return [
             'unit_price_bdt' => 'decimal:2',
+            'buy_price_bdt' => 'decimal:2',
             'subtotal_bdt' => 'decimal:2',
             'quantity' => 'integer',
         ];

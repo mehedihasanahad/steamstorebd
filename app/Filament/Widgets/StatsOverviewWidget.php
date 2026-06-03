@@ -2,7 +2,6 @@
 
 namespace App\Filament\Widgets;
 
-use App\Models\GiftCard;
 use App\Models\GiftCardCode;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
@@ -29,20 +28,21 @@ class StatsOverviewWidget extends BaseWidget
 
         $totalSold = GiftCardCode::sold()->count();
 
-        $profitQuery = DB::table('order_items')
+        // profit = sum(subtotal) - sum(buy_price × quantity), snapshotted at order time
+        $totalProfit = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->join('gift_cards', 'order_items.gift_card_id', '=', 'gift_cards.id')
             ->whereIn('orders.status', ['paid', 'completed'])
-            ->whereNotNull('gift_cards.buy_price_bdt');
+            ->whereNotNull('order_items.buy_price_bdt')
+            ->selectRaw('SUM(order_items.subtotal_bdt) - SUM(order_items.buy_price_bdt * order_items.quantity) as profit')
+            ->first()?->profit ?? 0;
 
-        $totalProfit = (clone $profitQuery)
-            ->selectRaw('SUM((order_items.unit_price_bdt - gift_cards.buy_price_bdt) * order_items.quantity) as profit')
-            ->value('profit') ?? 0;
-
-        $todayProfit = (clone $profitQuery)
+        $todayProfit = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->whereIn('orders.status', ['paid', 'completed'])
             ->whereDate('orders.created_at', today())
-            ->selectRaw('SUM((order_items.unit_price_bdt - gift_cards.buy_price_bdt) * order_items.quantity) as profit')
-            ->value('profit') ?? 0;
+            ->whereNotNull('order_items.buy_price_bdt')
+            ->selectRaw('SUM(order_items.subtotal_bdt) - SUM(order_items.buy_price_bdt * order_items.quantity) as profit')
+            ->first()?->profit ?? 0;
 
         return [
             Stat::make("Today's Revenue", format_bdt($todayRevenue))

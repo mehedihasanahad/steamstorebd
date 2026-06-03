@@ -6,6 +6,7 @@ use App\Jobs\SendAdminNewOrderEmail;
 use App\Jobs\SendOrderCodesEmail;
 use App\Jobs\SendOrderPendingEmail;
 use App\Models\BkashPayment;
+use App\Models\GiftCard;
 use App\Models\GiftCardCode;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -31,13 +32,17 @@ class OrderService
                 'ip_address' => request()->ip(),
             ]);
 
+            $buyPrices = GiftCard::whereIn('id', collect($cartItems)->pluck('gift_card_id'))
+                ->pluck('buy_price_bdt', 'id');
+
             foreach ($cartItems as $item) {
                 $orderItem = OrderItem::create([
-                    'order_id' => $order->id,
-                    'gift_card_id' => $item['gift_card_id'],
-                    'quantity' => $item['quantity'],
+                    'order_id'       => $order->id,
+                    'gift_card_id'   => $item['gift_card_id'],
+                    'quantity'       => $item['quantity'],
                     'unit_price_bdt' => $item['price'],
-                    'subtotal_bdt' => $item['price'] * $item['quantity'],
+                    'buy_price_bdt'  => $buyPrices[$item['gift_card_id']] ?? null,
+                    'subtotal_bdt'   => $item['price'] * $item['quantity'],
                 ]);
 
                 // Reserve codes
@@ -114,12 +119,16 @@ class OrderService
                 'ip_address'        => request()->ip(),
             ]);
 
+            $buyPrices = GiftCard::whereIn('id', collect($cartItems)->pluck('gift_card_id'))
+                ->pluck('buy_price_bdt', 'id');
+
             foreach ($cartItems as $item) {
                 $orderItem = OrderItem::create([
                     'order_id'       => $order->id,
                     'gift_card_id'   => $item['gift_card_id'],
                     'quantity'       => $item['quantity'],
                     'unit_price_bdt' => $item['price'],
+                    'buy_price_bdt'  => $buyPrices[$item['gift_card_id']] ?? null,
                     'subtotal_bdt'   => $item['price'] * $item['quantity'],
                 ]);
 
