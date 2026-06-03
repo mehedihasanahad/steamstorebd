@@ -28,12 +28,11 @@ class StatsOverviewWidget extends BaseWidget
 
         $totalSold = GiftCardCode::sold()->count();
 
-        // profit = sum(subtotal) - sum(buy_price × quantity), snapshotted at order time
         $totalProfit = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->whereIn('orders.status', ['paid', 'completed'])
             ->whereNotNull('order_items.buy_price_bdt')
-            ->selectRaw('SUM(order_items.subtotal_bdt) - SUM(order_items.buy_price_bdt * order_items.quantity) as profit')
+            ->selectRaw('SUM((order_items.unit_price_bdt - order_items.buy_price_bdt) * order_items.quantity) as profit')
             ->first()?->profit ?? 0;
 
         $todayProfit = DB::table('order_items')
@@ -41,7 +40,7 @@ class StatsOverviewWidget extends BaseWidget
             ->whereIn('orders.status', ['paid', 'completed'])
             ->whereDate('orders.created_at', today())
             ->whereNotNull('order_items.buy_price_bdt')
-            ->selectRaw('SUM(order_items.subtotal_bdt) - SUM(order_items.buy_price_bdt * order_items.quantity) as profit')
+            ->selectRaw('SUM((order_items.unit_price_bdt - order_items.buy_price_bdt) * order_items.quantity) as profit')
             ->first()?->profit ?? 0;
 
         return [
