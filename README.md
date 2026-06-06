@@ -1,59 +1,97 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# SteamStoreBD - Steam Gift Card Store
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SteamStoreBD is a modern, high-performance e-commerce platform built with Laravel, specifically designed for selling Steam Gift Cards. It features a streamlined shopping experience, automated payment processing via bKash, and a robust admin dashboard.
 
-## About Laravel
+## 🚀 Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Storefront**: Clean and responsive UI for browsing gift card categories and denominations.
+- **Shopping Cart**: Fully functional cart system with quantity management.
+- **Automated Payments**: Integrated with **bKash Tokenized Payment** for seamless transactions.
+- **Order Management**:
+    - Automated order generation and tracking.
+    - Guest order lookup system.
+    - Authenticated user order history.
+- **Security**: 
+    - Rate-limiting (throttling) on critical routes (checkout, auth, lookup).
+    - Social Authentication via Google (Laravel Socialite).
+- **Admin Panel**: Powered by **Filament PHP**, providing a comprehensive dashboard to manage:
+    - Products (Gift Cards) and Categories.
+    - Inventory (Gift Card Codes).
+    - Orders and Payments.
+    - Customer Reviews.
+    - Site Settings.
+- **SEO Optimized**: Built-in sitemap generation and robots.txt configuration.
+- **Developer Friendly**: Custom scripts for easy setup and local development.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🛠️ Tech Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Framework**: [Laravel 12.x](https://laravel.com)
+- **Admin Panel**: [Filament v3](https://filamentphp.com)
+- **Payment Gateway**: [bKash (Tokenized)](https://github.com/karim007/laravel-bkash-tokenize)
+- **Authentication**: Laravel Breeze + Laravel Socialite (Google)
+- **Frontend**: Tailwind CSS + Vite
+- **Database**: MySQL / PostgreSQL / SQLite
 
-## Learning Laravel
+## 📥 Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Prerequisites
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- PHP 8.2 or higher
+- Composer
+- Node.js & NPM
 
-## Laravel Sponsors
+### Setup Steps
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+1. **Clone the repository**:
+   ```bash
+   git clone <repository-url>
+   cd steamstorebd
+   ```
 
-### Premium Partners
+2. **Initialize the project**:
+   This project includes a convenient setup script:
+   ```bash
+   composer setup
+   ```
+   *This command installs dependencies, copies `.env`, generates the application key, runs migrations, and builds frontend assets.*
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+3. **Configure Environment**:
+   Edit the `.env` file to set your database credentials and bKash API keys:
+   ```env
+   DB_CONNECTION=mysql
+   DB_DATABASE=steamstorebd
+   
+   BKASH_APP_KEY=your_app_key
+   BKASH_APP_SECRET=***   # ... other bKash config
+   
+   GOOGLE_CLIENT_ID=your_google_id
+   GOOGLE_CLIENT_SECRET=your_g...et
+   ```
 
-## Contributing
+## 💻 Development
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+To start the development server, queue listener, and Vite watcher concurrently, use:
 
-## Code of Conduct
+```bash
+composer dev
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🧪 Testing
 
-## Security Vulnerabilities
+The project uses [Pest](https://pestphp.com) for testing. To run the test suite:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer test
+```
 
-## License
+## 📁 Key Project Structure
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- `app/Models/`: Business logic and database schemas (GiftCard, Order, BkashPayment, etc.)
+- `app/Http/Controllers/`: Request handling for Storefront, Checkout, and Payments.
+- `app/Providers/Filament/`: Admin panel configuration.
+- `routes/web.php`: Public and authenticated routes.
+- `resources/views/`: Blade templates for the storefront.
+
+## 📄 License
+
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

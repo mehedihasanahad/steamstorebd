@@ -195,4 +195,42 @@ class OrderService
             BkashPayment::where('order_id', $order->id)->update(['status' => 'failed']);
         });
     }
+
+    public function cancelOrder(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'cancelled']);
+
+            // Release reserved codes (pending/pending_review orders have reserved codes, no OrderItemCode records yet)
+            GiftCardCode::whereHas('orderItem', fn($q) => $q->where('order_id', $order->id))
+                ->where('status', 'reserved')
+                ->update(['status' => 'available', 'order_item_id' => null]);
+        });
+    }
+
+    public function refundOrder(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order->update(['status' => 'refunded']);
+
+            // For paid/completed orders: release sold codes and restore stock count
+            foreach ($order->items as $orderItem) {
+                $itemCodes = OrderItemCode::where('order_item_id', $orderItem->id)->get();
+
+                if ($itemCodes->isNotEmpty()) {
+                    $itemCodes->each(function ($itemCode) {
+                        $itemCode->giftCardCode->update(['status' => 'available', 'order_item_id' => null]);
+                        $itemCode->delete();
+                    });
+
+                    $orderItem->giftCard->increment('stock_count', $itemCodes->count());
+                }
+            }
+
+            // For pending_review orders: release reserved codes (no OrderItemCode records exist yet)
+            GiftCardCode::whereHas('orderItem', fn($q) => $q->where('order_id', $order->id))
+                ->where('status', 'reserved')
+                ->update(['status' => 'available', 'order_item_id' => null]);
+        });
+    }
 }

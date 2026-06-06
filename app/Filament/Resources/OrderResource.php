@@ -24,6 +24,36 @@ class OrderResource extends Resource
         return $form->schema([]);
     }
 
+    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    {
+        return $infolist
+            ->schema([
+                \Filament\Infolists\Components\Section::make('Order Information')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('order_number')->label('Order #'),
+                        \Filament\Infolists\Components\TextEntry::make('status')->badge(),
+                        \Filament\Infolists\Components\TextEntry::make('total_bdt')->money('BDT'),
+                        \Filament\Infolists\Components\TextEntry::make('created_at')->dateTime(),
+                    ])->columns(2),
+                \Filament\Infolists\Components\Section::make('Customer Details')
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('customer_name'),
+                        \Filament\Infolists\Components\TextEntry::make('customer_email'),
+                        \Filament\Infolists\Components\TextEntry::make('customer_phone'),
+                    ])->columns(3),
+                \Filament\Infolists\Components\Section::make('Order Items')
+                    ->schema([
+                        \Filament\Infolists\Components\RepeatableEntry::make('items')
+                            ->label('')
+                            ->schema([
+                                \Filament\Infolists\Components\TextEntry::make('giftCard.name')->label('Product'),
+                                \Filament\Infolists\Components\TextEntry::make('quantity'),
+                                \Filament\Infolists\Components\TextEntry::make('unit_price_bdt')->label('Price (BDT)')->money('BDT'),
+                            ])->columns(3),
+                    ]),
+            ]);
+    }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -59,7 +89,7 @@ class OrderResource extends Resource
                         'primary' => 'payment_initiated',
                         'info'    => 'paid',
                         'success' => 'completed',
-                        'danger'  => fn($state) => \in_array($state, ['failed', 'refunded']),
+                        'danger'  => fn($state) => \in_array($state, ['failed', 'refunded', 'cancelled']),
                     ]),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
             ])
@@ -75,6 +105,7 @@ class OrderResource extends Resource
                         'completed'          => 'Completed',
                         'failed'             => 'Failed',
                         'refunded'           => 'Refunded',
+                        'cancelled'          => 'Cancelled',
                     ]),
                 Tables\Filters\SelectFilter::make('payment_method')
                     ->options([

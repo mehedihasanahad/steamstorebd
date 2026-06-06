@@ -16,6 +16,36 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('cancel_order')
+                ->label('Cancel Order')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->visible(fn() => in_array($this->record->status, ['pending', 'pending_review']))
+                ->action(function (OrderService $orderService) {
+                    try {
+                        $orderService->cancelOrder($this->record);
+                        $this->refreshFormData(['status']);
+                        Notification::make()->title('Order cancelled successfully')->success()->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()->title('Error: ' . $e->getMessage())->danger()->send();
+                    }
+                }),
+
+            Actions\Action::make('refund_order')
+                ->label('Refund Order')
+                ->color('danger')
+                ->requiresConfirmation()
+                ->visible(fn() => in_array($this->record->status, ['paid', 'completed', 'pending_review']))
+                ->action(function (OrderService $orderService) {
+                    try {
+                        $orderService->refundOrder($this->record);
+                        $this->refreshFormData(['status']);
+                        Notification::make()->title('Order refunded successfully')->success()->send();
+                    } catch (\Throwable $e) {
+                        Notification::make()->title('Error: ' . $e->getMessage())->danger()->send();
+                    }
+                }),
+
             Actions\Action::make('approve_send_money')
                 ->label('Approve & Send Codes')
                 ->icon('heroicon-o-check-badge')
