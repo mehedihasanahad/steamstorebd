@@ -34,7 +34,7 @@
     <meta property="og:image" content="@yield('og_image', asset('images/hero-image.png'))">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Steam Store BD — Buy Gift Cards in Bangladesh with bKash">
+    <meta property="og:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Buy Gift Cards in Bangladesh with bKash')">
     <meta property="og:locale" content="en_US">
 
     {{-- Twitter Card --}}
@@ -42,7 +42,7 @@
     <meta name="twitter:title" content="@yield('title', 'Steam Store BD — Buy Gift Cards in Bangladesh')">
     <meta name="twitter:description" content="@yield('meta_description', 'Buy digital gift cards in Bangladesh with bKash or Nagad. Instant delivery. Best BDT price.')">
     <meta name="twitter:image" content="@yield('og_image', asset('images/hero-image.png'))">
-    <meta name="twitter:image:alt" content="Steam Store BD — Gift Cards Bangladesh">
+    <meta name="twitter:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Gift Cards Bangladesh')">
 
     {{-- JSON-LD: Organization + WebSite --}}
     @php

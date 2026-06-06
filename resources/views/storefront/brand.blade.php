@@ -2,8 +2,12 @@
 
 @section('title', ($mainCategory->seo_title ?: 'Buy ' . $mainCategory->name . ' in Bangladesh | bKash') . ' — Steam Store BD')
 @section('meta_description', $mainCategory->seo_description ?: 'Buy ' . $mainCategory->name . ' in Bangladesh with bKash. Instant code delivery to email. 100% genuine codes at best BDT price. Steam Store BD.')
-@section('meta_keywords', $mainCategory->seo_keywords ?: 'buy ' . strtolower($mainCategory->name) . ' bangladesh, ' . strtolower($mainCategory->name) . ' bkash, gift card bangladesh, gift card bd bkash')
+@php
+    $_mcName = strtolower($mainCategory->name);
+@endphp
+@section('meta_keywords', $mainCategory->seo_keywords ?: 'buy ' . $_mcName . ' bangladesh, trusted ' . $_mcName . ' bd, ' . $_mcName . ' bkash, ' . $_mcName . ' nagad, ' . $_mcName . ' bd price 2025, genuine ' . $_mcName . ' bangladesh, digital gift card bd, gift card bkash nagad bangladesh')
 @section('og_type', 'website')
+@section('og_image_alt', 'Buy ' . $mainCategory->name . ' in Bangladesh — Steam Store BD')
 @if($mainCategory->image)
 @section('og_image', Storage::disk('public')->url($mainCategory->image))
 @endif
@@ -130,7 +134,7 @@
     </div>
     @endif
 
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {{-- Breadcrumb --}}
         <nav class="flex items-center gap-1.5 text-xs mb-4" style="color:#4A6080;">
             <a href="{{ route('home') }}" class="hover:text-blue-400 transition-colors">Home</a>
@@ -153,9 +157,12 @@
             @endif
 
             <div class="flex-1 min-w-0">
-                <h1 class="text-xl md:text-2xl lg:text-3xl font-black text-white mb-2" style="letter-spacing:-0.02em; line-height:1.2;">
+                <h1 class="text-xl md:text-2xl lg:text-3xl font-black text-white mb-1" style="letter-spacing:-0.02em; line-height:1.2;">
                     {{ $mainCategory->name }}
                 </h1>
+                @if($mainCategory->description)
+                <p class="text-sm mb-2 leading-relaxed" style="color:#7BA8C8;">{{ $mainCategory->description }}</p>
+                @endif
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-[11px] font-medium" style="color:#4A7A9B;">⚡ Instant delivery · bKash · Nagad</span>
                     {{-- Mobile: small pill button --}}
@@ -187,7 +194,7 @@
 
 {{-- Category Cards Grid --}}
 <section style="background:#EEF3FF; padding:36px 0 64px;">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         @if($categories->isEmpty())
         <div class="text-center py-24">
@@ -268,7 +275,7 @@
 {{-- How to Redeem --}}
 @if($mainCategory->how_to_redeem)
 <section id="how-to-redeem" style="background:#F8FAFF; padding:56px 0; border-top:1px solid #E2EAF8;">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-3 mb-6">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
                  style="background:linear-gradient(135deg,#2563EB,#1D4ED8); box-shadow:0 4px 12px rgba(37,99,235,0.3);">
@@ -293,13 +300,19 @@
 {{-- SEO Content --}}
 @if($mainCategory->seo_content)
 <section style="background:#F8FAFF; padding:64px 0; border-top:1px solid #E8EEF8;">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-white rounded-2xl p-8 md:p-10" style="border:1px solid #E8EEF8; box-shadow:0 2px 12px rgba(7,20,40,0.05);">
-            <div class="prose prose-gray max-w-none text-sm leading-relaxed
-                        prose-headings:font-black prose-headings:text-gray-900
-                        prose-h2:text-xl prose-h3:text-base
-                        prose-p:text-gray-500 prose-strong:text-gray-700
-                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                 style="background:linear-gradient(135deg,#2563EB,#1D4ED8); box-shadow:0 4px 12px rgba(37,99,235,0.3);">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <div>
+                <h2 class="text-lg md:text-xl font-black" style="color:#071428; letter-spacing:-0.01em;">About {{ $mainCategory->name }}</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Everything you need to know</p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl p-6 md:p-8" style="border:1px solid #E2EAF8; box-shadow:0 2px 16px rgba(37,99,235,0.07);">
+            <div class="rich-content">
                 {!! $mainCategory->seo_content !!}
             </div>
         </div>

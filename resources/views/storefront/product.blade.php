@@ -1,9 +1,16 @@
 @extends('layouts.storefront')
 
-@section('title', 'Buy ' . $category->name . ' in Bangladesh | bKash Nagad — Steam Store BD')
+@php
+    $_brandName  = $category->mainCategory->name ?? null;
+    $_titleBrand = $_brandName ? ' | ' . $_brandName . ' Bangladesh' : ' in Bangladesh';
+    $_kwBase     = strtolower($category->name);
+    $_kwBrand    = $_brandName ? strtolower($_brandName) . ' bangladesh, trusted ' . strtolower($_brandName) . ' bd, ' : '';
+@endphp
+@section('title', 'Buy ' . $category->name . $_titleBrand . ' | bKash Nagad — Steam Store BD')
 @section('meta_description', 'Buy ' . $category->name . ' in Bangladesh with bKash or Nagad. Instant code delivery to email. Starting from ৳' . ($denominations->where('stock_count', '>', 0)->min('price_bdt') ? number_format($denominations->where('stock_count', '>', 0)->min('price_bdt')) : '') . ' BDT. 100% genuine codes. Fast &amp; secure.')
-@section('meta_keywords', 'buy ' . strtolower($category->name) . ' bangladesh, ' . strtolower($category->name) . ' bkash, ' . strtolower($category->name) . ' nagad, ' . strtolower($category->name) . ' bd price, gift card bangladesh, digital gift card bd')
+@section('meta_keywords', $_kwBrand . 'buy ' . $_kwBase . ' bangladesh, ' . $_kwBase . ' bkash, ' . $_kwBase . ' nagad, ' . $_kwBase . ' bd price, trusted gift card bd, genuine gift card bangladesh, digital gift card bd 2025')
 @section('og_type', 'product')
+@section('og_image_alt', 'Buy ' . $category->name . ' in Bangladesh — Steam Store BD')
 
 @push('schema')
 @php
@@ -37,16 +44,16 @@
         $_productSchema['image'] = Storage::disk('public')->url($category->image);
     }
 
+    $_breadcrumbs = [['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')]];
+    if ($category->mainCategory) {
+        $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => 2, 'name' => $category->mainCategory->name, 'item' => route('brand', $category->mainCategory->slug)];
+    }
+    $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => count($_breadcrumbs) + 1, 'name' => $category->name, 'item' => route('product', $category->slug)];
+
     $_pageSchema = [
         '@context' => 'https://schema.org',
         '@graph'   => [
-            [
-                '@type'           => 'BreadcrumbList',
-                'itemListElement' => [
-                    ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')],
-                    ['@type' => 'ListItem', 'position' => 2, 'name' => $category->name, 'item' => route('product', $category->slug)],
-                ],
-            ],
+            ['@type' => 'BreadcrumbList', 'itemListElement' => $_breadcrumbs],
             $_productSchema,
         ],
     ];
