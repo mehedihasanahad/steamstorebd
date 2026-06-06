@@ -167,7 +167,7 @@ class CheckoutController extends Controller
     public function placeManualOrder(Request $request)
     {
         $enabledMethods = $this->enabledPaymentMethods();
-        $allowedMethods = array_filter(['bkash_send_money', 'nagad_send_money'], fn($m) => in_array($m, $enabledMethods));
+        $allowedMethods = array_filter(['bkash_send_money', 'nagad_send_money', 'rocket_send_money'], fn($m) => in_array($m, $enabledMethods));
 
         $request->validate([
             'name'               => ['required', 'string', 'max:100'],
@@ -258,6 +258,9 @@ class CheckoutController extends Controller
         }
         if (SiteSetting::get('payment_nagad_send_money_enabled', false)) {
             $methods[] = 'nagad_send_money';
+        }
+        if (SiteSetting::get('payment_rocket_send_money_enabled', false)) {
+            $methods[] = 'rocket_send_money';
         }
 
         return $methods ?: ['bkash_online'];

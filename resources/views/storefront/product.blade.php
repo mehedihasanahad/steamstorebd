@@ -1,8 +1,8 @@
 @extends('layouts.storefront')
 
-@section('title', 'Buy ' . $category->name . ' Bangladesh | bKash Payment — Steam Store BD')
-@section('meta_description', 'Buy ' . $category->name . ' in Bangladesh with bKash. Instant code delivery to email. Starting from ৳' . ($denominations->where('stock_count', '>', 0)->min('price_bdt') ? number_format($denominations->where('stock_count', '>', 0)->min('price_bdt')) : '') . ' BDT. 100% genuine Steam codes.')
-@section('meta_keywords', 'buy ' . strtolower($category->name) . ' bangladesh, ' . strtolower($category->name) . ' bkash, steam gift card bd, steam wallet code bangladesh')
+@section('title', 'Buy ' . $category->name . ' in Bangladesh | bKash Nagad — Steam Store BD')
+@section('meta_description', 'Buy ' . $category->name . ' in Bangladesh with bKash or Nagad. Instant code delivery to email. Starting from ৳' . ($denominations->where('stock_count', '>', 0)->min('price_bdt') ? number_format($denominations->where('stock_count', '>', 0)->min('price_bdt')) : '') . ' BDT. 100% genuine codes. Fast &amp; secure.')
+@section('meta_keywords', 'buy ' . strtolower($category->name) . ' bangladesh, ' . strtolower($category->name) . ' bkash, ' . strtolower($category->name) . ' nagad, ' . strtolower($category->name) . ' bd price, gift card bangladesh, digital gift card bd')
 @section('og_type', 'product')
 
 @push('schema')
@@ -27,8 +27,8 @@
     $_productSchema = [
         '@type'       => 'Product',
         'name'        => $category->name . ' Bangladesh',
-        'description' => 'Buy ' . $category->name . ' in Bangladesh with bKash payment. Instant digital delivery. 100% genuine Steam code.',
-        'brand'       => ['@type' => 'Brand', 'name' => 'Steam'],
+        'description' => 'Buy ' . $category->name . ' in Bangladesh with bKash or Nagad. Instant digital delivery to email. 100% genuine code.',
+        'brand'       => ['@type' => 'Brand', 'name' => $category->mainCategory->name ?? $category->name],
         'seller'      => ['@type' => 'Organization', 'name' => 'Steam Store BD', 'url' => url('/')],
         'url'         => route('product', $category->slug),
         'offers'      => $_offers,
@@ -61,6 +61,10 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <nav class="flex items-center gap-2 text-sm text-gray-400">
             <a href="{{ route('home') }}" class="hover:text-brand-500 transition-colors">Home</a>
+            @if($category->mainCategory)
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <a href="{{ route('brand', $category->mainCategory->slug) }}" class="hover:text-brand-500 transition-colors">{{ $category->mainCategory->name }}</a>
+            @endif
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="font-medium" style="color:#0E1F35;">{{ $category->name }}</span>
         </nav>
@@ -68,7 +72,7 @@
 </div>
 
 <div style="background:#F8FAFF; min-height:calc(100vh - 64px);">
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-0">
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
 
@@ -301,29 +305,42 @@
                 </div>
                 @endif
 
-                {{-- How to redeem --}}
-                <div class="mt-6 pt-5" style="border-top:1px solid #EEF2FF;">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">How to Redeem</p>
-                    <ol class="space-y-1.5 mb-3">
-                        @foreach([
-                            'Open Steam → Account Details → Redeem a Gift Card',
-                            'Enter your code and click Continue',
-                            'Funds added instantly to Steam Wallet',
-                        ] as $i => $step)
-                        <li class="flex items-start gap-2 text-xs text-gray-500">
-                            <span class="flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center font-bold text-white text-[10px] mt-0.5" style="background:#94A3B8;">{{ $i+1 }}</span>
-                            {{ $step }}
-                        </li>
-                        @endforeach
-                    </ol>
-                    <a href="{{ route('how-to-redeem') }}"
-                       class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 font-semibold transition-colors">
-                        Full step-by-step guide →
+                @if($category->mainCategory && $category->mainCategory->how_to_redeem)
+                <div class="mt-4 pt-4" style="border-top:1px solid #EEF2FF;">
+                    <a href="{{ route('brand', $category->mainCategory->slug) }}#how-to-redeem"
+                       class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-colors"
+                       style="background:#F0F5FF; border:1px solid #DBEAFE; color:#2563EB;"
+                       onmouseover="this.style.background='#E0EAFF'" onmouseout="this.style.background='#F0F5FF'">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        How to Redeem {{ $category->mainCategory->name }}
                     </a>
                 </div>
+                @endif
             </div>
         </div>
     </div>
+
+    @if($category->long_description)
+    <div class="max-w-5xl mx-auto px-0 pb-10 mt-10">
+        <div class="bg-white rounded-2xl p-6 md:p-8" style="border:1px solid #E8EEF8; box-shadow:0 2px 16px rgba(7,20,40,0.05);">
+            <div class="flex items-center gap-3 mb-5">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                     style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <h2 class="text-base font-black" style="color:#071428;">About {{ $category->name }}</h2>
+            </div>
+            <div class="rich-content">
+                {!! $category->long_description !!}
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 </div>
 
@@ -331,6 +348,24 @@
 <style>
     body { background: #F8FAFF !important; }
     [x-cloak] { display: none !important; }
+    /* Rich text content styles */
+    .rich-content { font-size: 0.9rem; line-height: 1.75; color: #374151; }
+    .rich-content h1,.rich-content h2,.rich-content h3,.rich-content h4 { font-weight: 800; color: #111827; margin: 1.2em 0 0.5em; line-height: 1.3; }
+    .rich-content h2 { font-size: 1.2rem; }
+    .rich-content h3 { font-size: 1.05rem; }
+    .rich-content p  { margin: 0.75em 0; color: #4B5563; }
+    .rich-content ul,.rich-content ol { margin: 0.75em 0; padding-left: 1.5em; color: #4B5563; }
+    .rich-content ul { list-style-type: disc; }
+    .rich-content ol { list-style-type: decimal; }
+    .rich-content li { margin: 0.35em 0; }
+    .rich-content strong,.rich-content b { font-weight: 700; color: #1F2937; }
+    .rich-content em,.rich-content i { font-style: italic; }
+    .rich-content a { color: #2563EB; text-decoration: underline; }
+    .rich-content blockquote { border-left: 3px solid #2563EB; margin: 1em 0; padding: 0.5em 1em; background: #EEF4FF; border-radius: 0 8px 8px 0; }
+    .rich-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.85rem; }
+    .rich-content th { background: #EEF4FF; color: #1E3A5F; font-weight: 700; padding: 8px 12px; border: 1px solid #DBEAFE; text-align: left; }
+    .rich-content td { padding: 8px 12px; border: 1px solid #E5E7EB; color: #4B5563; }
+    .rich-content tr:nth-child(even) td { background: #F9FAFB; }
 </style>
 @endpush
 

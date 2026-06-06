@@ -30,14 +30,16 @@ class SiteSettings extends Page implements HasForms
             'payment_bkash_online_enabled',
             'payment_bkash_send_money_enabled',
             'payment_nagad_send_money_enabled',
+            'payment_rocket_send_money_enabled',
             'whatsapp_chat_enabled', 'whatsapp_chat_number', 'whatsapp_chat_message',
             'messenger_chat_enabled', 'messenger_page_username', 'messenger_page_id', 'messenger_use_plugin',
         ];
 
         $defaults = [
-            'payment_bkash_online_enabled'      => true,
-            'payment_bkash_send_money_enabled'  => false,
-            'payment_nagad_send_money_enabled'  => false,
+            'payment_bkash_online_enabled'        => true,
+            'payment_bkash_send_money_enabled'    => false,
+            'payment_nagad_send_money_enabled'    => false,
+            'payment_rocket_send_money_enabled'   => false,
             'whatsapp_chat_enabled'             => false,
             'messenger_chat_enabled'            => false,
             'messenger_use_plugin'              => false,
@@ -110,6 +112,9 @@ class SiteSettings extends Page implements HasForms
                         Forms\Components\Toggle::make('payment_nagad_send_money_enabled')
                             ->label('Nagad Send Money')
                             ->helperText('Customer sends money via Nagad manually, then submits TRX ID. Requires NAGAD_SEND_MONEY_NUMBER in .env.'),
+                        Forms\Components\Toggle::make('payment_rocket_send_money_enabled')
+                            ->label('Rocket Send Money')
+                            ->helperText('Customer sends money via Rocket (Dutch-Bangla) manually, then submits TRX ID. Requires ROCKET_SEND_MONEY_NUMBER in .env.'),
                     ]),
             ])
             ->statePath('data');
@@ -129,7 +134,8 @@ class SiteSettings extends Page implements HasForms
             'announcement_bar_active'          => 'announcement',
             'payment_bkash_online_enabled'     => 'payment',
             'payment_bkash_send_money_enabled' => 'payment',
-            'payment_nagad_send_money_enabled' => 'payment',
+            'payment_nagad_send_money_enabled'   => 'payment',
+            'payment_rocket_send_money_enabled'  => 'payment',
             'whatsapp_chat_enabled'            => 'chat',
             'whatsapp_chat_number'             => 'chat',
             'whatsapp_chat_message'            => 'chat',

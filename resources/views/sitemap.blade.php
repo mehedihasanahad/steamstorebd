@@ -26,6 +26,15 @@
         <priority>0.5</priority>
     </url>
 
+    @foreach($mainCategories as $mainCat)
+    <url>
+        <loc>{{ route('brand', $mainCat->slug) }}</loc>
+        <lastmod>{{ $mainCat->updated_at->toAtomString() }}</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.95</priority>
+    </url>
+    @endforeach
+
     @foreach($categories as $category)
     <url>
         <loc>{{ route('product', $category->slug) }}</loc>

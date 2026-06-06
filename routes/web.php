@@ -32,6 +32,7 @@ Route::get('/robots.txt', function () {
 
 // Storefront
 Route::get('/', [StorefrontController::class, 'home'])->name('home');
+Route::get('/brand/{mainCategorySlug}', [StorefrontController::class, 'brand'])->name('brand');
 Route::get('/product/{categorySlug}', [StorefrontController::class, 'product'])->name('product');
 Route::get('/cards/{slug}', [StorefrontController::class, 'cardDetail'])->name('card.detail');
 Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');

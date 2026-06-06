@@ -84,7 +84,7 @@ class Order extends Model
 
     public function isSendMoneyOrder(): bool
     {
-        return in_array($this->payment_method, ['bkash_send_money', 'nagad_send_money']);
+        return in_array($this->payment_method, ['bkash_send_money', 'nagad_send_money', 'rocket_send_money']);
     }
 
     public function paymentMethodLabel(): string
@@ -92,8 +92,9 @@ class Order extends Model
         return match ($this->payment_method) {
             'bkash_online'     => 'bKash Online',
             'bkash_send_money' => 'bKash Send Money',
-            'nagad_send_money' => 'Nagad Send Money',
-            default            => $this->payment_method,
+            'nagad_send_money'   => 'Nagad Send Money',
+            'rocket_send_money'  => 'Rocket Send Money',
+            default              => $this->payment_method,
         };
     }
 }

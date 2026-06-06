@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GiftCardCategoryResource\Pages;
 use App\Models\GiftCardCategory;
+use App\Models\MainCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,6 +22,12 @@ class GiftCardCategoryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Forms\Components\Select::make('main_category_id')
+                ->label('Brand / Main Category')
+                ->options(MainCategory::orderBy('sort_order')->pluck('name', 'id'))
+                ->searchable()
+                ->nullable()
+                ->placeholder('— Select brand —'),
             Forms\Components\TextInput::make('name')
                 ->required()
                 ->live(onBlur: true)
@@ -29,6 +36,10 @@ class GiftCardCategoryResource extends Resource
                 ->required()
                 ->unique(ignoreRecord: true),
             Forms\Components\Textarea::make('description')->rows(3),
+            Forms\Components\RichEditor::make('long_description')
+                ->label('Long Description (shown on product page)')
+                ->toolbarButtons(['bold','italic','underline','bulletList','orderedList','link','h2','h3'])
+                ->columnSpanFull(),
             Forms\Components\TextInput::make('icon')->placeholder('heroicon-o-tag'),
             Forms\Components\FileUpload::make('image')
                 ->label('Category Image (1057×1488px)')
@@ -46,6 +57,11 @@ class GiftCardCategoryResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('mainCategory.name')
+                    ->label('Brand')
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('—'),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('slug')->color('gray'),
                 Tables\Columns\TextColumn::make('giftCards.id')->label('Cards')->counts('giftCards'),

@@ -18,8 +18,9 @@
 </div>
 
 @php
-    $bkashSendNumber = env('BKASH_SEND_MONEY_NUMBER', '');
-    $nagadSendNumber = env('NAGAD_SEND_MONEY_NUMBER', '');
+    $bkashSendNumber  = env('BKASH_SEND_MONEY_NUMBER', '');
+    $nagadSendNumber  = env('NAGAD_SEND_MONEY_NUMBER', '');
+    $rocketSendNumber = env('ROCKET_SEND_MONEY_NUMBER', '');
     $defaultMethod   = old('payment_method', $paymentMethods[0] ?? 'bkash_online');
 @endphp
 
@@ -61,10 +62,11 @@
                     @foreach($paymentMethods as $method)
                     @php
                         $label = match($method) {
-                            'bkash_online'     => ['icon' => 'b', 'name' => 'bKash Online', 'sub' => 'Payment', 'color' => '#E2136E', 'bg' => '#FFF5FA', 'border' => '#F9C8DF'],
-                            'bkash_send_money' => ['icon' => 'b', 'name' => 'bKash Send Money', 'sub' => 'Manual Transfer', 'color' => '#E2136E', 'bg' => '#FFF5FA', 'border' => '#F9C8DF'],
-                            'nagad_send_money' => ['icon' => 'N', 'name' => 'Nagad Send Money', 'sub' => 'Manual Transfer', 'color' => '#F37021', 'bg' => '#FFF8F3', 'border' => '#FDDBB8'],
-                            default            => ['icon' => '?', 'name' => $method, 'sub' => '', 'color' => '#6b7280', 'bg' => '#f9fafb', 'border' => '#e5e7eb'],
+                            'bkash_online'      => ['logo' => 'bkash-logo.png',  'name' => 'bKash Online',     'sub' => 'Tokenized Payment',  'color' => '#E2136E', 'bg' => '#FFF5FA', 'border' => '#F9C8DF'],
+                            'bkash_send_money'  => ['logo' => 'bkash-logo.png',  'name' => 'bKash Send Money', 'sub' => 'Manual Transfer',    'color' => '#E2136E', 'bg' => '#FFF5FA', 'border' => '#F9C8DF'],
+                            'nagad_send_money'  => ['logo' => 'nagad-logo.webp', 'name' => 'Nagad Send Money', 'sub' => 'Manual Transfer',    'color' => '#F37021', 'bg' => '#FFF8F3', 'border' => '#FDDBB8'],
+                            'rocket_send_money' => ['logo' => 'rocket-logo.png', 'name' => 'Rocket Send Money','sub' => 'Manual Transfer',    'color' => '#6B21A8', 'bg' => '#FAF5FF', 'border' => '#E9D5FF'],
+                            default             => ['logo' => null,              'name' => $method,             'sub' => '',                   'color' => '#6b7280', 'bg' => '#f9fafb', 'border' => '#e5e7eb'],
                         };
                     @endphp
                     <button type="button"
@@ -74,8 +76,16 @@
                             :style="paymentMethod === '{{ $method }}'
                                 ? 'background:{{ $label['bg'] }};border:2px solid {{ $label['color'] }};'
                                 : 'background:#FAFBFF;border:2px solid #E8EEF8;'">
-                        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-sm"
-                             style="background:{{ $label['color'] }};">{{ $label['icon'] }}</div>
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+                             style="background:#ffffff; border:1px solid rgba(0,0,0,0.08);">
+                            @if($label['logo'])
+                            <img src="{{ asset('images/' . $label['logo']) }}"
+                                 alt="{{ $label['name'] }}"
+                                 class="w-8 h-8 object-contain">
+                            @else
+                            <span class="font-black text-sm" style="color:{{ $label['color'] }};">?</span>
+                            @endif
+                        </div>
                         <div>
                             <div class="text-sm font-bold" style="color:#071428;">{{ $label['name'] }}</div>
                             <div class="text-xs text-gray-400">{{ $label['sub'] }}</div>
@@ -137,7 +147,9 @@
                             <div x-show="paymentMethod === 'bkash_send_money'" x-cloak
                                  class="rounded-2xl p-5 space-y-3" style="background:#FFF5FA; border:1px solid #F9C8DF;">
                                 <div class="flex items-center gap-2 text-sm font-bold" style="color:#E2136E;">
-                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black" style="background:#E2136E;">b</div>
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);">
+                                        <img src="{{ asset('images/bkash-logo.png') }}" alt="bKash" class="w-6 h-6 object-contain">
+                                    </div>
                                     bKash Send Money Instructions
                                 </div>
                                 <ol class="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
@@ -161,7 +173,9 @@
                             <div x-show="paymentMethod === 'nagad_send_money'" x-cloak
                                  class="rounded-2xl p-5 space-y-3" style="background:#FFF8F3; border:1px solid #FDDBB8;">
                                 <div class="flex items-center gap-2 text-sm font-bold" style="color:#F37021;">
-                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-black" style="background:#F37021;">N</div>
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);">
+                                        <img src="{{ asset('images/nagad-logo.webp') }}" alt="Nagad" class="w-6 h-6 object-contain">
+                                    </div>
                                     Nagad Send Money Instructions
                                 </div>
                                 <ol class="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
@@ -171,6 +185,32 @@
                                     <li>Send <strong>৳ [your order total]</strong> to: <strong style="color:#F37021; font-family:monospace; font-size:15px;">{{ $nagadSendNumber }}</strong></li>
                                     @else
                                     <li>Send <strong>৳ [your order total]</strong> to our Nagad number (check WhatsApp for the number)</li>
+                                    @endif
+                                    <li>Copy the <strong>Transaction ID</strong> from the confirmation message</li>
+                                    <li>Paste it below and click <strong>"Place Order"</strong></li>
+                                </ol>
+                                <div class="text-xs text-gray-400 flex items-center gap-1.5 mt-2">
+                                    <svg class="w-3.5 h-3.5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    Send the exact order total. Partial or extra amounts may delay your order.
+                                </div>
+                            </div>
+
+                            {{-- Rocket send money instructions --}}
+                            <div x-show="paymentMethod === 'rocket_send_money'" x-cloak
+                                 class="rounded-2xl p-5 space-y-3" style="background:#FAF5FF; border:1px solid #E9D5FF;">
+                                <div class="flex items-center gap-2 text-sm font-bold" style="color:#6B21A8;">
+                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center overflow-hidden" style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);">
+                                        <img src="{{ asset('images/rocket-logo.png') }}" alt="Rocket" class="w-6 h-6 object-contain">
+                                    </div>
+                                    Rocket Send Money Instructions
+                                </div>
+                                <ol class="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
+                                    <li>Open your <strong>Rocket app</strong> or dial <strong>*322#</strong></li>
+                                    <li>Select <strong>"Send Money"</strong></li>
+                                    @if($rocketSendNumber)
+                                    <li>Send <strong>৳ [your order total]</strong> to: <strong style="color:#6B21A8; font-family:monospace; font-size:15px;">{{ $rocketSendNumber }}</strong></li>
+                                    @else
+                                    <li>Send <strong>৳ [your order total]</strong> to our Rocket number (check WhatsApp for the number)</li>
                                     @endif
                                     <li>Copy the <strong>Transaction ID</strong> from the confirmation message</li>
                                     <li>Paste it below and click <strong>"Place Order"</strong></li>
@@ -213,7 +253,9 @@
                     {{-- bKash online notice --}}
                     <div x-show="!isSendMoney" x-cloak
                          class="mt-7 rounded-2xl p-4 flex items-start gap-3" style="background:#FFF5FA; border:1px solid #F9C8DF;">
-                        <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-white text-sm" style="background:#E2136E;">b</div>
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden" style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);">
+                            <img src="{{ asset('images/bkash-logo.png') }}" alt="bKash" class="w-8 h-8 object-contain">
+                        </div>
                         <div>
                             <div class="text-sm font-semibold" style="color:#071428;">Pay with bKash</div>
                             <div class="text-xs text-gray-500 mt-0.5">You'll be securely redirected to bKash Tokenized Checkout to complete payment.</div>
@@ -226,12 +268,15 @@
                             :class="loading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90 hover:shadow-lg'"
                             :style="paymentMethod === 'nagad_send_money'
                                 ? 'background:#F37021;'
-                                : 'background:#E2136E;'">
+                                : paymentMethod === 'rocket_send_money'
+                                    ? 'background:#6B21A8;'
+                                    : 'background:#E2136E;'">
 
                         <span x-show="!loading">
                             <span x-show="paymentMethod === 'bkash_online'">Pay with bKash →</span>
                             <span x-show="paymentMethod === 'bkash_send_money'" x-cloak>Place Order</span>
                             <span x-show="paymentMethod === 'nagad_send_money'" x-cloak>Place Order</span>
+                            <span x-show="paymentMethod === 'rocket_send_money'" x-cloak>Place Order</span>
                         </span>
                         <span x-show="loading" x-cloak class="flex items-center gap-2">
                             <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
