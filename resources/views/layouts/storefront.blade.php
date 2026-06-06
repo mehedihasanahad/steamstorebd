@@ -31,7 +31,7 @@
     <meta property="og:description" content="@yield('meta_description', 'Buy digital gift cards in Bangladesh with bKash or Nagad. Instant delivery. 100% genuine codes at best BDT price.')">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
-    <meta property="og:image" content="@yield('og_image', asset('images/hero-image.png'))">
+    <meta property="og:image" content="@yield('og_image', asset('images/hero-image-banner.png'))">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Buy Gift Cards in Bangladesh with bKash')">
@@ -41,7 +41,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'Steam Store BD — Buy Gift Cards in Bangladesh')">
     <meta name="twitter:description" content="@yield('meta_description', 'Buy digital gift cards in Bangladesh with bKash or Nagad. Instant delivery. Best BDT price.')">
-    <meta name="twitter:image" content="@yield('og_image', asset('images/hero-image.png'))">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/hero-image-banner.png'))">
     <meta name="twitter:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Gift Cards Bangladesh')">
 
     {{-- JSON-LD: Organization + WebSite --}}

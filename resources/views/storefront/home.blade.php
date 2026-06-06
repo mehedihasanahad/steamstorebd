@@ -177,7 +177,7 @@ $_schema = [
 <section class="hero-section" style="position:relative; overflow:hidden; background:#040D1A; display:flex; align-items:center;">
 
     {{-- Background image: covers the section, cropped from center-top on all screens --}}
-    <img src="{{ asset('images/hero-image.png') }}" alt="" aria-hidden="true"
+    <img src="{{ asset('images/hero-image-banner.png') }}" alt="" aria-hidden="true"
          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:0.32;pointer-events:none;user-select:none;">
 
     {{-- Overlays --}}
