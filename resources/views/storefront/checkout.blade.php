@@ -18,9 +18,9 @@
 </div>
 
 @php
-    $bkashSendNumber  = env('BKASH_SEND_MONEY_NUMBER', '');
-    $nagadSendNumber  = env('NAGAD_SEND_MONEY_NUMBER', '');
-    $rocketSendNumber = env('ROCKET_SEND_MONEY_NUMBER', '');
+    $bkashSendNumber  = config('services.payment.bkash_send_money_number', '');
+    $nagadSendNumber  = config('services.payment.nagad_send_money_number', '');
+    $rocketSendNumber = config('services.payment.rocket_send_money_number', '');
     $defaultMethod   = old('payment_method', $paymentMethods[0] ?? 'bkash_online');
 @endphp
 

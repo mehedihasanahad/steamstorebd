@@ -41,4 +41,10 @@ return [
         'redirect'      => env('GOOGLE_REDIRECT_URI', env('APP_URL') . '/auth/google/callback'),
     ],
 
+    'payment' => [
+        'bkash_send_money_number'  => env('BKASH_SEND_MONEY_NUMBER', ''),
+        'nagad_send_money_number'  => env('NAGAD_SEND_MONEY_NUMBER', ''),
+        'rocket_send_money_number' => env('ROCKET_SEND_MONEY_NUMBER', ''),
+    ],
+
 ];
