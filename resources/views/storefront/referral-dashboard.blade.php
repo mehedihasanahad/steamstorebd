@@ -36,6 +36,29 @@
             </div>
 
             @if($user->referral_code)
+            {{-- Earn amount highlight --}}
+            @php
+                $rewardAmt    = $referralSettings['owner_reward_amount'];
+                $discountType = $referralSettings['discount_type'];
+                $discountVal  = $referralSettings['discount_value'];
+                $discountCap  = $referralSettings['max_discount_cap'];
+                // e.g. "৳30 off" | "10% off" | "10% off (up to ৳100)"
+                $discountLabel = $discountType === 'percentage'
+                    ? $discountVal . '% off' . ($discountCap > 0 ? ' (up to ৳' . number_format($discountCap, 0) . ')' : '')
+                    : '৳' . number_format($discountVal, 0) . ' off';
+            @endphp
+            <div class="flex items-center justify-between gap-3 mb-4 px-4 py-3 rounded-2xl"
+                 style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7); border:1px solid #BBF7D0;">
+                <div>
+                    <p class="text-xs font-medium text-green-700">You earn per referral</p>
+                    <p class="text-2xl font-black text-green-600">৳{{ number_format($rewardAmt, 0) }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs font-medium text-green-700">Your friend gets</p>
+                    <p class="text-lg font-black text-green-600">{{ $discountLabel }}</p>
+                </div>
+            </div>
+
             <div class="flex items-center gap-3 p-4 rounded-2xl mb-4" style="background:#F0F5FF; border:1px solid #DBEAFE;">
                 <span class="flex-1 text-2xl font-black font-mono tracking-widest" style="color:#1D4ED8;">
                     {{ $user->referral_code }}
@@ -92,14 +115,14 @@
         <h2 class="font-bold text-base mb-5" style="color:#071428;">How the Referral Program Works</h2>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             @foreach([
-                ['icon'=>'🔗','title'=>'Share Your Code','desc'=>'Give your unique referral code to anyone.'],
-                ['icon'=>'🛒','title'=>'They Buy &amp; Save','desc'=>'Your friend uses the code at checkout and gets a discount.'],
-                ['icon'=>'💸','title'=>'You Earn Wallet Credit','desc'=>'After their order is confirmed, wallet credit is added to your account.'],
+                ['icon'=>'🔗','title'=>'Share Your Code','desc'=>'Give your unique referral code to a friend who hasn\'t bought from us before.'],
+                ['icon'=>'🛒','title'=>'They Buy &amp; Save','desc'=>'Your friend enters the code at checkout and gets ' . $discountLabel . ' on their first order.'],
+                ['icon'=>'💸','title'=>'You Earn ৳' . number_format($rewardAmt, 0),'desc'=>'After their order is confirmed & codes sent, ৳' . number_format($rewardAmt, 0) . ' wallet credit lands in your account instantly.'],
             ] as $step)
             <div class="text-center p-4 rounded-xl" style="background:#F8FAFF; border:1px solid #E8EEF8;">
                 <div class="text-3xl mb-2">{{ $step['icon'] }}</div>
                 <h3 class="font-bold text-sm mb-1" style="color:#071428;">{!! $step['title'] !!}</h3>
-                <p class="text-xs text-gray-400">{{ $step['desc'] }}</p>
+                <p class="text-xs text-gray-400">{!! $step['desc'] !!}</p>
             </div>
             @endforeach
         </div>

@@ -519,7 +519,17 @@ $_schema = [
 </section>
 
 {{-- ══ REFERRAL PROGRAM ══ --}}
-@php $referralEnabled = \App\Models\SiteSetting::get('referral_enabled', false); @endphp
+@php
+    $referralEnabled  = \App\Models\SiteSetting::get('referral_enabled', false);
+    $refRewardAmt     = (float) \App\Models\SiteSetting::get('referral_owner_reward_amount', 0);
+    $refDiscountType  = \App\Models\SiteSetting::get('referral_discount_type', 'flat');
+    $refDiscountVal   = (float) \App\Models\SiteSetting::get('referral_discount_value', 0);
+    $refDiscountCap   = (float) \App\Models\SiteSetting::get('referral_max_discount_cap', 0);
+    // e.g. "৳30 off" | "10% off" | "10% off (up to ৳100)"
+    $refDiscountLabel = $refDiscountType === 'percentage'
+        ? $refDiscountVal . '% off' . ($refDiscountCap > 0 ? ' (up to ৳' . number_format($refDiscountCap, 0) . ')' : '')
+        : '৳' . number_format($refDiscountVal, 0) . ' off';
+@endphp
 @if($referralEnabled)
 <section style="background:linear-gradient(135deg,#071428 0%,#0D2040 60%,#1a3a6b 100%); padding:80px 0; position:relative; overflow:hidden;">
     {{-- Decorative circles --}}
@@ -543,9 +553,9 @@ $_schema = [
         {{-- 3-step flow --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             @foreach([
-                ['icon'=>'🔗','step'=>'1','title'=>'Share Your Code','desc'=>'Every account gets a unique referral code. Share it with friends, family, or on social media.'],
-                ['icon'=>'🛒','step'=>'2','title'=>'Friend Buys','desc'=>'Your friend enters your code at checkout and gets an instant discount on their order.'],
-                ['icon'=>'💰','step'=>'3','title'=>'Both Get Rewarded','desc'=>'After their purchase is confirmed, you earn wallet credit — usable on your next order.'],
+                ['icon'=>'🔗','step'=>'1','title'=>'Share Your Code','desc'=>'Every account gets a unique referral code. Share it with friends who haven\'t bought from us before.'],
+                ['icon'=>'🛒','step'=>'2','title'=>'Friend Gets ' . $refDiscountLabel,'desc'=>'Your friend enters your code at checkout and gets ' . $refDiscountLabel . ' on their first order.'],
+                ['icon'=>'💰','step'=>'3','title'=>'You Earn ৳' . number_format($refRewardAmt, 0),'desc'=>'After their order is confirmed and codes are sent, ৳' . number_format($refRewardAmt, 0) . ' is credited to your wallet instantly.'],
             ] as $step)
             <div class="rounded-2xl p-6 text-center relative"
                  style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(8px);">

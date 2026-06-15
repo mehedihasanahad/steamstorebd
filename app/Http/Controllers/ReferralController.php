@@ -23,13 +23,14 @@ class ReferralController extends Controller
             $user->update(['referral_code' => $this->referralService->generateUniqueCode()]);
         }
 
-        $transactions = WalletTransaction::where('user_id', $user->id)->latest()->paginate(10, ['*'], 'tx_page');
-        $usages       = ReferralUsage::where('referrer_id', $user->id)
+        $transactions     = WalletTransaction::where('user_id', $user->id)->latest()->paginate(10, ['*'], 'tx_page');
+        $usages           = ReferralUsage::where('referrer_id', $user->id)
             ->with(['order', 'referee'])
             ->latest()
             ->paginate(10, ['*'], 'ref_page');
+        $referralSettings = $this->referralService->getSettings();
 
-        return view('storefront.referral-dashboard', compact('user', 'transactions', 'usages'));
+        return view('storefront.referral-dashboard', compact('user', 'transactions', 'usages', 'referralSettings'));
     }
 
     public function applyCode(Request $request)
