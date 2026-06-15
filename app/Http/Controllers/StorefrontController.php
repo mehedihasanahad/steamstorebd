@@ -7,7 +7,9 @@ use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
 use App\Models\Review;
 use App\Models\SiteSetting;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class StorefrontController extends Controller
@@ -99,7 +101,10 @@ class StorefrontController extends Controller
             ->orderBy('price_bdt')
             ->get();
 
-        return view('storefront.product', compact('category', 'denominations'));
+        $referralSettings = app(ReferralService::class)->getSettings();
+        $referralCode     = Auth::check() ? Auth::user()->referral_code : null;
+
+        return view('storefront.product', compact('category', 'denominations', 'referralSettings', 'referralCode'));
     }
 
     public function cardDetail(string $slug)

@@ -206,8 +206,11 @@ $_schema = [
 
             <p class="text-base md:text-lg text-gray-300 mb-8 leading-relaxed max-w-lg mx-auto">
                 Steam, Google Play, App Store, PlayStation &amp; more —
-                pay with <strong class="text-white">{{ collect($activePaymentMethods)->pluck('name')->take(3)->implode(', ') }}</strong> and receive your code
-                <strong class="text-white">within minutes</strong>.
+                pay with <strong class="text-white">{{ collect($activePaymentMethods)->pluck('name')->take(3)->implode(', ') }}</strong>,
+                receive your code <strong class="text-white">instantly</strong>.
+                @if(site_setting('referral_enabled', false))
+                Refer friends &amp; <strong class="text-white">earn wallet credit</strong> on every order.
+                @endif
             </p>
 
             {{-- CTAs --}}
@@ -217,11 +220,20 @@ $_schema = [
                    style="background:linear-gradient(135deg,#2563EB,#1D4ED8);box-shadow:0 0 40px rgba(37,99,235,0.55);">
                     🛒 Shop Gift Cards
                 </a>
+                @if(site_setting('referral_enabled', false))
+                <a href="{{ route('referral.dashboard') }}"
+                   class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.03] w-full sm:w-auto"
+                   style="background:linear-gradient(135deg,#7C3AED,#6D28D9);box-shadow:0 0 32px rgba(124,58,237,0.50);color:#fff;">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Referral &amp; Wallet
+                </a>
+                @else
                 <a href="#how-it-works"
                    class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-semibold text-sm transition-all duration-200 hover:bg-white/10 w-full sm:w-auto"
                    style="color:#9BB5D5;border:1px solid rgba(255,255,255,0.13);">
                     How it works ↓
                 </a>
+                @endif
             </div>
 
             {{-- Stats row --}}
@@ -505,6 +517,84 @@ $_schema = [
         </div>
     </div>
 </section>
+
+{{-- ══ REFERRAL PROGRAM ══ --}}
+@php $referralEnabled = \App\Models\SiteSetting::get('referral_enabled', false); @endphp
+@if($referralEnabled)
+<section style="background:linear-gradient(135deg,#071428 0%,#0D2040 60%,#1a3a6b 100%); padding:80px 0; position:relative; overflow:hidden;">
+    {{-- Decorative circles --}}
+    <div style="position:absolute;top:-80px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(37,99,235,0.08);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-60px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(37,99,235,0.06);pointer-events:none;"></div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4"
+                 style="background:rgba(37,99,235,0.2);color:#60A5FA;border:1px solid rgba(37,99,235,0.3);">
+                REFERRAL PROGRAM
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black mb-3 text-white" style="letter-spacing:-0.02em;">
+                Share &amp; Earn Together
+            </h2>
+            <p class="text-sm md:text-base max-w-xl mx-auto" style="color:#8BAFD4;">
+                Share your unique referral link with friends. When they buy, you both get rewarded — instantly to your wallet.
+            </p>
+        </div>
+
+        {{-- 3-step flow --}}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            @foreach([
+                ['icon'=>'🔗','step'=>'1','title'=>'Share Your Code','desc'=>'Every account gets a unique referral code. Share it with friends, family, or on social media.'],
+                ['icon'=>'🛒','step'=>'2','title'=>'Friend Buys','desc'=>'Your friend enters your code at checkout and gets an instant discount on their order.'],
+                ['icon'=>'💰','step'=>'3','title'=>'Both Get Rewarded','desc'=>'After their purchase is confirmed, you earn wallet credit — usable on your next order.'],
+            ] as $step)
+            <div class="rounded-2xl p-6 text-center relative"
+                 style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(8px);">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+                     style="background:rgba(37,99,235,0.2);border:1px solid rgba(37,99,235,0.3);">
+                    {{ $step['icon'] }}
+                </div>
+                <div class="absolute top-4 right-4 text-xs font-black opacity-20 text-white" style="font-size:32px;">{{ $step['step'] }}</div>
+                <h3 class="font-bold text-white mb-2">{{ $step['title'] }}</h3>
+                <p class="text-sm" style="color:#8BAFD4;">{{ $step['desc'] }}</p>
+            </div>
+            @endforeach
+        </div>
+
+        {{-- CTA --}}
+        <div class="text-center">
+            @auth
+            <div class="inline-flex flex-col sm:flex-row items-center gap-4 bg-white/5 border border-white/10 rounded-2xl px-6 py-5">
+                <div class="text-left">
+                    <p class="text-xs font-semibold mb-1" style="color:#8BAFD4;">Your Referral Code</p>
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl font-black font-mono tracking-widest text-white"
+                              id="home-ref-code">{{ auth()->user()->referral_code ?? '—' }}</span>
+                        <button onclick="navigator.clipboard.writeText('{{ auth()->user()->referral_code ?? '' }}');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)"
+                                class="text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                                style="background:rgba(37,99,235,0.3);color:#93C5FD;border:1px solid rgba(37,99,235,0.4);">
+                            Copy
+                        </button>
+                    </div>
+                </div>
+                <div class="w-px h-10 hidden sm:block" style="background:rgba(255,255,255,0.1);"></div>
+                <a href="{{ route('referral.dashboard') }}"
+                   class="text-sm font-bold px-5 py-2.5 rounded-xl transition-all text-white"
+                   style="background:#2563EB;">
+                    View Dashboard →
+                </a>
+            </div>
+            @else
+            <a href="{{ route('register') }}"
+               class="inline-flex items-center gap-2 font-bold px-8 py-4 rounded-2xl text-white text-base transition-all hover:opacity-90 hover:shadow-lg"
+               style="background:#2563EB;">
+                Create Account &amp; Get Your Code →
+            </a>
+            <p class="text-xs mt-3" style="color:#557AA0;">Free to join. Referral code generated instantly on signup.</p>
+            @endauth
+        </div>
+    </div>
+</section>
+@endif
 
 {{-- ══ SEO CONTENT ══ --}}
 <section style="background:#F8FAFF; padding:64px 0; border-top:1px solid #E8EEF8;">

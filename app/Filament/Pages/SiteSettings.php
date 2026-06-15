@@ -33,6 +33,12 @@ class SiteSettings extends Page implements HasForms
             'payment_rocket_send_money_enabled',
             'whatsapp_chat_enabled', 'whatsapp_chat_number', 'whatsapp_chat_message',
             'messenger_chat_enabled', 'messenger_page_username', 'messenger_page_id', 'messenger_use_plugin',
+            'referral_enabled',
+            'referral_discount_type',
+            'referral_discount_value',
+            'referral_max_discount_cap',
+            'referral_min_order_amount',
+            'referral_owner_reward_amount',
         ];
 
         $defaults = [
@@ -40,9 +46,15 @@ class SiteSettings extends Page implements HasForms
             'payment_bkash_send_money_enabled'    => false,
             'payment_nagad_send_money_enabled'    => false,
             'payment_rocket_send_money_enabled'   => false,
-            'whatsapp_chat_enabled'             => false,
-            'messenger_chat_enabled'            => false,
-            'messenger_use_plugin'              => false,
+            'whatsapp_chat_enabled'               => false,
+            'messenger_chat_enabled'              => false,
+            'messenger_use_plugin'                => false,
+            'referral_enabled'                    => false,
+            'referral_discount_type'              => 'flat',
+            'referral_discount_value'             => 0,
+            'referral_max_discount_cap'           => 0,
+            'referral_min_order_amount'           => 0,
+            'referral_owner_reward_amount'        => 0,
         ];
 
         $this->form->fill(
@@ -100,6 +112,38 @@ class SiteSettings extends Page implements HasForms
                             ->helperText('Optional — for reference only.'),
                     ])->columns(1),
 
+                Forms\Components\Section::make('Referral Program')
+                    ->description('Configure the referral system. Referral codes are auto-generated for every user on registration.')
+                    ->schema([
+                        Forms\Components\Toggle::make('referral_enabled')
+                            ->label('Enable Referral Program')
+                            ->helperText('When enabled, users get a unique referral code they can share. Off = no discounts applied and code input hidden at checkout.'),
+                        Forms\Components\Select::make('referral_discount_type')
+                            ->label('Discount Type for Buyer')
+                            ->options(['flat' => 'Flat Amount (৳)', 'percentage' => 'Percentage (%)'])
+                            ->helperText('How the discount is calculated for the person who uses the referral code.'),
+                        Forms\Components\TextInput::make('referral_discount_value')
+                            ->label('Discount Value')
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText('৳ amount (if flat) or % number (if percentage). E.g. 50 = ৳50 off or 5 = 5% off.'),
+                        Forms\Components\TextInput::make('referral_max_discount_cap')
+                            ->label('Max Discount Cap (৳)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText('For percentage type only — maximum BDT discount allowed. Set 0 for no cap.'),
+                        Forms\Components\TextInput::make('referral_min_order_amount')
+                            ->label('Minimum Order Amount (৳)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText('Referral code only applies if the cart total is at or above this amount. Set 0 for no minimum.'),
+                        Forms\Components\TextInput::make('referral_owner_reward_amount')
+                            ->label('Referrer Wallet Reward (৳)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->helperText('Flat BDT amount credited to the referral code owner\'s wallet after each successful referred order.'),
+                    ])->columns(2),
+
                 Forms\Components\Section::make('Payment Methods')
                     ->description('Enable or disable payment options shown at checkout. Credentials are configured in .env.')
                     ->schema([
@@ -143,6 +187,12 @@ class SiteSettings extends Page implements HasForms
             'messenger_page_username'          => 'chat',
             'messenger_page_id'                => 'chat',
             'messenger_use_plugin'             => 'chat',
+            'referral_enabled'                 => 'referral',
+            'referral_discount_type'           => 'referral',
+            'referral_discount_value'          => 'referral',
+            'referral_max_discount_cap'        => 'referral',
+            'referral_min_order_amount'        => 'referral',
+            'referral_owner_reward_amount'     => 'referral',
         ];
 
         foreach ($data as $key => $value) {

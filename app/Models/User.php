@@ -23,6 +23,8 @@ class User extends Authenticatable implements FilamentUser
         'is_admin',
         'google_id',
         'avatar',
+        'referral_code',
+        'wallet_balance',
     ];
 
     protected $hidden = [
@@ -34,8 +36,9 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_admin' => 'boolean',
+            'password'          => 'hashed',
+            'is_admin'          => 'boolean',
+            'wallet_balance'    => 'decimal:2',
         ];
     }
 
@@ -52,5 +55,15 @@ class User extends Authenticatable implements FilamentUser
     public function addedGiftCardCodes(): HasMany
     {
         return $this->hasMany(GiftCardCode::class, 'added_by_admin_id');
+    }
+
+    public function walletTransactions(): HasMany
+    {
+        return $this->hasMany(WalletTransaction::class)->latest();
+    }
+
+    public function referralUsages(): HasMany
+    {
+        return $this->hasMany(ReferralUsage::class, 'referrer_id')->latest();
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\ReferralService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -45,10 +46,11 @@ class SocialAuthController extends Controller
                 ]);
             } else {
                 $user = User::create([
-                    'name'      => $googleUser->getName(),
-                    'email'     => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'avatar'    => $googleUser->getAvatar(),
+                    'name'          => $googleUser->getName(),
+                    'email'         => $googleUser->getEmail(),
+                    'google_id'     => $googleUser->getId(),
+                    'avatar'        => $googleUser->getAvatar(),
+                    'referral_code' => app(ReferralService::class)->generateUniqueCode(),
                 ]);
             }
         } catch (\Exception $e) {

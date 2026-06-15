@@ -7,15 +7,18 @@ use App\Models\Order;
 use App\Models\SiteSetting;
 use App\Services\BkashService;
 use App\Services\OrderService;
+use App\Services\ReferralService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
 {
     public function __construct(
-        private OrderService $orderService,
-        private BkashService $bkashService,
+        private OrderService    $orderService,
+        private BkashService    $bkashService,
+        private ReferralService $referralService,
     ) {}
 
     public function index(Request $request)
@@ -32,9 +35,11 @@ class CheckoutController extends Controller
             return redirect()->route('cart')->with('error', 'Some items in your cart are no longer available.');
         }
 
-        $paymentMethods = $this->enabledPaymentMethods();
+        $paymentMethods    = $this->enabledPaymentMethods();
+        $referralSettings  = $this->referralService->getSettings();
+        $walletBalance     = (float) (auth()->user()->wallet_balance ?? 0);
 
-        return view('storefront.checkout', compact('cartItems', 'paymentMethods'));
+        return view('storefront.checkout', compact('cartItems', 'paymentMethods', 'referralSettings', 'walletBalance'));
     }
 
     public function cart(): \Illuminate\View\View
@@ -60,7 +65,7 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'gift_card_id' => ['required', 'exists:gift_cards,id'],
-            'quantity' => ['required', 'integer', 'min:1', 'max:10'],
+            'quantity'     => ['required', 'integer', 'min:1', 'max:10'],
         ]);
 
         $giftCard = GiftCard::findOrFail($request->gift_card_id);
@@ -72,8 +77,8 @@ class CheckoutController extends Controller
         $cart = Session::get('cart', []);
         $cart[$giftCard->id] = [
             'gift_card_id' => $giftCard->id,
-            'quantity' => (int) $request->quantity,
-            'price' => $giftCard->price_bdt,
+            'quantity'     => (int) $request->quantity,
+            'price'        => $giftCard->price_bdt,
         ];
         Session::put('cart', $cart);
 
@@ -121,7 +126,7 @@ class CheckoutController extends Controller
     public function initiate(Request $request)
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+            'name'  => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:100'],
         ]);
 
@@ -137,15 +142,25 @@ class CheckoutController extends Controller
 
         try {
             $customerData = [
-                'name' => $request->name,
+                'name'  => $request->name,
                 'email' => $request->email,
                 'phone' => auth()->user()->phone ?? '',
             ];
 
-            $order = $this->orderService->createOrder($customerData, $cartItems);
+            $discountData = $this->resolveDiscountData($request, $cartItems);
+
+            $order = $this->orderService->createOrder($customerData, $cartItems, $discountData);
 
             $order->user_id = auth()->id();
             $order->save();
+
+            // Record referral usage for bKash-online orders (wallet debit happens in completeOrder)
+            if (! empty($discountData['referral_code'])) {
+                $referrer = \App\Models\User::where('referral_code', strtoupper($discountData['referral_code']))->first();
+                if ($referrer) {
+                    $this->referralService->recordUsage($order, $referrer, (float) $discountData['referral_discount']);
+                }
+            }
 
             Session::put('current_order_id', $order->id);
 
@@ -166,14 +181,17 @@ class CheckoutController extends Controller
 
     public function placeManualOrder(Request $request)
     {
-        $enabledMethods = $this->enabledPaymentMethods();
-        $allowedMethods = array_filter(['bkash_send_money', 'nagad_send_money', 'rocket_send_money'], fn($m) => in_array($m, $enabledMethods));
+        $enabledMethods  = $this->enabledPaymentMethods();
+        $allowedMethods  = array_filter(
+            ['bkash_send_money', 'nagad_send_money', 'rocket_send_money'],
+            fn($m) => in_array($m, $enabledMethods)
+        );
 
         $request->validate([
-            'name'               => ['required', 'string', 'max:100'],
-            'email'              => ['required', 'email', 'max:100'],
-            'payment_method'     => ['required', 'in:' . implode(',', array_values($allowedMethods))],
-            'send_money_trx_id'  => ['required', 'string', 'max:100'],
+            'name'              => ['required', 'string', 'max:100'],
+            'email'             => ['required', 'email', 'max:100'],
+            'payment_method'    => ['required', 'in:' . implode(',', array_values($allowedMethods))],
+            'send_money_trx_id' => ['required', 'string', 'max:100'],
         ]);
 
         $cart = Session::get('cart', []);
@@ -193,12 +211,15 @@ class CheckoutController extends Controller
                 'phone' => auth()->user()->phone ?? '',
             ];
 
+            $discountData = $this->resolveDiscountData($request, $cartItems);
+
             $order = $this->orderService->createSendMoneyOrder(
                 $customerData,
                 $cartItems,
                 $request->payment_method,
                 trim($request->send_money_trx_id),
-                auth()->id()
+                auth()->id(),
+                $discountData,
             );
 
             Session::forget('cart');
@@ -222,7 +243,10 @@ class CheckoutController extends Controller
 
         Session::forget('cart');
 
-        return view('storefront.checkout-success', compact('order'));
+        $referralSettings = $this->referralService->getSettings();
+        $referralCode     = Auth::check() ? Auth::user()->referral_code : null;
+
+        return view('storefront.checkout-success', compact('order', 'referralSettings', 'referralCode'));
     }
 
     public function pending(string $orderNumber)
@@ -276,11 +300,50 @@ class CheckoutController extends Controller
             }
             $items[] = [
                 'gift_card_id' => $giftCard->id,
-                'gift_card' => $giftCard,
-                'quantity' => $item['quantity'],
-                'price' => $giftCard->price_bdt,
+                'gift_card'    => $giftCard,
+                'quantity'     => $item['quantity'],
+                'price'        => $giftCard->price_bdt,
             ];
         }
         return $items;
+    }
+
+    /**
+     * Validate and resolve referral + wallet discounts from the request.
+     * Re-validates server-side to prevent tampering.
+     */
+    private function resolveDiscountData(Request $request, array $cartItems): array
+    {
+        $subtotal         = collect($cartItems)->sum(fn($i) => $i['price'] * $i['quantity']);
+        $referralDiscount = 0.0;
+        $walletDiscount   = 0.0;
+        $referralCode     = null;
+
+        // Validate referral code
+        if ($this->referralService->isEnabled() && $request->filled('referral_code')) {
+            $result = $this->referralService->validateCode(
+                $request->referral_code,
+                auth()->user(),
+                $subtotal
+            );
+            if ($result['valid']) {
+                $referralCode     = strtoupper(trim($request->referral_code));
+                $referralDiscount = $result['discount'];
+            }
+        }
+
+        // Validate wallet usage
+        if ($request->boolean('use_wallet') && auth()->check()) {
+            $user          = auth()->user();
+            $available     = (float) $user->wallet_balance;
+            $remaining     = max(0, $subtotal - $referralDiscount);
+            $walletDiscount = min($available, $remaining);
+        }
+
+        return [
+            'referral_code'     => $referralCode,
+            'referral_discount' => $referralDiscount,
+            'wallet_discount'   => $walletDiscount,
+        ];
     }
 }

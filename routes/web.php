@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BkashController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\CheckoutController;
@@ -81,6 +82,12 @@ Route::middleware('throttle:10,1')->group(function () {
 Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/orders/{orderNumber}', [OrderLookupController::class, 'show'])->name('orders.show');
     Route::post('/orders/{orderNumber}/review', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
+});
+
+// Referral
+Route::middleware(['auth', 'throttle:30,1'])->group(function () {
+    Route::get('/referral', [ReferralController::class, 'dashboard'])->name('referral.dashboard');
+    Route::post('/referral/apply', [ReferralController::class, 'applyCode'])->name('referral.apply')->middleware('throttle:20,1');
 });
 
 // Google OAuth

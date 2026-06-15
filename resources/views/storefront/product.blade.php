@@ -329,6 +329,37 @@
         </div>
     </div>
 
+    {{-- Referral teaser --}}
+    @if($referralSettings['enabled'])
+    <div class="mt-6 rounded-2xl p-4 flex items-center gap-4" style="background:linear-gradient(135deg,#071428,#0D2040); border:1px solid rgba(37,99,235,0.25);">
+        <div class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.18);">
+            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <div class="text-white font-bold text-sm">Earn with referrals</div>
+            <div class="text-gray-400 text-xs mt-0.5 leading-snug">Share your code → friends get a discount at checkout → you earn BDT wallet credit.</div>
+        </div>
+        @if($referralCode)
+        <div x-data="{ refCopied: false }" class="flex items-center gap-2 flex-shrink-0">
+            <span class="font-mono text-brand-400 font-bold text-sm tracking-widest hidden sm:inline">{{ $referralCode }}</span>
+            <button @click="navigator.clipboard.writeText('{{ $referralCode }}'); refCopied = true; setTimeout(() => refCopied = false, 2000)"
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap"
+                    :class="refCopied ? 'bg-green-600 text-white' : 'bg-brand-500 hover:bg-brand-600 text-white'">
+                <span x-show="!refCopied">Copy Code</span>
+                <span x-show="refCopied" x-cloak>✓ Copied!</span>
+            </button>
+        </div>
+        @else
+        <a href="{{ route('login') }}"
+           class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 transition-colors whitespace-nowrap">
+            Login to earn
+        </a>
+        @endif
+    </div>
+    @endif
+
     @if($category->long_description)
     <div class="max-w-5xl mx-auto px-0 pb-10 mt-10">
         <div class="bg-white rounded-2xl p-6 md:p-8" style="border:1px solid #E8EEF8; box-shadow:0 2px 16px rgba(7,20,40,0.05);">

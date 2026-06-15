@@ -22,13 +22,18 @@ class Order extends Model
         'send_money_trx_id',
         'notes',
         'ip_address',
+        'referral_code_used',
+        'referral_discount_bdt',
+        'wallet_discount_bdt',
     ];
 
     protected function casts(): array
     {
         return [
-            'subtotal_bdt' => 'decimal:2',
-            'total_bdt' => 'decimal:2',
+            'subtotal_bdt'          => 'decimal:2',
+            'total_bdt'             => 'decimal:2',
+            'referral_discount_bdt' => 'decimal:2',
+            'wallet_discount_bdt'   => 'decimal:2',
         ];
     }
 
@@ -50,6 +55,11 @@ class Order extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function referralUsage(): HasOne
+    {
+        return $this->hasOne(ReferralUsage::class);
     }
 
     public function scopePending($query)
