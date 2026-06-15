@@ -377,6 +377,8 @@
             </div>
         </div>
     </div>
+    @else
+    <div class="mt-8"></div>
     @endif
 
 </div>
