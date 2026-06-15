@@ -41,6 +41,27 @@ class OrderResource extends Resource
                         \Filament\Infolists\Components\TextEntry::make('customer_email'),
                         \Filament\Infolists\Components\TextEntry::make('customer_phone'),
                     ])->columns(3),
+                \Filament\Infolists\Components\Section::make('Referral & Wallet Discounts')
+                    ->icon('heroicon-o-gift')
+                    ->visible(fn(Order $record) => $record->referral_code_used || $record->wallet_discount_bdt > 0)
+                    ->schema([
+                        \Filament\Infolists\Components\TextEntry::make('referral_code_used')
+                            ->label('Referral Code')
+                            ->badge()
+                            ->color('purple')
+                            ->placeholder('—')
+                            ->visible(fn(Order $record) => (bool) $record->referral_code_used),
+                        \Filament\Infolists\Components\TextEntry::make('referral_discount_bdt')
+                            ->label('Referral Discount')
+                            ->formatStateUsing(fn($state) => '৳ ' . number_format($state, 2))
+                            ->color('success')
+                            ->visible(fn(Order $record) => $record->referral_discount_bdt > 0),
+                        \Filament\Infolists\Components\TextEntry::make('wallet_discount_bdt')
+                            ->label('Wallet Credit Used')
+                            ->formatStateUsing(fn($state) => '৳ ' . number_format($state, 2))
+                            ->color('success')
+                            ->visible(fn(Order $record) => $record->wallet_discount_bdt > 0),
+                    ])->columns(3),
                 \Filament\Infolists\Components\Section::make('Order Items')
                     ->schema([
                         \Filament\Infolists\Components\RepeatableEntry::make('items')

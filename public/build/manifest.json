@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BpIcfNzU.css",
+    "file": "assets/app-9Lsl_qQV.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,7 +9,7 @@
     ]
   },
   "resources/css/storefront.css": {
-    "file": "assets/storefront-CmpisvQs.css",
+    "file": "assets/storefront-r_D05Ydy.css",
     "src": "resources/css/storefront.css",
     "isEntry": true,
     "name": "storefront",
