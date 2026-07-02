@@ -39,6 +39,7 @@ class SiteSettings extends Page implements HasForms
             'referral_max_discount_cap',
             'referral_min_order_amount',
             'referral_owner_reward_amount',
+            'referral_min_withdrawal_amount',
         ];
 
         $defaults = [
@@ -55,6 +56,7 @@ class SiteSettings extends Page implements HasForms
             'referral_max_discount_cap'           => 0,
             'referral_min_order_amount'           => 0,
             'referral_owner_reward_amount'        => 0,
+            'referral_min_withdrawal_amount'      => 50,
         ];
 
         $this->form->fill(
@@ -142,6 +144,11 @@ class SiteSettings extends Page implements HasForms
                             ->numeric()
                             ->minValue(0)
                             ->helperText('Flat BDT amount credited to the referral code owner\'s wallet after each successful referred order.'),
+                        Forms\Components\TextInput::make('referral_min_withdrawal_amount')
+                            ->label('Minimum Withdrawal Amount (৳)')
+                            ->numeric()
+                            ->minValue(1)
+                            ->helperText('Minimum BDT a user must have to place a withdrawal request. Default: 50.'),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Payment Methods')
@@ -193,6 +200,7 @@ class SiteSettings extends Page implements HasForms
             'referral_max_discount_cap'        => 'referral',
             'referral_min_order_amount'        => 'referral',
             'referral_owner_reward_amount'     => 'referral',
+            'referral_min_withdrawal_amount'   => 'referral',
         ];
 
         foreach ($data as $key => $value) {

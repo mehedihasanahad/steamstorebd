@@ -63,17 +63,17 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
         ->middleware('throttle:30,1')
         ->name('checkout.initiate');
     Route::post('/checkout/manual', [CheckoutController::class, 'placeManualOrder'])
-        ->middleware('throttle:10,1')
+        ->middleware('throttle:20,1')
         ->name('checkout.manual');
 });
 
 // bKash callback
-Route::middleware('throttle:10,1')->group(function () {
+Route::middleware('throttle:30,1')->group(function () {
     Route::get('/bkash/callback', [BkashController::class, 'callback'])->name('bkash.callback');
 });
 
 // Order lookup (guest)
-Route::middleware('throttle:10,1')->group(function () {
+Route::middleware('throttle:30,1')->group(function () {
     Route::get('/orders', [OrderLookupController::class, 'index'])->name('orders.lookup');
     Route::post('/orders', [OrderLookupController::class, 'lookup'])->name('orders.lookup.submit');
 });
@@ -88,6 +88,7 @@ Route::middleware(['auth', 'throttle:30,1'])->group(function () {
 Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/referral', [ReferralController::class, 'dashboard'])->name('referral.dashboard');
     Route::post('/referral/apply', [ReferralController::class, 'applyCode'])->name('referral.apply')->middleware('throttle:20,1');
+    Route::post('/referral/withdraw', [ReferralController::class, 'requestWithdrawal'])->name('referral.withdraw')->middleware('throttle:5,1');
 });
 
 // Google OAuth

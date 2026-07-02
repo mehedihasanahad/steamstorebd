@@ -19,12 +19,13 @@ class ReferralService
     public function getSettings(): array
     {
         return [
-            'enabled'             => $this->isEnabled(),
-            'discount_type'       => SiteSetting::get('referral_discount_type', 'flat'),
-            'discount_value'      => (float) SiteSetting::get('referral_discount_value', 0),
-            'min_order_amount'    => (float) SiteSetting::get('referral_min_order_amount', 0),
-            'owner_reward_amount' => (float) SiteSetting::get('referral_owner_reward_amount', 0),
-            'max_discount_cap'    => (float) SiteSetting::get('referral_max_discount_cap', 0),
+            'enabled'               => $this->isEnabled(),
+            'discount_type'         => SiteSetting::get('referral_discount_type', 'flat'),
+            'discount_value'        => (float) SiteSetting::get('referral_discount_value', 0),
+            'min_order_amount'      => (float) SiteSetting::get('referral_min_order_amount', 0),
+            'owner_reward_amount'   => (float) SiteSetting::get('referral_owner_reward_amount', 0),
+            'max_discount_cap'      => (float) SiteSetting::get('referral_max_discount_cap', 0),
+            'min_withdrawal_amount' => (float) SiteSetting::get('referral_min_withdrawal_amount', 50),
         ];
     }
 

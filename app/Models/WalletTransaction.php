@@ -34,11 +34,13 @@ class WalletTransaction extends Model
     public function sourceLabel(): string
     {
         return match ($this->source) {
-            'referral_reward'  => 'Referral Reward',
-            'order_payment'    => 'Used at Checkout',
-            'manual_credit'    => 'Manual Credit',
-            'manual_debit'     => 'Manual Debit',
-            default            => ucfirst(str_replace('_', ' ', $this->source)),
+            'referral_reward'   => 'Referral Reward',
+            'order_payment'     => 'Used at Checkout',
+            'manual_credit'     => 'Manual Credit',
+            'manual_debit'      => 'Manual Debit',
+            'withdrawal'        => 'Withdrawal Request',
+            'withdrawal_refund' => 'Withdrawal Refund',
+            default             => ucfirst(str_replace('_', ' ', $this->source)),
         };
     }
 }
