@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\InventoryOverview;
 use App\Filament\Pages\SiteSettings;
+use App\Filament\Widgets\MonthlyProfitChartWidget;
 use App\Filament\Widgets\RecentOrdersWidget;
 use App\Filament\Widgets\StatsOverviewWidget;
 use App\Filament\Widgets\StockAlertWidget;
@@ -44,6 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 StatsOverviewWidget::class,
+                MonthlyProfitChartWidget::class,
                 StockAlertWidget::class,
                 RecentOrdersWidget::class,
             ])
