@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\SiteSetting;
+use App\Services\ChatLinkBuilder;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -10,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Validation\ValidationException;
 
 class SiteSettings extends Page implements HasForms
 {
@@ -41,6 +43,11 @@ class SiteSettings extends Page implements HasForms
             'referral_min_order_amount',
             'referral_owner_reward_amount',
             'referral_min_withdrawal_amount',
+            'product_chat_whatsapp_enabled',
+            'product_chat_whatsapp_number',
+            'product_chat_whatsapp_template',
+            'product_chat_messenger_enabled',
+            'product_chat_messenger_username',
         ];
 
         $defaults = [
@@ -58,6 +65,9 @@ class SiteSettings extends Page implements HasForms
             'referral_min_order_amount'           => 0,
             'referral_owner_reward_amount'        => 0,
             'referral_min_withdrawal_amount'      => 50,
+            'product_chat_whatsapp_enabled'       => false,
+            'product_chat_whatsapp_template'      => ChatLinkBuilder::DEFAULT_TEMPLATE,
+            'product_chat_messenger_enabled'      => false,
         ];
 
         $this->form->fill(
@@ -126,6 +136,32 @@ class SiteSettings extends Page implements HasForms
                                             ->label('Facebook Page ID')
                                             ->placeholder('123456789012345')
                                             ->helperText('Optional — for reference only.'),
+                                    ])->columns(1),
+
+                                Forms\Components\Section::make('Product Page Chat Buttons')
+                                    ->description('Buttons shown under "Add to Cart" and "Buy Now" on the product details page. Configured separately from the floating buttons above, so product enquiries can go to a different number.')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('product_chat_whatsapp_enabled')
+                                            ->label('Enable WhatsApp Button')
+                                            ->live(),
+                                        Forms\Components\TextInput::make('product_chat_whatsapp_number')
+                                            ->label('WhatsApp Number')
+                                            ->placeholder('8801XXXXXXXXX')
+                                            ->helperText('International format. Spaces, dashes and + are stripped automatically.')
+                                            ->required(fn (Get $get): bool => (bool) $get('product_chat_whatsapp_enabled')),
+                                        Forms\Components\Textarea::make('product_chat_whatsapp_template')
+                                            ->label('WhatsApp Message Template')
+                                            ->rows(3)
+                                            ->helperText('Placeholders: {product} {denomination} {price} {url}. Empty placeholders are removed cleanly, so the message still reads correctly before the customer picks an amount.'),
+
+                                        Forms\Components\Toggle::make('product_chat_messenger_enabled')
+                                            ->label('Enable Messenger Button')
+                                            ->live(),
+                                        Forms\Components\TextInput::make('product_chat_messenger_username')
+                                            ->label('Facebook Page Username')
+                                            ->placeholder('YourPageName')
+                                            ->helperText('Messenger cannot pre-fill a message — Facebook removed that. The button opens a chat with product details attached as an invisible ref tag, which only a Messenger bot can read. There is no message template for Messenger because it would do nothing.')
+                                            ->required(fn (Get $get): bool => (bool) $get('product_chat_messenger_enabled')),
                                     ])->columns(1),
                             ]),
 
@@ -197,7 +233,20 @@ class SiteSettings extends Page implements HasForms
 
     public function save(): void
     {
-        $data = $this->form->getState();
+        // Filament 3.3 does not switch to the tab holding an invalid field, so a
+        // required number on a tab the admin is not looking at would otherwise
+        // fail with no visible cause. Name the tab in the notification instead.
+        try {
+            $data = $this->form->getState();
+        } catch (ValidationException $e) {
+            Notification::make()
+                ->title('Could not save')
+                ->body('Check the Chat & Buttons tab — an enabled button is missing its number or page username.')
+                ->danger()
+                ->send();
+
+            throw $e;
+        }
 
         $groups = [
             'site_name'                        => 'general',
@@ -225,6 +274,11 @@ class SiteSettings extends Page implements HasForms
             'referral_min_order_amount'        => 'referral',
             'referral_owner_reward_amount'     => 'referral',
             'referral_min_withdrawal_amount'   => 'referral',
+            'product_chat_whatsapp_enabled'    => 'product_chat',
+            'product_chat_whatsapp_number'     => 'product_chat',
+            'product_chat_whatsapp_template'   => 'product_chat',
+            'product_chat_messenger_enabled'   => 'product_chat',
+            'product_chat_messenger_username'  => 'product_chat',
         ];
 
         foreach ($data as $key => $value) {
