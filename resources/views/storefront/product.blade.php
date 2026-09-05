@@ -312,6 +312,14 @@
                 </div>
                 @endif
 
+                {{-- Outside the stock guard on purpose: when a product is out of
+                     stock the buttons above disappear, and that is exactly when a
+                     customer wants to ask when it will be back. --}}
+                <x-product-chat-buttons
+                    :name="$category->name"
+                    :url="route('product', $category->slug)"
+                    :slug="$category->slug" />
+
                 @if($category->mainCategory && $category->mainCategory->how_to_redeem)
                 <div class="mt-4 pt-4" style="border-top:1px solid #EEF2FF;">
                     <a href="{{ route('brand', $category->mainCategory->slug) }}#how-to-redeem"
