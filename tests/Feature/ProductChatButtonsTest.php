@@ -39,7 +39,8 @@ it('shows no chat buttons when both channels are off', function () {
         ->assertOk()
         ->assertDontSee('wa.me')
         ->assertDontSee('m.me')
-        ->assertDontSee('Need help? Order via chat');
+        ->assertDontSee('Order on WhatsApp')
+        ->assertDontSee('Order on Messenger');
 });
 
 it('shows only the whatsapp button when only whatsapp is configured', function () {
@@ -48,7 +49,7 @@ it('shows only the whatsapp button when only whatsapp is configured', function (
     $this->get('/product/steam-wallet')
         ->assertOk()
         ->assertSee('https://wa.me/8801711223344', escape: false)
-        ->assertSee('Need help? Order via chat')
+        ->assertSee('Order on WhatsApp')
         // Assert on the anchor, not on the bare domain: the shared Alpine block
         // always mentions both hosts inside its href builders even when only one
         // channel is enabled.

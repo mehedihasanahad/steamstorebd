@@ -108,7 +108,7 @@ class SiteSettings extends Page implements HasForms
                                 ]),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Chat & Buttons')
+                        Forms\Components\Tabs\Tab::make('Floating Chat')
                             ->icon('heroicon-o-chat-bubble-left-right')
                             ->schema([
                                 Forms\Components\Section::make('Floating Chat Buttons')
@@ -137,9 +137,13 @@ class SiteSettings extends Page implements HasForms
                                             ->placeholder('123456789012345')
                                             ->helperText('Optional — for reference only.'),
                                     ])->columns(1),
+                            ]),
 
+                        Forms\Components\Tabs\Tab::make('Product Page Buttons')
+                            ->icon('heroicon-o-shopping-bag')
+                            ->schema([
                                 Forms\Components\Section::make('Product Page Chat Buttons')
-                                    ->description('Buttons shown under "Add to Cart" and "Buy Now" on the product details page. Configured separately from the floating buttons above, so product enquiries can go to a different number.')
+                                    ->description('The "Order on WhatsApp" and "Order on Messenger" buttons shown under Add to Cart and Buy Now on the product details page. Completely separate from the floating chat buttons — different toggles, different number, different page.')
                                     ->schema([
                                         Forms\Components\Toggle::make('product_chat_whatsapp_enabled')
                                             ->label('Enable WhatsApp Button')
@@ -241,7 +245,7 @@ class SiteSettings extends Page implements HasForms
         } catch (ValidationException $e) {
             Notification::make()
                 ->title('Could not save')
-                ->body('Check the Chat & Buttons tab — an enabled button is missing its number or page username.')
+                ->body('Check the Product Page Buttons tab — an enabled button is missing its number or page username.')
                 ->danger()
                 ->send();
 

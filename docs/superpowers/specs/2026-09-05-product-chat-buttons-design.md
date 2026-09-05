@@ -35,11 +35,11 @@ same time.
 | Settings source | Fully independent from the floating widget | Lets product enquiries route to a different number than the floating button |
 | Message content | Live product + denomination, built by Alpine | Support sees exactly what the customer was looking at |
 | Disabled state | Always clickable | A customer unsure which denomination to buy is exactly who needs chat |
-| Layout | Side-by-side pair under a captioned divider | Reads as a secondary action, does not compete with Buy Now |
+| Layout | Side-by-side pair matching the Add to Cart button shape | Revised 2026-09-05: reads as a peer ordering channel, not a footnote |
 | Architecture | Service class + Blade component | Sanitisation logic is small but error-prone; unit tests pin it down |
 | Messenger behaviour | `m.me/<page>?ref=<token>` | Messenger cannot pre-fill visible text (see Constraint below) |
 | Message template | One WhatsApp-only field | Avoids a Messenger field whose effect is invisible |
-| Admin layout | 5 balanced tabs | The page already has 6 sections and is gaining a 7th |
+| Admin layout | 6 tabs, product buttons on their own | Revised 2026-09-05: the product buttons get a dedicated tab so they are never confused with the floating chat settings |
 
 ## Constraint: Messenger cannot pre-fill a message
 
@@ -177,10 +177,11 @@ The JS mirrors steps 2-4 of the rendering rules above in roughly four regexes.
 
 ### Markup
 
-- A hairline divider with a centred caption: **"Need help? Order via chat"**.
+- No caption or divider. The two buttons form a second row directly under Add to Cart / Buy Now.
 - Two `flex-1` buttons in one `flex gap-3` row, matching the page's existing
-  `rounded-2xl` / `border-2` vocabulary, at `py-3.5` versus Buy Now's `py-4` so they
-  read as secondary.
+  `rounded-2xl` / `border-2` vocabulary at the same `py-4` and `text-base` as Add to
+  Cart, so all four buttons share one shape. Labelled "Order on WhatsApp" and
+  "Order on Messenger".
 - WhatsApp `#25D366`, Messenger `#0084FF`. SVG paths are reused from the floating
   buttons in the storefront layout.
 - If only one channel is enabled it takes the full width — `flex-1` handles this.
@@ -206,7 +207,8 @@ disappear, and that is exactly when a customer wants to ask when it will be back
 |---|---|
 | General | site name, contact email, contact WhatsApp |
 | Homepage | *Hero Section* + *Announcement Bar* |
-| Chat & Buttons | *Floating Chat Buttons* + *Product Page Chat Buttons* |
+| Floating Chat | *Floating Chat Buttons* (existing 6) |
+| Product Page Buttons | *Product Page Chat Buttons* (new 5) — its own tab, deliberately kept apart from the floating chat settings |
 | Referral | existing 7 fields |
 | Payments | existing 4 fields |
 
@@ -281,7 +283,7 @@ Note `denomination_usd` was renamed to `denomination` with a separate
 
 ## Out of scope
 
-- The "Need help? Order via chat" caption is hard-coded, not an admin field.
+- No caption above the buttons; the labels carry the meaning.
 - No `{qty}` token.
 - Not added to cart or checkout. The component is reusable if that is wanted later.
 - `messenger_use_plugin` is written by `save()` but has no form field. This is a

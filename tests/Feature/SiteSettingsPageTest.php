@@ -17,14 +17,22 @@ beforeEach(function () {
     SiteSetting::set('contact_email', 'support@steamstorebd.com', 'general');
 });
 
-it('renders all five settings tabs', function () {
+it('renders all six settings tabs', function () {
     Livewire::test(SiteSettings::class)
         ->assertOk()
         ->assertSee('General')
         ->assertSee('Homepage')
-        ->assertSee('Chat &amp; Buttons', escape: false)
+        ->assertSee('Floating Chat')
+        ->assertSee('Product Page Buttons')
         ->assertSee('Referral')
         ->assertSee('Payments');
+});
+
+it('keeps the product page buttons on their own tab, away from the floating chat', function () {
+    Livewire::test(SiteSettings::class)
+        ->assertOk()
+        ->assertSee('Product Page Chat Buttons')
+        ->assertSee('Floating Chat Buttons');
 });
 
 it('still persists an existing setting after the restructure', function () {
