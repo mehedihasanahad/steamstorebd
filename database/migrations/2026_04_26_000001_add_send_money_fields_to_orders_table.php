@@ -9,7 +9,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','pending_review','payment_initiated','paid','processing','completed','failed','refunded') DEFAULT 'pending'");
+        // MODIFY COLUMN ... ENUM is MySQL-only syntax. On other drivers (SQLite in
+        // the test suite) widen the column to a plain string instead, which drops
+        // the CHECK constraint the original enum() compiled to and lets every
+        // status value through.
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','pending_review','payment_initiated','paid','processing','completed','failed','refunded') DEFAULT 'pending'");
+        } else {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->string('status')->default('pending')->change();
+            });
+        }
 
         Schema::table('orders', function (Blueprint $table) {
             $table->string('payment_method', 30)->default('bkash_online')->after('status');
@@ -23,6 +33,8 @@ return new class extends Migration
             $table->dropColumn(['payment_method', 'send_money_trx_id']);
         });
 
-        DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','payment_initiated','paid','processing','completed','failed','refunded') DEFAULT 'pending'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE orders MODIFY COLUMN status ENUM('pending','payment_initiated','paid','processing','completed','failed','refunded') DEFAULT 'pending'");
+        }
     }
 };
