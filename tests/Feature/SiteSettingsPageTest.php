@@ -3,6 +3,7 @@
 use App\Filament\Pages\SiteSettings;
 use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\ResellerProgram;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
 
@@ -17,7 +18,7 @@ beforeEach(function () {
     SiteSetting::set('contact_email', 'support@steamstorebd.com', 'general');
 });
 
-it('renders all six settings tabs', function () {
+it('renders all seven settings tabs', function () {
     Livewire::test(SiteSettings::class)
         ->assertOk()
         ->assertSee('General')
@@ -25,7 +26,8 @@ it('renders all six settings tabs', function () {
         ->assertSee('Floating Chat')
         ->assertSee('Product Page Buttons')
         ->assertSee('Referral')
-        ->assertSee('Payments');
+        ->assertSee('Payments')
+        ->assertSee('Reseller');
 });
 
 it('keeps the product page buttons on their own tab, away from the floating chat', function () {
@@ -92,4 +94,48 @@ it('allows saving when both product chat toggles are off', function () {
         ])
         ->call('save')
         ->assertHasNoFormErrors();
+});
+
+it('persists the reseller settings under the reseller group', function () {
+    Livewire::test(SiteSettings::class)
+        ->fillForm([
+            'reseller_program_enabled' => true,
+            'reseller_hero_title'      => 'Grow Your Gift Card Business',
+            'reseller_response_time'   => 'within 12 hours',
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect(site_setting('reseller_hero_title'))->toBe('Grow Your Gift Card Business')
+        ->and(site_setting('reseller_response_time'))->toBe('within 12 hours')
+        ->and(SiteSetting::where('key', 'reseller_hero_title')->value('group'))->toBe('reseller');
+});
+
+it('stores the benefits repeater as json the reseller page can read back', function () {
+    Livewire::test(SiteSettings::class)
+        ->fillForm([
+            'reseller_benefits' => [
+                ['icon' => '🔥', 'title' => 'Best Rates', 'description' => 'Lowest wholesale price in BD.'],
+                ['icon' => '⚡', 'title' => 'Fast Delivery', 'description' => 'Codes in minutes.'],
+            ],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    $benefits = ResellerProgram::fromSettings()->benefits();
+
+    expect($benefits)->toHaveCount(2)
+        ->and($benefits[0]['title'])->toBe('Best Rates')
+        ->and($benefits[1]['icon'])->toBe('⚡');
+});
+
+it('refuses a benefit with no title', function () {
+    Livewire::test(SiteSettings::class)
+        ->fillForm([
+            'reseller_benefits' => [
+                ['icon' => '🔥', 'title' => '', 'description' => 'Missing its title.'],
+            ],
+        ])
+        ->call('save')
+        ->assertHasFormErrors();
 });

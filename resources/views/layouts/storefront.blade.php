@@ -354,6 +354,9 @@
                         <li><a href="{{ route('home') }}"          class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Home</a></li>
                         <li><a href="{{ route('faq') }}"           class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ FAQ</a></li>
                         <li><a href="{{ route('contact') }}"       class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Contact</a></li>
+                        @if(site_setting('reseller_program_enabled', false))
+                        <li><a href="{{ route('reseller') }}"      class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Become a Reseller</a></li>
+                        @endif
                     </ul>
                 </div>
                 <div>
