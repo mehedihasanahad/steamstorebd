@@ -23,6 +23,11 @@ class SiteSettingsSeeder extends Seeder
             ['key' => 'product_chat_whatsapp_template', 'value' => ChatLinkBuilder::DEFAULT_TEMPLATE, 'group' => 'product_chat'],
             ['key' => 'product_chat_messenger_enabled', 'value' => '0', 'group' => 'product_chat'],
             ['key' => 'product_chat_messenger_username', 'value' => '', 'group' => 'product_chat'],
+            ['key' => 'reseller_program_enabled', 'value' => '0', 'group' => 'reseller'],
+            ['key' => 'reseller_hero_title', 'value' => '', 'group' => 'reseller'],
+            ['key' => 'reseller_hero_subtitle', 'value' => '', 'group' => 'reseller'],
+            ['key' => 'reseller_response_time', 'value' => 'within 24 hours', 'group' => 'reseller'],
+            ['key' => 'reseller_benefits', 'value' => '', 'group' => 'reseller'],
         ];
 
         foreach ($settings as $setting) {

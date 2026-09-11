@@ -7,6 +7,7 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderLookupController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\StorefrontController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,14 @@ Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');
 Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name('how-to-redeem');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
 Route::post('/contact', [StorefrontController::class, 'contactSubmit'])->name('contact.submit');
+
+// Reseller program (public — 404s while the program is switched off in Site Settings)
+Route::middleware('throttle:30,1')->group(function () {
+    Route::get('/reseller', [ResellerController::class, 'show'])->name('reseller');
+    Route::post('/reseller', [ResellerController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('reseller.submit');
+});
 
 // Legacy shop redirect
 Route::get('/shop', fn() => redirect()->route('home'))->name('shop');

@@ -234,6 +234,14 @@ $_schema = [
                     How it works ↓
                 </a>
                 @endif
+                @if(site_setting('reseller_program_enabled', false))
+                <a href="{{ route('reseller') }}"
+                   class="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-2xl font-bold text-sm transition-all duration-200 hover:opacity-90 hover:scale-[1.03] w-full sm:w-auto"
+                   style="background:linear-gradient(135deg,#059669,#047857);box-shadow:0 0 32px rgba(5,150,105,0.45);color:#fff;">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    Become a Reseller
+                </a>
+                @endif
             </div>
 
             {{-- Stats row --}}
@@ -601,6 +609,58 @@ $_schema = [
             </a>
             <p class="text-xs mt-3" style="color:#557AA0;">Free to join. Referral code generated instantly on signup.</p>
             @endauth
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ══ BECOME A RESELLER ══ --}}
+@if(site_setting('reseller_program_enabled', false))
+<section style="background:linear-gradient(135deg,#04170F 0%,#052E1F 55%,#064E3B 100%); padding:80px 0; position:relative; overflow:hidden;">
+    {{-- Decorative circles --}}
+    <div style="position:absolute;top:-90px;left:-70px;width:300px;height:300px;border-radius:50%;background:rgba(5,150,105,0.10);pointer-events:none;"></div>
+    <div style="position:absolute;bottom:-70px;right:-50px;width:240px;height:240px;border-radius:50%;background:rgba(5,150,105,0.08);pointer-events:none;"></div>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold mb-4"
+                 style="background:rgba(16,185,129,0.18);color:#6EE7B7;border:1px solid rgba(16,185,129,0.3);">
+                RESELLER PROGRAM
+            </div>
+            <h2 class="text-2xl md:text-3xl font-black mb-3 text-white" style="letter-spacing:-0.02em;">
+                Selling Gift Cards? Partner With Us
+            </h2>
+            <p class="text-sm md:text-base max-w-xl mx-auto" style="color:#9DC9B5;">
+                Facebook page sellers, shops and gaming zones — get wholesale pricing, priority delivery
+                and bulk stock so you can serve your own customers faster.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            @foreach([
+                ['icon'=>'💰','title'=>'Wholesale Pricing','desc'=>'Dedicated bulk rates on every brand we stock. The more you move, the better your rate.'],
+                ['icon'=>'⚡','title'=>'Priority Delivery','desc'=>'Your orders jump the queue, so you never keep your own customer waiting.'],
+                ['icon'=>'🤝','title'=>'Dedicated Support','desc'=>'A direct WhatsApp line to our team — no tickets, no queue, straight to a human.'],
+            ] as $perk)
+            <div class="rounded-2xl p-6 text-center"
+                 style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(8px);">
+                <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+                     style="background:rgba(16,185,129,0.18);border:1px solid rgba(16,185,129,0.3);">
+                    {{ $perk['icon'] }}
+                </div>
+                <h3 class="font-bold text-white mb-2">{{ $perk['title'] }}</h3>
+                <p class="text-sm" style="color:#9DC9B5;">{{ $perk['desc'] }}</p>
+            </div>
+            @endforeach
+        </div>
+
+        <div class="text-center">
+            <a href="{{ route('reseller') }}"
+               class="inline-flex items-center gap-2 font-bold px-8 py-4 rounded-2xl text-white text-base transition-all hover:opacity-90 hover:shadow-lg"
+               style="background:#059669;">
+                Become a Reseller →
+            </a>
+            <p class="text-xs mt-3" style="color:#5E8F79;">Free to apply. No trade license needed.</p>
         </div>
     </div>
 </section>

@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\SiteSetting;
 use App\Services\ChatLinkBuilder;
+use App\Services\ResellerProgram;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -48,6 +49,11 @@ class SiteSettings extends Page implements HasForms
             'product_chat_whatsapp_template',
             'product_chat_messenger_enabled',
             'product_chat_messenger_username',
+            'reseller_program_enabled',
+            'reseller_hero_title',
+            'reseller_hero_subtitle',
+            'reseller_response_time',
+            'reseller_benefits',
         ];
 
         $defaults = [
@@ -68,10 +74,19 @@ class SiteSettings extends Page implements HasForms
             'product_chat_whatsapp_enabled'       => false,
             'product_chat_whatsapp_template'      => ChatLinkBuilder::DEFAULT_TEMPLATE,
             'product_chat_messenger_enabled'      => false,
+            'reseller_program_enabled'            => false,
+            'reseller_response_time'              => 'within 24 hours',
         ];
 
         $this->form->fill(
             collect($keys)->mapWithKeys(function ($key) use ($defaults) {
+                // The benefits repeater is the one setting stored as JSON, so it
+                // is decoded here instead of going through the boolean coercion
+                // every other key uses.
+                if ($key === 'reseller_benefits') {
+                    return [$key => ResellerProgram::fromSettings()->benefits()];
+                }
+
                 $raw = SiteSetting::get($key, $defaults[$key] ?? '');
                 return [$key => is_string($raw) && in_array($raw, ['1', '0', '']) ? (bool) $raw : $raw];
             })->toArray()
@@ -230,6 +245,68 @@ class SiteSettings extends Page implements HasForms
                                             ->helperText('Customer sends money via Rocket (Dutch-Bangla) manually, then submits TRX ID. Requires ROCKET_SEND_MONEY_NUMBER in .env.'),
                                     ]),
                             ]),
+
+                        Forms\Components\Tabs\Tab::make('Reseller')
+                            ->icon('heroicon-o-user-group')
+                            ->schema([
+                                Forms\Components\Section::make('Reseller Program')
+                                    ->description('Controls the public Become a Reseller page and the button on the homepage. While this is off, the reseller page returns 404 and the button is hidden.')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('reseller_program_enabled')
+                                            ->label('Enable Reseller Program')
+                                            ->helperText('Shows the Become a Reseller button on the homepage and opens the /reseller application page.'),
+                                        Forms\Components\TextInput::make('reseller_hero_title')
+                                            ->label('Page Headline')
+                                            ->placeholder('Sell Gift Cards. Earn More.')
+                                            ->helperText('Leave empty to use the default headline.')
+                                            ->maxLength(120),
+                                        Forms\Components\Textarea::make('reseller_hero_subtitle')
+                                            ->label('Page Subheading')
+                                            ->placeholder('Join our reseller network and get wholesale pricing, priority delivery and bulk stock for your own customers.')
+                                            ->helperText('Leave empty to use the default subheading.')
+                                            ->rows(2)
+                                            ->maxLength(300),
+                                        Forms\Components\TextInput::make('reseller_response_time')
+                                            ->label('Promised Response Time')
+                                            ->placeholder('within 24 hours')
+                                            ->helperText('Shown to applicants and in their confirmation email. Promise something you can keep.')
+                                            ->maxLength(60),
+                                    ]),
+
+                                Forms\Components\Section::make('Benefits')
+                                    ->description('The benefit cards shown on the reseller page and listed in the approval email. Leave the list empty to fall back to the built-in defaults.')
+                                    ->schema([
+                                        Forms\Components\Repeater::make('reseller_benefits')
+                                            ->label('')
+                                            ->schema([
+                                                Forms\Components\TextInput::make('icon')
+                                                    ->label('Icon')
+                                                    ->placeholder('💰')
+                                                    ->helperText('A single emoji.')
+                                                    ->maxLength(8)
+                                                    ->columnSpan(1),
+                                                Forms\Components\TextInput::make('title')
+                                                    ->label('Title')
+                                                    ->placeholder('Wholesale Pricing')
+                                                    ->required()
+                                                    ->maxLength(60)
+                                                    ->columnSpan(3),
+                                                Forms\Components\Textarea::make('description')
+                                                    ->label('Description')
+                                                    ->placeholder('Approved resellers get dedicated bulk pricing on every brand we stock.')
+                                                    ->rows(2)
+                                                    ->maxLength(300)
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columns(4)
+                                            ->reorderable()
+                                            ->collapsible()
+                                            ->cloneable()
+                                            ->itemLabel(fn(array $state): ?string => $state['title'] ?? null)
+                                            ->addActionLabel('Add a benefit')
+                                            ->defaultItems(0),
+                                    ]),
+                            ]),
                     ]),
             ])
             ->statePath('data');
@@ -283,9 +360,20 @@ class SiteSettings extends Page implements HasForms
             'product_chat_whatsapp_template'   => 'product_chat',
             'product_chat_messenger_enabled'   => 'product_chat',
             'product_chat_messenger_username'  => 'product_chat',
+            'reseller_program_enabled'         => 'reseller',
+            'reseller_hero_title'              => 'reseller',
+            'reseller_hero_subtitle'           => 'reseller',
+            'reseller_response_time'           => 'reseller',
+            'reseller_benefits'                => 'reseller',
         ];
 
         foreach ($data as $key => $value) {
+            // site_settings.value is a text column, so the benefits repeater —
+            // the only array on this page — is encoded before it is stored.
+            if (is_array($value)) {
+                $value = json_encode(array_values($value));
+            }
+
             SiteSetting::set($key, $value, $groups[$key] ?? 'general');
         }
 
