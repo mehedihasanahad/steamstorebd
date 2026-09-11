@@ -39,6 +39,7 @@ class GiftCardCodeResource extends Resource
                     'available' => 'Available',
                     'reserved'  => 'Reserved',
                     'sold'      => 'Sold',
+                    'revoked'   => 'Revoked',
                 ])
                 ->required(),
         ]);
@@ -60,7 +61,11 @@ class GiftCardCodeResource extends Resource
                         'success' => 'available',
                         'warning' => 'reserved',
                         'danger'  => 'sold',
-                    ]),
+                        'gray'    => 'revoked',
+                    ])
+                    ->tooltip(fn ($state) => $state === 'revoked'
+                        ? 'Pulled off an order after the customer already had it. Never resold.'
+                        : null),
                 Tables\Columns\TextColumn::make('addedBy.name')
                     ->label('Added By'),
                 Tables\Columns\TextColumn::make('created_at')
@@ -78,6 +83,7 @@ class GiftCardCodeResource extends Resource
                         'available' => 'Available',
                         'reserved'  => 'Reserved',
                         'sold'      => 'Sold',
+                        'revoked'   => 'Revoked',
                     ]),
             ])
             ->headerActions([
@@ -140,6 +146,7 @@ class GiftCardCodeResource extends Resource
                                 'available' => 'Available',
                                 'reserved'  => 'Reserved',
                                 'sold'      => 'Sold',
+                                'revoked'   => 'Revoked',
                             ])
                             ->required(),
                     ])

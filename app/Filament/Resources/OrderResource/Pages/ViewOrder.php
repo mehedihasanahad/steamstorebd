@@ -4,6 +4,7 @@ namespace App\Filament\Resources\OrderResource\Pages;
 
 use App\Filament\Resources\OrderResource;
 use App\Jobs\SendOrderCodesEmail;
+use App\Services\OrderEditService;
 use App\Services\OrderService;
 use Filament\Actions;
 use Filament\Notifications\Notification;
@@ -16,6 +17,13 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('edit_items')
+                ->label('Edit Items')
+                ->icon('heroicon-o-pencil-square')
+                ->color('warning')
+                ->visible(fn () => app(OrderEditService::class)->canEdit($this->record))
+                ->url(fn () => static::getResource()::getUrl('edit-items', ['record' => $this->record])),
+
             Actions\Action::make('cancel_order')
                 ->label('Cancel Order')
                 ->color('danger')
@@ -104,7 +112,7 @@ class ViewOrder extends ViewRecord
     public function getViewData(): array
     {
         return [
-            'order' => $this->record->load(['items.giftCard', 'items.orderItemCodes.giftCardCode', 'bkashPayment']),
+            'order' => $this->record->load(['items.giftCard', 'items.orderItemCodes.giftCardCode', 'bkashPayment', 'edits.admin']),
         ];
     }
 }

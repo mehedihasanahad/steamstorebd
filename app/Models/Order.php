@@ -62,6 +62,11 @@ class Order extends Model
         return $this->hasOne(ReferralUsage::class);
     }
 
+    public function edits(): HasMany
+    {
+        return $this->hasMany(OrderEdit::class)->latest();
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -90,6 +95,11 @@ class Order extends Model
     public function isPendingReview(): bool
     {
         return $this->status === 'pending_review';
+    }
+
+    public function isEdited(): bool
+    {
+        return $this->edits()->exists();
     }
 
     public function isSendMoneyOrder(): bool

@@ -50,4 +50,18 @@ class GiftCardCode extends Model
     {
         return $query->where('status', 'sold');
     }
+
+    /**
+     * Codes pulled off an order after the customer already had them. They are
+     * burned on purpose and must never be sold again.
+     */
+    public function scopeRevoked($query)
+    {
+        return $query->where('status', 'revoked');
+    }
+
+    public function isRevoked(): bool
+    {
+        return $this->status === 'revoked';
+    }
 }

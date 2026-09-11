@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Jobs\SendOrderCodesEmail;
 use App\Models\Order;
+use App\Services\OrderEditService;
 use App\Services\OrderService;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -62,6 +63,58 @@ class OrderResource extends Resource
                             ->color('success')
                             ->visible(fn(Order $record) => $record->wallet_discount_bdt > 0),
                     ])->columns(3),
+                \Filament\Infolists\Components\Section::make('Edit History')
+                    ->icon('heroicon-o-pencil-square')
+                    ->description('Every admin change made to the line items on this order.')
+                    ->collapsed()
+                    ->visible(fn (Order $record) => $record->edits()->exists())
+                    ->schema([
+                        \Filament\Infolists\Components\RepeatableEntry::make('edits')
+                            ->label('')
+                            ->schema([
+                                \Filament\Infolists\Components\TextEntry::make('created_at')
+                                    ->label('When')
+                                    ->dateTime(),
+                                \Filament\Infolists\Components\TextEntry::make('admin.name')
+                                    ->label('By'),
+                                \Filament\Infolists\Components\TextEntry::make('total_before_bdt')
+                                    ->label('Total before')
+                                    ->formatStateUsing(fn ($state) => format_bdt($state)),
+                                \Filament\Infolists\Components\TextEntry::make('total_after_bdt')
+                                    ->label('Total after')
+                                    ->formatStateUsing(fn ($state) => format_bdt($state)),
+                                \Filament\Infolists\Components\TextEntry::make('balance_delta_bdt')
+                                    ->label('Settlement')
+                                    ->badge()
+                                    ->color(fn ($state) => match (true) {
+                                        (float) $state > 0 => 'warning',
+                                        (float) $state < 0 => 'danger',
+                                        default            => 'gray',
+                                    })
+                                    ->formatStateUsing(fn ($state) => match (true) {
+                                        (float) $state > 0 => 'Collect ' . format_bdt($state),
+                                        (float) $state < 0 => 'Refund ' . format_bdt(abs((float) $state)),
+                                        default            => 'Settled',
+                                    }),
+                                \Filament\Infolists\Components\TextEntry::make('reason')
+                                    ->label('Reason')
+                                    ->columnSpanFull(),
+                                \Filament\Infolists\Components\TextEntry::make('items_before')
+                                    ->label('Before')
+                                    ->listWithLineBreaks()
+                                    ->bulleted()
+                                    ->placeholder('—')
+                                    ->formatStateUsing(fn ($state) => static::describeItem($state))
+                                    ->columnSpan(3),
+                                \Filament\Infolists\Components\TextEntry::make('items_after')
+                                    ->label('After')
+                                    ->listWithLineBreaks()
+                                    ->bulleted()
+                                    ->placeholder('—')
+                                    ->formatStateUsing(fn ($state) => static::describeItem($state))
+                                    ->columnSpan(3),
+                            ])->columns(3),
+                    ]),
                 \Filament\Infolists\Components\Section::make('Order Items')
                     ->schema([
                         \Filament\Infolists\Components\RepeatableEntry::make('items')
@@ -148,6 +201,13 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
 
+                Tables\Actions\Action::make('edit_items')
+                    ->label('Edit Items')
+                    ->icon('heroicon-o-pencil-square')
+                    ->color('warning')
+                    ->visible(fn (Order $record) => app(OrderEditService::class)->canEdit($record))
+                    ->url(fn (Order $record) => static::getUrl('edit-items', ['record' => $record])),
+
                 Tables\Actions\Action::make('approve_send_money')
                     ->label('Approve & Send Codes')
                     ->icon('heroicon-o-check-badge')
@@ -191,9 +251,29 @@ class OrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/'),
-            'view'  => Pages\ViewOrder::route('/{record}'),
+            'index'      => Pages\ListOrders::route('/'),
+            'view'       => Pages\ViewOrder::route('/{record}'),
+            'edit-items' => Pages\EditOrderItems::route('/{record}/edit-items'),
         ];
+    }
+
+    /**
+     * Render one entry of a stored line-item snapshot.
+     *
+     * TextEntry formats array state element by element, so this receives a
+     * single item from `items_before` / `items_after`.
+     *
+     * @param  array<string, mixed>|null  $item
+     */
+    public static function describeItem(?array $item): string
+    {
+        if (empty($item)) {
+            return '—';
+        }
+
+        return ($item['gift_card_name'] ?? 'Gift card #' . ($item['gift_card_id'] ?? '?'))
+            . ' × ' . ($item['quantity'] ?? 0)
+            . ' @ ' . format_bdt($item['unit_price_bdt'] ?? 0);
     }
 
     public static function canCreate(): bool
