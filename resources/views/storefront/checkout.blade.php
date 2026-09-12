@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Checkout — Steam Store BD')
+@section('robots', 'noindex, follow')
 
 @section('content')
 

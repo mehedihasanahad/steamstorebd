@@ -40,5 +40,10 @@ class MainCategory extends Model
     {
         static::saved(fn() => Cache::forget('home_main_categories'));
         static::deleted(fn() => Cache::forget('home_main_categories'));
+        static::updated(function (MainCategory $brand) {
+            if ($brand->wasChanged('slug')) {
+                SlugRedirect::rememberSlugChange($brand);
+            }
+        });
     }
 }

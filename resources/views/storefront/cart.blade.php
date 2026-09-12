@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Cart — Steam Store BD')
+@section('robots', 'noindex, follow')
 @section('meta_description', 'Review your Steam gift card order before checkout.')
 
 @section('content')

@@ -2,7 +2,6 @@
 
 @section('title', 'FAQ — Gift Cards Bangladesh | How to Buy with bKash & Nagad — Steam Store BD')
 @section('meta_description', 'Frequently asked questions about buying digital gift cards in Bangladesh. How to pay with bKash or Nagad, instant delivery, genuine codes, refund policy, and how to redeem your gift card.')
-@section('meta_keywords', 'gift card bangladesh faq, buy gift card bkash, gift card nagad bangladesh, how to buy gift card bd, gift card redeem bangladesh, steam google play gift card faq bd')
 
 @push('schema')
 @php

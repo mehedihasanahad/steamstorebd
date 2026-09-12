@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Sign In">
 <div style="min-height:100vh; display:flex; align-items:stretch;">
 
     {{-- Left decorative panel --}}

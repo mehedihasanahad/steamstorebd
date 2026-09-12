@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Track Your Order — Steam Store BD')
+@section('robots', 'noindex, follow')
 
 @section('content')
 <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-16">

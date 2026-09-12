@@ -34,7 +34,8 @@ class GiftCardCategoryResource extends Resource
                 ->afterStateUpdated(fn($state, Forms\Set $set) => $set('slug', Str::slug($state))),
             Forms\Components\TextInput::make('slug')
                 ->required()
-                ->unique(ignoreRecord: true),
+                ->unique(ignoreRecord: true)
+                ->helperText('Changing the slug is safe: the old /product URL redirects to the new one.'),
             Forms\Components\Textarea::make('description')->rows(3),
             Forms\Components\RichEditor::make('long_description')
                 ->label('Long Description (shown on product page)')
@@ -50,6 +51,23 @@ class GiftCardCategoryResource extends Resource
                 ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             Forms\Components\Toggle::make('is_active')->default(true),
+
+            Forms\Components\Section::make('SEO')
+                ->description('Search engine settings for this product page (/product/{slug}). Leave empty to use the automatic title and description.')
+                ->schema([
+                    Forms\Components\TextInput::make('seo_title')
+                        ->label('SEO Title')
+                        ->placeholder('Buy Steam Wallet Gift Card in Bangladesh')
+                        ->helperText('Aim for under 45 characters. " — Steam Store BD" is added automatically.')
+                        ->maxLength(70),
+                    Forms\Components\Textarea::make('seo_description')
+                        ->label('Meta Description')
+                        ->helperText('Shown under the title in Google. Aim for 120–160 characters.')
+                        ->rows(3)
+                        ->maxLength(165),
+                ])
+                ->columnSpanFull()
+                ->collapsible(),
         ]);
     }
 

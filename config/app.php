@@ -56,6 +56,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Canonical URL Redirect
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, GET requests that arrive on a host or scheme other than
+    | APP_URL (www vs bare domain, http vs https) are sent to the same path
+    | on APP_URL with a 301. Only enable it once your proxy forwards the
+    | X-Forwarded-Proto header, or https requests will redirect forever.
+    |
+    */
+
+    'canonical_redirect' => (bool) env('APP_CANONICAL_REDIRECT', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

@@ -1,47 +1,46 @@
 @extends('layouts.storefront')
 
 @php
-    $_brandName  = $category->mainCategory->name ?? null;
-    $_titleBrand = $_brandName ? ' | ' . $_brandName . ' Bangladesh' : ' in Bangladesh';
-    $_kwBase     = strtolower($category->name);
-    $_kwBrand    = $_brandName ? strtolower($_brandName) . ' bangladesh, trusted ' . strtolower($_brandName) . ' bd, ' : '';
+    $_inStock     = $denominations->filter(fn ($denomination) => $denomination->stock_count > 0);
+    $_lowestPrice = $_inStock->min('price_bdt');
+    $_payWith     = $paymentMethodNames ? ' with ' . \Illuminate\Support\Arr::join($paymentMethodNames, ', ', ' or ') : '';
+    $_image       = $category->image ?: $category->mainCategory?->image;
+    $_imageUrl    = $_image ? Storage::disk('public')->url($_image) : null;
+    $_description = $category->seo_description
+        ?: 'Buy ' . $category->name . ' in Bangladesh' . $_payWith . '. Instant code delivery to email.'
+            . ($_lowestPrice ? ' Prices from ৳' . number_format((float) $_lowestPrice) . '.' : '')
+            . ' 100% genuine codes.';
 @endphp
-@section('title', 'Buy ' . $category->name . $_titleBrand . ' | bKash Nagad — Steam Store BD')
-@section('meta_description', 'Buy ' . $category->name . ' in Bangladesh with bKash or Nagad. Instant code delivery to email. Starting from ৳' . ($denominations->where('stock_count', '>', 0)->min('price_bdt') ? number_format($denominations->where('stock_count', '>', 0)->min('price_bdt')) : '') . ' BDT. 100% genuine codes. Fast &amp; secure.')
-@section('meta_keywords', $_kwBrand . 'buy ' . $_kwBase . ' bangladesh, ' . $_kwBase . ' bkash, ' . $_kwBase . ' nagad, ' . $_kwBase . ' bd price, trusted gift card bd, genuine gift card bangladesh, digital gift card bd 2025')
+@section('title', ($category->seo_title ?: 'Buy ' . $category->name . ' in Bangladesh') . ' — Steam Store BD')
+@section('meta_description', $_description)
 @section('og_type', 'product')
 @section('og_image_alt', 'Buy ' . $category->name . ' in Bangladesh — Steam Store BD')
+@if($_imageUrl)
+@section('og_image', $_imageUrl)
+@endif
 
 @push('schema')
 @php
-    $inStockDenoms = $denominations->where('stock_count', '>', 0);
-    $lowestPrice   = $inStockDenoms->min('price_bdt');
-    $highestPrice  = $inStockDenoms->max('price_bdt');
-    $totalStock    = $denominations->sum('stock_count');
-
-    $_offers = [
-        '@type'        => 'AggregateOffer',
-        'priceCurrency'=> 'BDT',
-        'offerCount'   => $denominations->count(),
-        'availability' => $totalStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-        'seller'       => ['@type' => 'Organization', 'name' => 'Steam Store BD'],
-    ];
-    if ($lowestPrice) {
-        $_offers['lowPrice']  = (string) $lowestPrice;
-        $_offers['highPrice'] = (string) $highestPrice;
-    }
-
     $_productSchema = [
         '@type'       => 'Product',
-        'name'        => $category->name . ' Bangladesh',
-        'description' => 'Buy ' . $category->name . ' in Bangladesh with bKash or Nagad. Instant digital delivery to email. 100% genuine code.',
+        'name'        => $category->name,
+        'description' => $_description,
         'brand'       => ['@type' => 'Brand', 'name' => $category->mainCategory->name ?? $category->name],
-        'seller'      => ['@type' => 'Organization', 'name' => 'Steam Store BD', 'url' => url('/')],
         'url'         => route('product', $category->slug),
-        'offers'      => $_offers,
     ];
-    if ($category->image) {
-        $_productSchema['image'] = Storage::disk('public')->url($category->image);
+    if ($_imageUrl) {
+        $_productSchema['image'] = $_imageUrl;
+    }
+    if ($denominations->isNotEmpty()) {
+        $_productSchema['offers'] = [
+            '@type'         => 'AggregateOffer',
+            'priceCurrency' => 'BDT',
+            'lowPrice'      => (string) $denominations->min('price_bdt'),
+            'highPrice'     => (string) $denominations->max('price_bdt'),
+            'offerCount'    => $denominations->count(),
+            'availability'  => $_inStock->isNotEmpty() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'seller'        => ['@id' => url('/') . '/#organization'],
+        ];
     }
 
     $_breadcrumbs = [['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')]];
@@ -387,6 +386,24 @@
     </div>
     @else
     <div class="mt-8"></div>
+    @endif
+
+    @if($relatedCategories->isNotEmpty())
+    <section class="pb-12" aria-labelledby="related-products-heading">
+        <h2 id="related-products-heading" class="text-base font-black mb-4" style="color:#071428;">More {{ $category->mainCategory->name }} Gift Cards</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            @foreach($relatedCategories as $related)
+            <a href="{{ route('product', $related->slug) }}"
+               class="group block bg-white rounded-2xl p-4 transition-shadow hover:shadow-md"
+               style="border:1px solid #E8EEF8; box-shadow:0 1px 4px rgba(7,20,40,0.05);">
+                <div class="font-bold text-sm group-hover:text-blue-600 transition-colors" style="color:#071428;">{{ $related->name }}</div>
+                @if($related->min_price_bdt)
+                <div class="text-xs text-gray-400 mt-1">From <span class="font-semibold text-brand-500">৳ {{ number_format($related->min_price_bdt, 0) }}</span></div>
+                @endif
+            </a>
+            @endforeach
+        </div>
+    </section>
     @endif
 
 </div>

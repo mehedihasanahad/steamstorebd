@@ -14,6 +14,8 @@ class GiftCardCategory extends Model
         'slug',
         'description',
         'long_description',
+        'seo_title',
+        'seo_description',
         'icon',
         'image',
         'sort_order',
@@ -49,5 +51,10 @@ class GiftCardCategory extends Model
     {
         static::saved(fn() => Cache::forget('home_main_categories'));
         static::deleted(fn() => Cache::forget('home_main_categories'));
+        static::updated(function (GiftCardCategory $category) {
+            if ($category->wasChanged('slug')) {
+                SlugRedirect::rememberSlugChange($category);
+            }
+        });
     }
 }

@@ -1,4 +1,4 @@
-<x-guest-layout>
+<x-guest-layout title="Create Account">
 
 <div style="min-height:100vh; display:flex; align-items:stretch;">
 

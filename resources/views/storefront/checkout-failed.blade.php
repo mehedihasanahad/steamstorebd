@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Payment Failed — Steam Store BD')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
@@ -25,7 +26,7 @@
         <a href="{{ route('checkout') }}" class="flex-1 text-center font-bold py-4 rounded-xl text-white transition-all hover:shadow-lg" style="background-color: #E2136E;">
             Try Again with bKash
         </a>
-        <a href="{{ route('shop') }}" class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 rounded-xl transition-colors">
+        <a href="{{ route('home') }}" class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 rounded-xl transition-colors">
             Browse Cards
         </a>
     </div>

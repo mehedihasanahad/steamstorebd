@@ -40,7 +40,15 @@ Route::get('/cards/{slug}', [StorefrontController::class, 'cardDetail'])->name('
 Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');
 Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name('how-to-redeem');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
-Route::post('/contact', [StorefrontController::class, 'contactSubmit'])->name('contact.submit');
+Route::post('/contact', [StorefrontController::class, 'contactSubmit'])
+    ->middleware('throttle:5,1')
+    ->name('contact.submit');
+
+// Company & policy pages
+Route::view('/about', 'storefront.pages.about')->name('about');
+Route::view('/refund-policy', 'storefront.pages.refund-policy')->name('refund-policy');
+Route::view('/privacy-policy', 'storefront.pages.privacy-policy')->name('privacy-policy');
+Route::view('/terms', 'storefront.pages.terms')->name('terms');
 
 // Reseller program (public — 404s while the program is switched off in Site Settings)
 Route::middleware('throttle:30,1')->group(function () {
@@ -50,9 +58,9 @@ Route::middleware('throttle:30,1')->group(function () {
         ->name('reseller.submit');
 });
 
-// Legacy shop redirect
-Route::get('/shop', fn() => redirect()->route('home'))->name('shop');
-Route::get('/shop/{any}', fn() => redirect()->route('home'))->name('shop.category')->where('any', '.*');
+// Legacy shop URLs (permanent, so search engines move rankings to the new pages)
+Route::permanentRedirect('/shop', '/')->name('shop');
+Route::get('/shop/{any}', [StorefrontController::class, 'legacyShop'])->name('shop.category')->where('any', '.*');
 
 // Cart & Checkout (guest accessible)
 Route::middleware(['throttle:60,1'])->group(function () {

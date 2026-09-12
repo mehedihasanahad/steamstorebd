@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Order Confirmed — Steam Store BD')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -88,7 +89,7 @@
         <a href="{{ route('home') }}" class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl transition-colors">
             ← Back to Home
         </a>
-        <a href="{{ route('shop') }}" class="flex-1 text-center btn-steam font-semibold py-3 rounded-xl transition-all hover:shadow-steam-glow">
+        <a href="{{ route('home') }}" class="flex-1 text-center btn-steam font-semibold py-3 rounded-xl transition-all hover:shadow-steam-glow">
             Buy More Cards
         </a>
     </div>

@@ -137,7 +137,7 @@ class CheckoutController extends Controller
 
         $cartItems = $this->resolveCartItems($cart);
         if ($cartItems === null) {
-            return redirect()->route('shop')->with('error', 'Some items are out of stock.');
+            return redirect()->route('home')->with('error', 'Some items are out of stock.');
         }
 
         try {

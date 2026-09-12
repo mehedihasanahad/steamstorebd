@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Order Under Review — Steam Store BD')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 
@@ -88,7 +89,7 @@
                style="background:#EEF4FF; color:#2563EB;">
                 ← Back to Home
             </a>
-            <a href="{{ route('shop') }}"
+            <a href="{{ route('home') }}"
                class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
                style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">
                 🛒 Buy More Cards

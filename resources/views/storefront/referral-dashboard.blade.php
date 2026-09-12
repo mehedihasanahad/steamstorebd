@@ -1,6 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', 'Referral & Wallet — Steam Store BD')
+@section('robots', 'noindex, nofollow')
 
 @section('content')
 

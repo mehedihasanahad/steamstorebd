@@ -2,35 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ContactMessageRequest;
+use App\Jobs\SendAdminContactMessageEmail;
+use App\Models\ContactMessage;
 use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
 use App\Models\Review;
-use App\Models\SiteSetting;
+use App\Models\SlugRedirect;
+use App\Services\PaymentMethods;
 use App\Services\ReferralService;
-use Illuminate\Http\Request;
+use App\Services\StorefrontCatalog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class StorefrontController extends Controller
 {
-    public function home()
+    public function home(StorefrontCatalog $catalog)
     {
-        $mainCategories = Cache::remember('home_main_categories', 300, function () {
-            return MainCategory::with(['giftCardCategories' => function ($q) {
-                $q->where('is_active', true)
-                    ->with(['giftCards' => function ($q) { $q->where('is_active', true)->orderBy('price_bdt'); }]);
-            }])
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->get()
-                ->filter(function ($mc) {
-                    return $mc->giftCardCategories
-                        ->filter(fn($cat) => $cat->giftCards->isNotEmpty())
-                        ->isNotEmpty();
-                })
-                ->values();
-        });
+        $mainCategories = $catalog->brands();
 
         // Fallback: show gift card categories directly if no main categories are set up yet
         $fallbackCategories = $mainCategories->isEmpty()
@@ -52,19 +43,7 @@ class StorefrontController extends Controller
             ->limit(12)
             ->get();
 
-        $activePaymentMethods = [];
-        if (SiteSetting::get('payment_bkash_online_enabled', true) || SiteSetting::get('payment_bkash_send_money_enabled', false)) {
-            $activePaymentMethods[] = ['name' => 'bKash', 'logo' => 'bkash-logo.png', 'round' => true];
-        }
-        if (SiteSetting::get('payment_nagad_send_money_enabled', false)) {
-            $activePaymentMethods[] = ['name' => 'Nagad', 'logo' => 'nagad-logo.webp', 'round' => false];
-        }
-        if (SiteSetting::get('payment_rocket_send_money_enabled', false)) {
-            $activePaymentMethods[] = ['name' => 'Rocket', 'logo' => 'rocket-logo.png', 'round' => true];
-        }
-        if (SiteSetting::get('payment_bkash_online_enabled', true)) {
-            $activePaymentMethods[] = ['name' => 'VISA / MC', 'logo' => null, 'round' => false];
-        }
+        $activePaymentMethods = PaymentMethods::active();
 
         return view('storefront.home', compact('mainCategories', 'fallbackCategories', 'reviews', 'activePaymentMethods'));
     }
@@ -73,10 +52,17 @@ class StorefrontController extends Controller
     {
         $mainCategory = MainCategory::where('slug', $mainCategorySlug)
             ->where('is_active', true)
-            ->firstOrFail();
+            ->first();
+
+        if ($mainCategory === null) {
+            $moved = SlugRedirect::findModel(MainCategory::class, $mainCategorySlug);
+            abort_unless($moved?->is_active, 404);
+
+            return redirect()->route('brand', $moved->slug, 301);
+        }
 
         $categories = GiftCardCategory::with(['giftCards' => function ($q) {
-            $q->where('is_active', true)->orderBy('price_bdt');
+            $q->where('is_active', true)->withAvailableCodesCount()->orderBy('price_bdt');
         }])
             ->where('main_category_id', $mainCategory->id)
             ->where('is_active', true)
@@ -85,7 +71,9 @@ class StorefrontController extends Controller
             ->filter(fn($cat) => $cat->giftCards->isNotEmpty())
             ->values();
 
-        return view('storefront.brand', compact('mainCategory', 'categories'));
+        $paymentMethodNames = PaymentMethods::walletNames();
+
+        return view('storefront.brand', compact('mainCategory', 'categories', 'paymentMethodNames'));
     }
 
     public function product(string $categorySlug)
@@ -93,18 +81,38 @@ class StorefrontController extends Controller
         $category = GiftCardCategory::with('mainCategory')
             ->where('slug', $categorySlug)
             ->where('is_active', true)
-            ->firstOrFail();
+            ->first();
+
+        if ($category === null) {
+            $moved = SlugRedirect::findModel(GiftCardCategory::class, $categorySlug);
+            abort_unless($moved?->is_active, 404);
+
+            return redirect()->route('product', $moved->slug, 301);
+        }
 
         $denominations = GiftCard::where('category_id', $category->id)
             ->where('is_active', true)
+            ->withAvailableCodesCount()
             ->orderBy('sort_order')
             ->orderBy('price_bdt')
             ->get();
 
-        $referralSettings = app(ReferralService::class)->getSettings();
-        $referralCode     = Auth::check() ? Auth::user()->referral_code : null;
+        $relatedCategories = $category->main_category_id
+            ? GiftCardCategory::where('main_category_id', $category->main_category_id)
+                ->whereKeyNot($category->id)
+                ->where('is_active', true)
+                ->whereHas('giftCards', fn ($q) => $q->where('is_active', true))
+                ->withMin(['giftCards as min_price_bdt' => fn ($q) => $q->where('is_active', true)], 'price_bdt')
+                ->orderBy('sort_order')
+                ->limit(8)
+                ->get()
+            : collect();
 
-        return view('storefront.product', compact('category', 'denominations', 'referralSettings', 'referralCode'));
+        $paymentMethodNames = PaymentMethods::walletNames();
+        $referralSettings   = app(ReferralService::class)->getSettings();
+        $referralCode       = Auth::check() ? Auth::user()->referral_code : null;
+
+        return view('storefront.product', compact('category', 'denominations', 'relatedCategories', 'paymentMethodNames', 'referralSettings', 'referralCode'));
     }
 
     public function cardDetail(string $slug)
@@ -114,7 +122,28 @@ class StorefrontController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        return redirect()->route('product', $card->category->slug);
+        return redirect()->route('product', $card->category->slug, 301);
+    }
+
+    /**
+     * The old /shop/{category} URLs: send each to the product or brand it
+     * named, so links and rankings they earned carry over.
+     */
+    public function legacyShop(string $path)
+    {
+        $slug = Str::of($path)->trim('/')->afterLast('/')->value();
+
+        $category = GiftCardCategory::where('slug', $slug)->where('is_active', true)->first();
+        if ($category) {
+            return redirect()->route('product', $category->slug, 301);
+        }
+
+        $brand = MainCategory::where('slug', $slug)->where('is_active', true)->first();
+        if ($brand) {
+            return redirect()->route('brand', $brand->slug, 301);
+        }
+
+        return redirect()->route('home', [], 301);
     }
 
     public function faq()
@@ -132,13 +161,11 @@ class StorefrontController extends Controller
         return view('storefront.contact');
     }
 
-    public function contactSubmit(Request $request)
+    public function contactSubmit(ContactMessageRequest $request)
     {
-        $request->validate([
-            'name'    => ['required', 'string', 'max:100'],
-            'email'   => ['required', 'email', 'max:100'],
-            'message' => ['required', 'string', 'max:2000'],
-        ]);
+        $contactMessage = ContactMessage::create($request->messageAttributes());
+
+        dispatch(new SendAdminContactMessageEmail($contactMessage));
 
         return back()->with('success', 'Your message has been sent! We\'ll get back to you soon.');
     }

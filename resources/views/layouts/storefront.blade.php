@@ -15,14 +15,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Steam Store BD — Buy Gift Cards in Bangladesh | bKash Nagad')</title>
     <meta name="description" content="@yield('meta_description', 'Steam Store BD — Bangladesh\'s trusted gift card store. Buy Steam, Google Play, App Store & more with bKash or Nagad. Instant digital delivery to email. 100% genuine codes at best BDT price.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'gift card bangladesh, buy gift card bd, steam gift card bangladesh, google play gift card bangladesh, gift card bkash, gift card nagad, digital gift card bd, steam store bd, gift card buy bangladesh, instant gift card bd, online gift card bangladesh, gift card bd price 2025')">
     <meta name="robots" content="@yield('robots', 'index, follow')">
     <link rel="canonical" href="{{ url()->current() }}">
-
-    {{-- Geo targeting: Bangladesh --}}
-    <meta name="geo.region" content="BD">
-    <meta name="geo.placename" content="Bangladesh">
-    <meta name="language" content="English">
     <meta name="theme-color" content="#2563EB">
 
     {{-- Open Graph --}}
@@ -32,8 +26,6 @@
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:image" content="@yield('og_image', asset('images/hero-image-banner.png'))">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Buy Gift Cards in Bangladesh with bKash')">
     <meta property="og:locale" content="en_US">
 
@@ -46,34 +38,45 @@
 
     {{-- JSON-LD: Organization + WebSite --}}
     @php
+    $_facebookPage = site_setting('messenger_page_username') ?: site_setting('product_chat_messenger_username');
+    $_organization = [
+        '@type'           => 'Organization',
+        '@id'             => url('/') . '/#organization',
+        'name'            => 'Steam Store BD',
+        'alternateName'   => ['Gift Card BD', 'Steam Gift Card BD'],
+        'url'             => url('/'),
+        'logo'            => ['@type' => 'ImageObject', 'url' => asset('images/icons/icon-512.png'), 'width' => 512, 'height' => 512],
+        'description'     => "Bangladesh's trusted digital gift card marketplace. Buy Steam, Google Play, App Store and more gift cards with local mobile wallets. Instant delivery, 100% genuine codes.",
+        'areaServed'      => ['@type' => 'Country', 'name' => 'Bangladesh'],
+        'contactPoint'    => array_filter([
+            '@type'             => 'ContactPoint',
+            'contactType'       => 'customer support',
+            'email'             => site_setting('contact_email') ?: null,
+            'telephone'         => site_setting('contact_whatsapp') ?: null,
+            'availableLanguage' => ['English', 'Bengali'],
+        ]),
+        'hasMerchantReturnPolicy' => [
+            '@type'                => 'MerchantReturnPolicy',
+            'applicableCountry'    => 'BD',
+            'returnPolicyCategory' => 'https://schema.org/MerchantReturnNotPermitted',
+            'merchantReturnLink'   => route('refund-policy'),
+        ],
+    ];
+    if ($_facebookPage) {
+        $_organization['sameAs'] = ['https://www.facebook.com/' . $_facebookPage];
+    }
     $_globalSchema = [
         '@context' => 'https://schema.org',
         '@graph'   => [
+            $_organization,
             [
-                '@type'           => 'Organization',
-                '@id'             => url('/') . '/#organization',
-                'name'            => 'Steam Store BD',
-                'alternateName'   => ['Steam Store BD', 'Gift Card BD', 'Steam Gift Card BD'],
-                'url'             => url('/'),
-                'logo'            => ['@type' => 'ImageObject', 'url' => asset('images/logo.svg'), 'width' => 48, 'height' => 48],
-                'description'     => "Bangladesh's trusted digital gift card marketplace. Buy Steam, Google Play, App Store and more gift cards with bKash or Nagad. Instant delivery, 100% genuine codes.",
-                'areaServed'      => ['@type' => 'Country', 'name' => 'Bangladesh'],
-                'contactPoint'    => ['@type' => 'ContactPoint', 'contactType' => 'customer support', 'availableLanguage' => ['English', 'Bengali']],
-                'sameAs'          => [],
-            ],
-            [
-                '@type'           => 'WebSite',
-                '@id'             => url('/') . '/#website',
-                'url'             => url('/'),
-                'name'            => 'Steam Store BD',
-                'alternateName'   => 'Gift Card BD',
-                'description'     => 'Buy digital gift cards in Bangladesh with bKash or Nagad. Instant code delivery. Best BDT price.',
-                'publisher'       => ['@id' => url('/') . '/#organization'],
-                'potentialAction' => [
-                    '@type'       => 'SearchAction',
-                    'target'      => ['@type' => 'EntryPoint', 'urlTemplate' => url('/') . '/?s={search_term_string}'],
-                    'query-input' => 'required name=search_term_string',
-                ],
+                '@type'         => 'WebSite',
+                '@id'           => url('/') . '/#website',
+                'url'           => url('/'),
+                'name'          => 'Steam Store BD',
+                'alternateName' => 'Gift Card BD',
+                'description'   => 'Buy digital gift cards in Bangladesh with local mobile wallets. Instant code delivery. Best BDT price.',
+                'publisher'     => ['@id' => url('/') . '/#organization'],
             ],
         ],
     ];
@@ -82,8 +85,10 @@
 
     @stack('schema')
 
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="48x48">
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/logo.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/logo.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/icons/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
     {{-- Resource hints: preconnect before any external requests ──────────── --}}
     <link rel="preconnect" href="https://www.googletagmanager.com">
@@ -333,8 +338,8 @@
     {{-- ── Footer ── --}}
     <footer style="background: #071428; border-top: 1px solid rgba(37,99,235,0.12);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div>
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
+                <div class="col-span-2 lg:col-span-1">
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5 mb-4">
                         <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="36" height="36" class="w-9 h-9 flex-shrink-0" style="border-radius:9px;">
                         <div class="leading-tight">
@@ -348,15 +353,35 @@
                         <span class="inline-flex items-center gap-1.5 text-xs text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">🔒 Secure</span>
                     </div>
                 </div>
+                @if(($footerBrands ?? collect())->isNotEmpty())
                 <div>
-                    <h4 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Quick Links</h4>
+                    <h4 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Gift Cards</h4>
                     <ul class="space-y-2.5">
-                        <li><a href="{{ route('home') }}"          class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Home</a></li>
+                        @foreach($footerBrands->take(8) as $footerBrand)
+                        <li><a href="{{ route('brand', $footerBrand->slug) }}" class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ {{ $footerBrand->name }}</a></li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
+                <div>
+                    <h4 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Help</h4>
+                    <ul class="space-y-2.5">
                         <li><a href="{{ route('faq') }}"           class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ FAQ</a></li>
-                        <li><a href="{{ route('contact') }}"       class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Contact</a></li>
+                        <li><a href="{{ route('how-to-redeem') }}" class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ How to Redeem</a></li>
+                        <li><a href="{{ route('orders.lookup') }}" class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Track Your Order</a></li>
+                        <li><a href="{{ route('contact') }}"       class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Contact Us</a></li>
                         @if(site_setting('reseller_program_enabled', false))
                         <li><a href="{{ route('reseller') }}"      class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Become a Reseller</a></li>
                         @endif
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-white mb-4 text-sm uppercase tracking-wider">Company</h4>
+                    <ul class="space-y-2.5">
+                        <li><a href="{{ route('about') }}"          class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ About Us</a></li>
+                        <li><a href="{{ route('refund-policy') }}"  class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Refund Policy</a></li>
+                        <li><a href="{{ route('privacy-policy') }}" class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Privacy Policy</a></li>
+                        <li><a href="{{ route('terms') }}"          class="text-gray-400 hover:text-brand-400 text-sm transition-colors flex items-center gap-1.5">→ Terms of Service</a></li>
                     </ul>
                 </div>
                 <div>
@@ -384,7 +409,7 @@
         </div>
     </footer>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.11/dist/cdn.min.js"></script>
     @stack('scripts')
 
     {{-- ── Floating Chat Buttons ── --}}

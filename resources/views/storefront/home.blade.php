@@ -2,7 +2,6 @@
 
 @section('title', 'Buy Gift Cards in Bangladesh | bKash Payment — Steam Store BD')
 @section('meta_description', 'Steam Store BD — Bangladesh\'s #1 gift card store. Buy Steam, Google Play, App Store & more with bKash. Instant digital delivery. 100% genuine codes at best BDT price.')
-@section('meta_keywords', 'gift card bangladesh, buy gift card bd, steam gift card bd, google play gift card bangladesh, gift card bkash, digital gift card bd, steam store bd, gift card buy bangladesh')
 
 @push('schema')
 @php

@@ -26,13 +26,13 @@
              msUser:   {{ Js::from($chat->messengerUsername()) }},
          })">
 
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row gap-3">
             @if($chat->whatsappEnabled())
             <a href="{{ $chat->whatsappUrl($fallbackMessage) }}"
                x-bind:href="whatsappHref()"
                target="_blank" rel="noopener noreferrer"
                aria-label="Order {{ $name }} on WhatsApp"
-               class="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+               class="sm:flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                style="border-color:#25D366; color:#128C7E; --tw-ring-color:#25D366;"
                onmouseover="this.style.backgroundColor='#F0FFF4';"
                onmouseout="this.style.backgroundColor='transparent';">
@@ -48,7 +48,7 @@
                x-bind:href="messengerHref()"
                target="_blank" rel="noopener noreferrer"
                aria-label="Chat about {{ $name }} on Messenger"
-               class="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+               class="sm:flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl font-bold text-base border-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                style="border-color:#0084FF; color:#0064C8; --tw-ring-color:#0084FF;"
                onmouseover="this.style.backgroundColor='#F0F7FF';"
                onmouseout="this.style.backgroundColor='transparent';">

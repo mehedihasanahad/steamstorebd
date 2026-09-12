@@ -60,7 +60,18 @@ class GiftCard extends Model
 
     public function getStockCountAttribute(): int
     {
+        // Storefront listings load the count up front with withAvailableCodesCount(),
+        // so reading stock there doesn't run a COUNT query on every read.
+        if (array_key_exists('available_codes_count', $this->attributes)) {
+            return (int) $this->attributes['available_codes_count'];
+        }
+
         return $this->codes()->available()->count();
+    }
+
+    public function scopeWithAvailableCodesCount($query)
+    {
+        return $query->withCount(['codes as available_codes_count' => fn ($q) => $q->available()]);
     }
 
     public function scopeActive($query)

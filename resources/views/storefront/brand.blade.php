@@ -1,11 +1,10 @@
 @extends('layouts.storefront')
 
-@section('title', ($mainCategory->seo_title ?: 'Buy ' . $mainCategory->name . ' in Bangladesh | bKash') . ' — Steam Store BD')
-@section('meta_description', $mainCategory->seo_description ?: 'Buy ' . $mainCategory->name . ' in Bangladesh with bKash. Instant code delivery to email. 100% genuine codes at best BDT price. Steam Store BD.')
 @php
-    $_mcName = strtolower($mainCategory->name);
+    $_payWith = $paymentMethodNames ? ' with ' . \Illuminate\Support\Arr::join($paymentMethodNames, ', ', ' or ') : '';
 @endphp
-@section('meta_keywords', $mainCategory->seo_keywords ?: 'buy ' . $_mcName . ' bangladesh, trusted ' . $_mcName . ' bd, ' . $_mcName . ' bkash, ' . $_mcName . ' nagad, ' . $_mcName . ' bd price 2025, genuine ' . $_mcName . ' bangladesh, digital gift card bd, gift card bkash nagad bangladesh')
+@section('title', ($mainCategory->seo_title ?: 'Buy ' . $mainCategory->name . ' in Bangladesh') . ' — Steam Store BD')
+@section('meta_description', $mainCategory->seo_description ?: 'Buy ' . $mainCategory->name . ' in Bangladesh' . $_payWith . '. Instant code delivery to email. 100% genuine codes at the best BDT price.')
 @section('og_type', 'website')
 @section('og_image_alt', 'Buy ' . $mainCategory->name . ' in Bangladesh — Steam Store BD')
 @if($mainCategory->image)
@@ -14,7 +13,6 @@
 
 @push('schema')
 @php
-    $_inStockCount = $categories->sum(fn($cat) => $cat->giftCards->where('stock_count', '>', 0)->count());
     $_pageSchema = [
         '@context' => 'https://schema.org',
         '@graph'   => [
@@ -26,7 +24,6 @@
                 ],
             ],
             [
-                '@context' => 'https://schema.org',
                 '@type'    => 'ItemList',
                 'name'     => $mainCategory->name . ' Bangladesh',
                 'description' => 'Buy ' . $mainCategory->name . ' in Bangladesh with bKash payment',

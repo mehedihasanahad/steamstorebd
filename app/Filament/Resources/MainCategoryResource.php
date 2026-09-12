@@ -64,16 +64,14 @@ class MainCategoryResource extends Resource
                 ->schema([
                     Forms\Components\TextInput::make('seo_title')
                         ->label('SEO Title')
-                        ->placeholder('Buy Steam Gift Cards in Bangladesh | bKash — Steam Store BD')
+                        ->placeholder('Buy Steam Gift Cards in Bangladesh')
+                        ->helperText('Aim for under 45 characters. " — Steam Store BD" is added automatically.')
                         ->maxLength(70),
                     Forms\Components\Textarea::make('seo_description')
                         ->label('Meta Description')
+                        ->helperText('Shown under the title in Google. Aim for 120–160 characters.')
                         ->rows(3)
                         ->maxLength(165),
-                    Forms\Components\Textarea::make('seo_keywords')
-                        ->label('Meta Keywords')
-                        ->rows(3)
-                        ->placeholder('steam gift card bd, buy steam gift card bangladesh, ...'),
                     Forms\Components\RichEditor::make('seo_content')
                         ->label('SEO Content')
                         ->toolbarButtons(['bold', 'italic', 'h2', 'h3', 'bulletList', 'orderedList', 'link'])
