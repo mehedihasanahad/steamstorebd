@@ -1,7 +1,7 @@
 @extends('layouts.storefront')
 
-@section('title', 'Buy Gift Cards in Bangladesh | bKash Payment — Steam Store BD')
-@section('meta_description', 'Steam Store BD — Bangladesh\'s #1 gift card store. Buy Steam, Google Play, App Store & more with bKash. Instant digital delivery. 100% genuine codes at best BDT price.')
+@section('title', 'Buy Gift Cards in Bangladesh with bKash — Steam Store BD')
+@section('meta_description', 'Steam Store BD — Bangladesh\'s #1 gift card store. Buy Steam, Google Play, App Store & more with bKash. Instant delivery, 100% genuine codes.')
 
 @push('schema')
 @php

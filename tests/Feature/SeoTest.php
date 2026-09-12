@@ -221,7 +221,7 @@ describe('product page metadata', function () {
 
         $this->get('/product/steam-wallet')
             ->assertSuccessful()
-            ->assertSee('More Steam Gift Cards')
+            ->assertSee('More from Steam')
             ->assertSee(route('product', 'steam-wallet-tl'), false);
     });
 });

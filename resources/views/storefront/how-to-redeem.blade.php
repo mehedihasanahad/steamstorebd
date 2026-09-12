@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'How to Redeem Steam Gift Card in Bangladesh — Step by Step Guide')
+@section('title', 'How to Redeem a Steam Gift Card — Steam Store BD')
 @section('meta_description', 'Simple step-by-step guide to redeem your Steam gift card code in Bangladesh. Works on PC, Mac, and mobile. Add Steam Wallet funds in under 2 minutes.')
 
 @section('content')

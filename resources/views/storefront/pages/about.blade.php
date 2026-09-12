@@ -6,7 +6,7 @@
 @endphp
 
 @section('title', 'About Us — Steam Store BD')
-@section('meta_description', 'Steam Store BD is an independent digital gift card store in Bangladesh. Learn how we deliver codes, handle faulty cards and support customers who pay with ' . $_payWith . '.')
+@section('meta_description', 'Steam Store BD is an independent gift card store in Bangladesh. See how we deliver codes, replace faulty cards and support our customers.')
 @section('heading', 'About Steam Store BD')
 
 @section('page_content')

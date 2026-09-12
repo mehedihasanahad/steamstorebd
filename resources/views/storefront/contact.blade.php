@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', 'Contact Us — Steam Store BD | Steam Gift Card Bangladesh Support')
+@section('title', 'Contact Us — Steam Store BD')
 @section('meta_description', 'Contact Steam Store BD for help with your Steam gift card order in Bangladesh. Send us a message and get a response within 5–10 minutes.')
 
 @section('content')

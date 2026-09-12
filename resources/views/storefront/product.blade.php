@@ -390,7 +390,7 @@
 
     @if($relatedCategories->isNotEmpty())
     <section class="pb-12" aria-labelledby="related-products-heading">
-        <h2 id="related-products-heading" class="text-base font-black mb-4" style="color:#071428;">More {{ $category->mainCategory->name }} Gift Cards</h2>
+        <h2 id="related-products-heading" class="text-base font-black mb-4" style="color:#071428;">More from {{ $category->mainCategory->name }}</h2>
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             @foreach($relatedCategories as $related)
             <a href="{{ route('product', $related->slug) }}"

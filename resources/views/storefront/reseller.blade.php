@@ -1,8 +1,7 @@
 @extends('layouts.storefront')
 
-@section('title', 'Become a Reseller — ' . site_setting('site_name', 'Steam Store BD') . ' | Wholesale Gift Cards Bangladesh')
-@section('meta_description', 'Join the ' . site_setting('site_name', 'Steam Store BD') . ' reseller program. Wholesale gift card pricing, priority delivery and bulk stock for Facebook page sellers, shops and gaming zones in Bangladesh.')
-@section('meta_keywords', 'gift card reseller bangladesh, wholesale gift card bd, steam gift card reseller, become a reseller bangladesh, bulk gift card bd')
+@section('title', 'Wholesale Gift Card Reseller Program — ' . site_setting('site_name', 'Steam Store BD'))
+@section('meta_description', 'Join the ' . site_setting('site_name', 'Steam Store BD') . ' reseller program: wholesale gift card prices, priority delivery and bulk stock for sellers in Bangladesh.')
 
 @push('styles')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.min.css">

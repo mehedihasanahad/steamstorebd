@@ -1,7 +1,7 @@
 @extends('layouts.storefront')
 
-@section('title', 'FAQ — Gift Cards Bangladesh | How to Buy with bKash & Nagad — Steam Store BD')
-@section('meta_description', 'Frequently asked questions about buying digital gift cards in Bangladesh. How to pay with bKash or Nagad, instant delivery, genuine codes, refund policy, and how to redeem your gift card.')
+@section('title', 'Gift Card FAQ: Payment, Delivery & Refunds — Steam Store BD')
+@section('meta_description', 'Answers to common questions about buying gift cards in Bangladesh: paying with bKash or Nagad, delivery time, genuine codes, refunds and redeeming.')
 
 @push('schema')
 @php
