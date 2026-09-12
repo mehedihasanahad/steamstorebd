@@ -18,6 +18,9 @@
     @vite(['resources/css/storefront.css'])
 </head>
 <body class="antialiased" style="background:#040D1A; min-height:100vh;">
+    <div role="note" style="background:#071428;border-bottom:1px solid rgba(37,99,235,0.2);color:#9BB5D5;font-size:0.8125rem;line-height:1.5;text-align:center;padding:0.625rem 1rem;">
+        This is a Steam Store BD account, not a Steam login. We are an independent gift card store, not affiliated with Valve or Steam, and will never ask for your Steam password.
+    </div>
     {{ $slot }}
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.15.11/dist/cdn.min.js"></script>
 </body>

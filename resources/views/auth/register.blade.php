@@ -14,7 +14,7 @@
                     <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="48" height="48" style="border-radius:12px;flex-shrink:0;">
                     <div>
                         <div style="font-weight:800;font-size:1.25rem;color:#fff;letter-spacing:-0.02em;">Steam Store BD</div>
-                        <div style="font-size:0.75rem;color:#557AA0;">Official Gift Card Marketplace</div>
+                        <div style="font-size:0.75rem;color:#557AA0;">Independent Gift Card Store</div>
                     </div>
                 </a>
             </div>
@@ -24,7 +24,7 @@
                 <span style="background:linear-gradient(90deg,#4B8FEF,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">gamers in Bangladesh</span>
             </h1>
             <p style="color:#7898BB;font-size:0.9375rem;line-height:1.65;max-width:380px;margin-bottom:2.5rem;">
-                Create a free account to buy Steam gift cards, track your orders, and get instant code delivery to your inbox.
+                Create a free account to buy gift cards, track your orders, and get instant code delivery to your inbox.
             </p>
 
             <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:3rem;">

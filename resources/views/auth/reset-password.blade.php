@@ -13,7 +13,7 @@
                     <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="48" height="48" style="border-radius:12px;flex-shrink:0;">
                     <div>
                         <div style="font-weight:800;font-size:1.25rem;color:#fff;letter-spacing:-0.02em;">Steam Store BD</div>
-                        <div style="font-size:0.75rem;color:#557AA0;">Official Gift Card Marketplace</div>
+                        <div style="font-size:0.75rem;color:#557AA0;">Independent Gift Card Store</div>
                     </div>
                 </a>
             </div>

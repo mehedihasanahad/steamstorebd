@@ -13,17 +13,17 @@
                     <img src="{{ asset('images/logo.svg') }}" alt="Steam Store BD" width="48" height="48" style="border-radius:12px;flex-shrink:0;">
                     <div>
                         <div style="font-weight:800;font-size:1.25rem;color:#fff;letter-spacing:-0.02em;">Steam Store BD</div>
-                        <div style="font-size:0.75rem;color:#557AA0;">Official Gift Card Marketplace</div>
+                        <div style="font-size:0.75rem;color:#557AA0;">Independent Gift Card Store</div>
                     </div>
                 </a>
             </div>
 
             <h1 style="font-size:2.25rem;font-weight:800;color:#fff;line-height:1.15;letter-spacing:-0.03em;margin-bottom:1rem;">
-                Your gateway to<br>
-                <span style="background:linear-gradient(90deg,#4B8FEF,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Steam gaming</span>
+                Your gift card store<br>
+                <span style="background:linear-gradient(90deg,#4B8FEF,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">in Bangladesh</span>
             </h1>
             <p style="color:#7898BB;font-size:0.9375rem;line-height:1.65;max-width:380px;margin-bottom:2.5rem;">
-                Instant delivery of Steam gift cards via bKash. Secure, fast and trusted by thousands of gamers in Bangladesh.
+                Buy digital gift cards with bKash and get your code by email. Sign in to see your orders and codes.
             </p>
 
             <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:3rem;">
@@ -57,7 +57,7 @@
 
             <div style="margin-bottom:1.75rem;">
                 <h2 style="font-size:1.625rem;font-weight:800;color:#fff;letter-spacing:-0.025em;margin-bottom:0.375rem;">Welcome back</h2>
-                <p style="color:#557AA0;font-size:0.875rem;">Sign in to your admin account</p>
+                <p style="color:#557AA0;font-size:0.875rem;">Sign in to your Steam Store BD account</p>
             </div>
 
             @if(session('status'))
