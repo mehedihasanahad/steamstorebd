@@ -182,18 +182,22 @@
                 </div>
 
                 {{-- Favourites are for signed-in shoppers; a guest is offered the
-                     sign-in that makes the control mean something. --}}
+                     sign-in that makes the control mean something.
+
+                     Full width below sm so it wraps onto its own line: as a
+                     flex-shrink-0 sibling it took 155px of a 358px row and left
+                     the title a column too narrow to read. --}}
                 @auth
-                    <form method="POST" action="{{ route('favourites.toggle', $category) }}" class="flex-shrink-0">
+                    <form method="POST" action="{{ route('favourites.toggle', $category) }}" class="w-full sm:w-auto sm:flex-shrink-0">
                         @csrf
                         @php $_saved = auth()->user()->hasFavourited($category->id); @endphp
-                        <x-ui.button type="submit" variant="{{ $_saved ? 'outline' : 'secondary' }}" size="sm">
+                        <x-ui.button type="submit" variant="{{ $_saved ? 'outline' : 'secondary' }}" size="sm" class="w-full sm:w-auto">
                             <svg class="h-4 w-4" fill="{{ $_saved ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                             {{ $_saved ? 'Saved' : 'Add to favourite' }}
                         </x-ui.button>
                     </form>
                 @else
-                    <x-ui.button :href="route('login')" variant="secondary" size="sm" class="flex-shrink-0">
+                    <x-ui.button :href="route('login')" variant="secondary" size="sm" class="w-full sm:w-auto sm:flex-shrink-0">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                         Add to favourite
                     </x-ui.button>
@@ -380,7 +384,7 @@
          is where the store is mostly used. --}}
     @if($denominations->isNotEmpty())
         <div x-show="current" x-cloak
-             class="fixed inset-x-0 bottom-0 z-40 border-t border-surface-3 bg-surface-1/97 px-4 py-3 backdrop-blur lg:hidden">
+             class="mobile-buy-bar fixed inset-x-0 bottom-0 z-40 border-t border-surface-3 bg-surface-1/97 px-4 py-3 backdrop-blur lg:hidden">
             <div class="flex items-center gap-3">
                 <div class="min-w-0 flex-1">
                     <p class="truncate text-meta text-ink-low" x-text="current?.name ?? ''"></p>

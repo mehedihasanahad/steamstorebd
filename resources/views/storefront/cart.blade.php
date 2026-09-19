@@ -177,7 +177,7 @@
             </div>
 
             {{-- Mobile totals bar --}}
-            <div class="fixed inset-x-0 bottom-0 z-40 border-t border-surface-3 bg-surface-1/97 px-4 py-3 backdrop-blur lg:hidden">
+            <div class="mobile-buy-bar fixed inset-x-0 bottom-0 z-40 border-t border-surface-3 bg-surface-1/97 px-4 py-3 backdrop-blur lg:hidden">
                 <div class="flex items-center gap-3">
                     <div class="min-w-0 flex-1">
                         <p class="text-meta text-ink-low"><span x-text="selectedCount"></span> item(s) selected</p>

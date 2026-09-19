@@ -370,7 +370,7 @@
 @endphp
 
 @if($waOn && $waNum || $msOn && $msUser)
-<div class="fixed bottom-5 right-4 z-[70] flex flex-col items-end gap-3">
+<div class="chat-float-dock fixed bottom-5 right-4 z-[70] flex flex-col items-end gap-3">
     @if($msOn && $msUser)
     <div x-data="{ tip: false }" class="relative">
         <div x-show="tip" x-cloak class="chat-tip">Chat on Messenger</div>

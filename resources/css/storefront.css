@@ -194,6 +194,14 @@ body {
     transition: transform 0.2s ease;
 }
 .chat-float-btn:hover { transform: scale(1.06); }
+
+/* A page with a sticky purchase bar has 68px of Buy button along the bottom
+   edge, and the dock would sit on top of it. Lift the dock clear on those
+   pages only -- everywhere else it belongs in the corner. Browsers without
+   :has() simply keep the corner position, which is where it was before. */
+@media (max-width: 1023px) {
+    body:has(.mobile-buy-bar) .chat-float-dock { bottom: calc(1.25rem + 4.5rem); }
+}
 .wa-float { background: #25D366; }
 .ms-float { background: #0099FF; }
 .chat-tip {
