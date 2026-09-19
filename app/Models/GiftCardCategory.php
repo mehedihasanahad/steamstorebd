@@ -17,6 +17,8 @@ class GiftCardCategory extends Model
         'region_group',
         'description',
         'long_description',
+        'instructions',
+        'faq',
         'buyer_input_fields',
         'seo_title',
         'seo_description',
@@ -36,6 +38,7 @@ class GiftCardCategory extends Model
             'is_featured'        => 'boolean',
             'featured_sort'      => 'integer',
             'buyer_input_fields' => 'array',
+            'faq'                => 'array',
             'sort_order'       => 'integer',
             'main_category_id' => 'integer',
         ];
@@ -106,6 +109,46 @@ class GiftCardCategory extends Model
             ->where('is_active', true)
             ->orderBy('featured_sort')
             ->orderBy('name');
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
+     * Redemption steps for this product, falling back to the brand's.
+     * Products that write nothing inherit what the brand already says.
+     */
+    public function redemptionInstructions(): ?string
+    {
+        return filled($this->instructions)
+            ? $this->instructions
+            : $this->mainCategory?->how_to_redeem;
+    }
+
+    /** @return array<int, array{question: string, answer: string}> */
+    public function faqEntries(): array
+    {
+        return $this->faq ?? [];
+    }
+
+    /**
+     * Mean approved rating, or NULL when nobody has rated this product.
+     *
+     * Null rather than zero on purpose: the page hides its rating block
+     * entirely instead of advertising "0/5" on a product nobody has reviewed.
+     */
+    public function averageRating(): ?float
+    {
+        $average = $this->reviews()->approved()->avg('rating');
+
+        return $average === null ? null : round((float) $average, 1);
+    }
+
+    public function reviewCount(): int
+    {
+        return $this->reviews()->approved()->count();
     }
 
     public function giftCards(): HasMany

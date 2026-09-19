@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Review;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,7 @@ class ReviewController extends Controller
         Review::create([
             'user_id'              => auth()->id(),
             'order_id'             => $order->id,
+            'gift_card_category_id' => $this->reviewedProductId($order),
             'reviewer_name'        => auth()->user()->name,
             'rating'               => $data['rating'],
             'comment'              => $data['comment'],
@@ -43,5 +45,24 @@ class ReviewController extends Controller
         ]);
 
         return back()->with('success', 'Thank you for your review! It will appear after approval.');
+    }
+
+    /**
+     * Which product this review is about.
+     *
+     * Only attributed when the order bought exactly one product: a review of a
+     * mixed basket says nothing specific about any single product, so guessing
+     * would put words in the customer's mouth on a page they never rated.
+     */
+    private function reviewedProductId(Order $order): ?int
+    {
+        $productIds = $order->items()
+            ->with('giftCard:id,category_id')
+            ->get()
+            ->pluck('giftCard.category_id')
+            ->filter()
+            ->unique();
+
+        return $productIds->count() === 1 ? (int) $productIds->first() : null;
     }
 }

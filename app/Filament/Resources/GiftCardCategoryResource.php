@@ -74,6 +74,29 @@ class GiftCardCategoryResource extends Resource
                 ->label('Featured order')
                 ->helperText('Lower numbers appear first in the Featured rail.'),
 
+            Forms\Components\Section::make('Product Content')
+                ->description('The Instructions and FAQ tabs on the product page.')
+                ->schema([
+                    Forms\Components\RichEditor::make('instructions')
+                        ->label('Instructions')
+                        ->helperText("Leave blank to inherit the brand's How to Redeem steps.")
+                        ->toolbarButtons(['bold', 'italic', 'h3', 'bulletList', 'orderedList', 'link'])
+                        ->columnSpanFull(),
+                    Forms\Components\Repeater::make('faq')
+                        ->label('FAQ')
+                        ->schema([
+                            Forms\Components\TextInput::make('question')->required()->maxLength(255),
+                            Forms\Components\Textarea::make('answer')->required()->rows(3),
+                        ])
+                        ->defaultItems(0)
+                        ->addActionLabel('Add a question')
+                        ->collapsed()
+                        ->itemLabel(fn (array $state): ?string => $state['question'] ?? null)
+                        ->columnSpanFull(),
+                ])
+                ->columnSpanFull()
+                ->collapsed(),
+
             Forms\Components\Section::make('Buyer Inputs')
                 ->description('Details the buyer must supply before this product can be fulfilled — a Player ID for a top-up, an account e-mail for a subscription. Leave empty for gift cards.')
                 ->schema([

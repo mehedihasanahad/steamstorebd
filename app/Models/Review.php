@@ -10,6 +10,7 @@ class Review extends Model
     protected $fillable = [
         'user_id',
         'order_id',
+        'gift_card_category_id',
         'reviewer_name',
         'rating',
         'comment',
@@ -38,6 +39,15 @@ class Review extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class)->withDefault();
+    }
+
+    /**
+     * The product this review was left for. Null on every review written
+     * before reviews could be attributed to a product.
+     */
+    public function giftCardCategory(): BelongsTo
+    {
+        return $this->belongsTo(GiftCardCategory::class);
     }
 
     public function scopeApproved($query)
