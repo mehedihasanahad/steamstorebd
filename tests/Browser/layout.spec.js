@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAlpine, gotoStable, addToCart } from './helpers.js';
+import { waitForAlpine, gotoStable, addToCart, expectMenuOnScreen } from './helpers.js';
 
 /**
  * The reference layout, written down as facts a browser can check.
@@ -309,5 +309,28 @@ test.describe('cart — reference layout', () => {
         await gotoStable(page, '/cart');
 
         await expect(shown()).toHaveText('2');
+    });
+});
+
+test.describe('dropdowns open on screen, not off the side', () => {
+    test('the region filter', async ({ page }) => {
+        await gotoStable(page, '/category/gift-cards');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'region-filter-menu');
+    });
+
+    test('the sort menu', async ({ page }) => {
+        await gotoStable(page, '/category/gift-cards');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'sort-menu');
+    });
+
+    test('the product region switcher', async ({ page }) => {
+        await gotoStable(page, '/product/steam-wallet-hkd');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'region-switcher-menu');
     });
 });

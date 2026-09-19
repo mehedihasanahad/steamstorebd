@@ -175,3 +175,31 @@ export async function addToCart(page, productPath = '/product/steam-wallet-hkd',
     await expect(page.getByText('Added to cart!')).toBeVisible();
     await page.waitForLoadState('domcontentloaded');
 }
+
+/**
+ * Open a dropdown by the id its trigger points at, and prove it landed on
+ * screen.
+ *
+ * An absolutely-positioned menu anchors to one edge of its trigger, and which
+ * edge is right depends on where that trigger sits at this width -- a panel
+ * anchored to the right of a trigger that has wrapped to the left of the row
+ * hangs off the side of the phone. Nothing else catches it: an element at a
+ * negative x is invisible without widening the page, so the horizontal
+ * overflow check sees nothing wrong.
+ */
+export async function expectMenuOnScreen(page, menu) {
+    await page.locator(`[aria-controls="${menu}"]`).click();
+
+    const panel = page.locator(`#${menu}`);
+
+    await expect(panel).toBeVisible();
+
+    const box = await panel.boundingBox();
+    const viewport = page.viewportSize();
+
+    expect(box.x, `#${menu} runs off the left edge`).toBeGreaterThanOrEqual(0);
+    expect(
+        box.x + box.width,
+        `#${menu} runs off the right edge`,
+    ).toBeLessThanOrEqual(viewport.width);
+}

@@ -146,13 +146,15 @@
                         @if($regionalSiblings->isNotEmpty())
                             <div x-data="{ open: false }" class="relative" @click.outside="open = false" @keydown.escape="open = false">
                                 <button @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                                        aria-controls="region-switcher-menu"
                                         class="flex min-h-[32px] items-center gap-1.5 rounded-chip border border-surface-3 bg-surface-2 px-2.5 text-caption font-medium text-ink-hi transition-colors hover:border-accent/50">
                                     <span aria-hidden="true">{{ $category->regionFlag() ?: '🌐' }}</span>
                                     <span>{{ $category->regionName() ?: 'Choose region' }}</span>
                                     <svg class="h-3 w-3 text-ink-low transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
 
-                                <div x-show="open" x-cloak class="absolute left-0 z-30 mt-2 w-56 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
+                                <div id="region-switcher-menu" x-show="open" x-cloak
+                                     class="absolute left-0 z-30 mt-2 w-56 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
                                     <span class="flex items-center gap-2 rounded-control bg-accent/15 px-3 py-2 text-caption font-semibold text-accent-hover">
                                         <span aria-hidden="true">{{ $category->regionFlag() ?: '🌐' }}</span>
                                         {{ $category->regionName() ?: $category->name }}

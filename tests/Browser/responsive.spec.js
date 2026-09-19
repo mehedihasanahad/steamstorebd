@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAlpine, gotoStable } from './helpers.js';
+import { waitForAlpine, gotoStable, expectMenuOnScreen } from './helpers.js';
 
 /**
  * What a phone gets that a desktop does not, and vice versa.
@@ -75,5 +75,28 @@ test.describe('the catalog listing on a phone', () => {
 
         // Opening it exposes the phone's copy, and only the phone's copy.
         await expect(categories).toHaveCount(1);
+    });
+});
+
+test.describe('dropdowns open on screen, not off the side', () => {
+    test('the region filter', async ({ page }) => {
+        await gotoStable(page, '/category/gift-cards');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'region-filter-menu');
+    });
+
+    test('the sort menu', async ({ page }) => {
+        await gotoStable(page, '/category/gift-cards');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'sort-menu');
+    });
+
+    test('the product region switcher', async ({ page }) => {
+        await gotoStable(page, '/product/steam-wallet-hkd');
+        await waitForAlpine(page);
+
+        await expectMenuOnScreen(page, 'region-switcher-menu');
     });
 });

@@ -146,12 +146,17 @@
                         @if(! empty($regionFilters))
                             <div x-data="{ open: false }" class="relative" @click.outside="open = false" @keydown.escape="open = false">
                                 <button @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                                        aria-controls="region-filter-menu"
                                         class="flex min-h-[40px] items-center gap-2 rounded-control border border-surface-3 bg-surface-2 px-3 text-caption font-medium text-ink-hi transition-colors hover:border-accent/50">
                                     <span>{{ $activeRegion ? \App\Support\Region::label($activeRegion) : '🌐 All' }}</span>
                                     <svg class="h-3 w-3 text-ink-low" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
 
-                                <div x-show="open" x-cloak class="absolute right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
+                                {{-- Anchored to whichever edge keeps it on screen: below md the
+                                     filter row wraps onto its own line and sits at the left, so a
+                                     right-anchored panel would hang off the side of the phone. --}}
+                                <div id="region-filter-menu" x-show="open" x-cloak
+                                     class="absolute left-0 md:left-auto md:right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
                                     <a href="{{ request()->fullUrlWithQuery(['region' => null, 'page' => null]) }}"
                                        class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeRegion ? 'text-ink-mid' : 'font-semibold text-accent-hover' }}">🌐 All regions</a>
                                     @foreach($regionFilters as $regionOption)
@@ -167,12 +172,14 @@
 
                         <div x-data="{ open: false }" class="relative" @click.outside="open = false" @keydown.escape="open = false">
                             <button @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                                    aria-controls="sort-menu"
                                     class="flex min-h-[40px] items-center gap-2 rounded-control border border-surface-3 bg-surface-2 px-3 text-caption font-medium text-ink-hi transition-colors hover:border-accent/50">
                                 <span>{{ \App\Services\CatalogBrowser::SORTS[$activeSort] }}</span>
                                 <svg class="h-3 w-3 text-ink-low" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                             </button>
 
-                            <div x-show="open" x-cloak class="absolute right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
+                            <div id="sort-menu" x-show="open" x-cloak
+                                 class="absolute left-0 md:left-auto md:right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
                                 @foreach(\App\Services\CatalogBrowser::SORTS as $key => $label)
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => $key, 'page' => null]) }}"
                                        class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeSort === $key ? 'font-semibold text-accent-hover' : 'text-ink-mid' }}">{{ $label }}</a>
