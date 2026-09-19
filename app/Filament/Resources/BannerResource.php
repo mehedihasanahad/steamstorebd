@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BannerResource\Pages;
 use App\Models\Banner;
+use App\Rules\ImageAspectRatio;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -43,21 +44,28 @@ class BannerResource extends Resource
                         ->placeholder('https://steamstorebd.com/category/gift-cards')
                         ->helperText('Leave blank to make the slide unclickable.'),
                     Forms\Components\FileUpload::make('image')
-                        ->label('Desktop image (16:5, e.g. 1600×500)')
+                        ->label('Desktop image')
                         ->image()
                         ->required()
                         ->disk('public')
                         ->directory('images/banners')
                         ->maxSize(5120)
-                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['16:5'])
+                        ->rules([new ImageAspectRatio(16, 5, 1600)])
+                        ->helperText('16:5 — 1600×500 or larger. Wrong shape? Upload it anyway and crop with the pencil.'),
                     Forms\Components\FileUpload::make('mobile_image')
-                        ->label('Mobile image (4:3, optional)')
+                        ->label('Mobile image')
                         ->image()
                         ->disk('public')
                         ->directory('images/banners')
                         ->maxSize(5120)
                         ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
-                        ->helperText('Falls back to the desktop image when empty.'),
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['4:3'])
+                        ->rules([new ImageAspectRatio(4, 3, 800)])
+                        ->helperText('4:3 — 800×600 or larger. Optional; without it a phone shows the desktop slide uncropped.'),
                     Forms\Components\TextInput::make('alt_text')
                         ->label('Alt text')
                         ->maxLength(255)
