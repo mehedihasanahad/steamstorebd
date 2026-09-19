@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\StorefrontCatalog;
+use App\Support\Region;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,6 +13,8 @@ class GiftCardCategory extends Model
     protected $fillable = [
         'name',
         'slug',
+        'region',
+        'region_group',
         'description',
         'long_description',
         'buyer_input_fields',
@@ -53,6 +56,43 @@ class GiftCardCategory extends Model
     public function needsBuyerInput(): bool
     {
         return $this->buyerInputSchema() !== [];
+    }
+
+    /**
+     * The same product in other regions — Steam Wallet USA and Turkey when
+     * this one is Hong Kong. Empty when the product declares no region group,
+     * so the page simply renders no switcher.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     */
+    public function regionalSiblings(): \Illuminate\Database\Eloquent\Collection
+    {
+        if (blank($this->region_group)) {
+            return self::newCollection([]);
+        }
+
+        return self::query()
+            ->where('region_group', $this->region_group)
+            ->whereKeyNot($this->getKey())
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function hasRegionalSiblings(): bool
+    {
+        return filled($this->region_group) && $this->regionalSiblings()->isNotEmpty();
+    }
+
+    public function regionName(): ?string
+    {
+        return Region::name($this->region);
+    }
+
+    public function regionFlag(): ?string
+    {
+        return Region::flag($this->region);
     }
 
     public function giftCards(): HasMany

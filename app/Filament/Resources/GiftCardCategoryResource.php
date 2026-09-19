@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiftCardCategoryResource\Pages;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
+use App\Support\Region;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -36,6 +37,18 @@ class GiftCardCategoryResource extends Resource
                 ->required()
                 ->unique(ignoreRecord: true)
                 ->helperText('Changing the slug is safe: the old /product URL redirects to the new one.'),
+            Forms\Components\Select::make('region')
+                ->label('Region')
+                ->options(Region::options())
+                ->searchable()
+                ->nullable()
+                ->placeholder('— No region —')
+                ->helperText('Where this product can be redeemed. Shown as a flag on product cards.'),
+            Forms\Components\TextInput::make('region_group')
+                ->label('Region Group')
+                ->maxLength(255)
+                ->placeholder('steam-wallet')
+                ->helperText("Products sharing this key appear in each other's region switcher. Leave blank if this product has no regional variants."),
             Forms\Components\Textarea::make('description')->rows(3),
             Forms\Components\RichEditor::make('long_description')
                 ->label('Long Description (shown on product page)')
@@ -127,11 +140,21 @@ class GiftCardCategoryResource extends Resource
                     ->placeholder('—'),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('slug')->color('gray'),
+                Tables\Columns\TextColumn::make('region')
+                    ->label('Region')
+                    ->formatStateUsing(fn (?string $state) => Region::label($state) ?? '—')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('giftCards.id')->label('Cards')->counts('giftCards'),
                 Tables\Columns\TextColumn::make('sort_order')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->defaultSort('sort_order')
+            ->filters([
+                Tables\Filters\SelectFilter::make('region')->options(Region::options()),
+                Tables\Filters\SelectFilter::make('main_category_id')
+                    ->label('Brand')
+                    ->options(fn () => MainCategory::orderBy('sort_order')->pluck('name', 'id')),
+            ])
             ->actions([Tables\Actions\EditAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
