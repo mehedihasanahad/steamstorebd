@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CatalogSection;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
 use App\Services\ResellerProgram;
@@ -19,6 +20,20 @@ class SitemapController extends Controller
         $productUrls = $products->map(fn (GiftCardCategory $category) => [
             'loc'     => route('product', $category->slug),
             'lastmod' => $this->productLastModified($category),
+        ]);
+
+        // Section pages are only advertised when they actually have something
+        // to sell, for the same reason a hidden product is left out: never
+        // point a crawler at a page a shopper would find empty.
+        $sectionUrls = $catalog->sectionsWithBrands()->map(fn (CatalogSection $section) => [
+            'loc'     => route('category', $section->slug),
+            'lastmod' => $this->latest([
+                $section->updated_at,
+                ...$section->mainCategories
+                    ->flatMap(fn (MainCategory $brand) => $brand->giftCardCategories)
+                    ->map(fn (GiftCardCategory $category) => $this->productLastModified($category))
+                    ->all(),
+            ]),
         ]);
 
         $brandUrls = $brands->map(fn (MainCategory $brand) => [
@@ -44,7 +59,7 @@ class SitemapController extends Controller
             $pages[] = ['loc' => route('reseller'), 'lastmod' => null];
         }
 
-        $urls = collect($pages)->concat($brandUrls)->concat($productUrls);
+        $urls = collect($pages)->concat($sectionUrls)->concat($brandUrls)->concat($productUrls);
 
         return response()
             ->view('sitemap', compact('urls'))

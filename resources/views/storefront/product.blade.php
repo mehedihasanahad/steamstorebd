@@ -10,7 +10,22 @@
         ?: 'Buy ' . $category->name . ' in Bangladesh' . $_payWith . '. Instant code delivery to email.'
             . ($_lowestPrice ? ' Prices from ৳' . number_format((float) $_lowestPrice) . '.' : '')
             . ' 100% genuine codes.';
+
+    // The delivery promise a shopper can actually rely on: instant only while
+    // something is in stock and delivered from the code pool.
+    $_deliveryLabel = $_inStock->isEmpty()
+        ? 'Restocking'
+        : ($_inStock->first()->usesCodePool()
+            ? ($_inStock->first()->delivery_eta_label ?: 'Instant delivery')
+            : ($_inStock->first()->delivery_eta_label ?: 'Manual delivery'));
+
+    $_tabs = array_filter([
+        'description'  => ($category->long_description || $category->description) ? 'Description' : null,
+        'instructions' => $category->redemptionInstructions() ? 'Instructions' : null,
+        'faq'          => $category->faqEntries() ? 'FAQ' : null,
+    ]);
 @endphp
+
 @section('title', ($category->seo_title ?: 'Buy ' . $category->name . ' in Bangladesh') . ' — Steam Store BD')
 @section('meta_description', $_description)
 @section('og_type', 'product')
@@ -31,6 +46,13 @@
     if ($_imageUrl) {
         $_productSchema['image'] = $_imageUrl;
     }
+    if ($averageRating !== null && $reviewCount > 0) {
+        $_productSchema['aggregateRating'] = [
+            '@type'       => 'AggregateRating',
+            'ratingValue' => (string) $averageRating,
+            'reviewCount' => $reviewCount,
+        ];
+    }
     if ($denominations->isNotEmpty()) {
         $_productSchema['offers'] = [
             '@type'         => 'AggregateOffer',
@@ -44,408 +66,389 @@
     }
 
     $_breadcrumbs = [['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => url('/')]];
+    if ($category->mainCategory?->catalogSection) {
+        $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => 2, 'name' => $category->mainCategory->catalogSection->name, 'item' => route('category', $category->mainCategory->catalogSection->slug)];
+    }
     if ($category->mainCategory) {
-        $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => 2, 'name' => $category->mainCategory->name, 'item' => route('brand', $category->mainCategory->slug)];
+        $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => count($_breadcrumbs) + 1, 'name' => $category->mainCategory->name, 'item' => route('brand', $category->mainCategory->slug)];
     }
     $_breadcrumbs[] = ['@type' => 'ListItem', 'position' => count($_breadcrumbs) + 1, 'name' => $category->name, 'item' => route('product', $category->slug)];
 
-    $_pageSchema = [
-        '@context' => 'https://schema.org',
-        '@graph'   => [
-            ['@type' => 'BreadcrumbList', 'itemListElement' => $_breadcrumbs],
-            $_productSchema,
-        ],
+    $_graph = [
+        ['@type' => 'BreadcrumbList', 'itemListElement' => $_breadcrumbs],
+        $_productSchema,
     ];
+
+    if ($category->faqEntries()) {
+        $_graph[] = [
+            '@type'      => 'FAQPage',
+            'mainEntity' => collect($category->faqEntries())->map(fn ($entry) => [
+                '@type'          => 'Question',
+                'name'           => $entry['question'] ?? '',
+                'acceptedAnswer' => ['@type' => 'Answer', 'text' => $entry['answer'] ?? ''],
+            ])->all(),
+        ];
+    }
+
+    $_pageSchema = ['@context' => 'https://schema.org', '@graph' => $_graph];
 @endphp
 <script type="application/ld+json">{!! json_encode($_pageSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 @endpush
 
 @section('content')
 
-{{-- Breadcrumb --}}
-<div style="background:#F8FAFF; border-bottom:1px solid #E8EEF8;">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <nav class="flex items-center gap-2 text-sm text-gray-400">
-            <a href="{{ route('home') }}" class="hover:text-brand-500 transition-colors">Home</a>
-            @if($category->mainCategory)
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a href="{{ route('brand', $category->mainCategory->slug) }}" class="hover:text-brand-500 transition-colors">{{ $category->mainCategory->name }}</a>
-            @endif
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="font-medium" style="color:#0E1F35;">{{ $category->name }}</span>
-        </nav>
-    </div>
-</div>
+@php
+    // Everything the purchase panel needs about each denomination, resolved
+    // once here so the panel never re-derives a price or a cap in the browser.
+    $_cards = $denominations->values()->map(fn ($card) => [
+        'id'    => $card->id,
+        'name'  => $card->name,
+        'price' => (float) $card->price_bdt,
+        'stock' => $card->stock_count,
+        'min'   => max(1, $card->min_quantity),
+        'max'   => $card->maxOrderableQuantity(),
+        'eta'   => $card->delivery_eta_label,
+    ]);
+    $_firstInStock = $denominations->values()->search(fn ($card) => $card->stock_count > 0);
+@endphp
 
-<div style="background:#F8FAFF; min-height:calc(100vh - 64px);">
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-0">
+<div x-data="productPage(@js($_cards), @js($_firstInStock === false ? null : $_firstInStock))">
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+    {{-- ══ Hero ══ --}}
+    <div class="border-b border-surface-3 bg-surface-1">
+        <div class="mx-auto max-w-shell px-4 py-5 sm:px-6 lg:px-8">
 
-        {{-- Left: Product Visual --}}
-        <div class="lg:col-span-2">
-            <div class="rounded-3xl overflow-hidden" style="background:linear-gradient(135deg,#071428 0%,#0D2040 100%); border:1px solid rgba(37,99,235,0.2); box-shadow:0 20px 60px rgba(7,20,40,0.18);">
-                @if($category->image)
-                <div class="relative w-full h-auto max-h-96 overflow-hidden flex items-center justify-center" style="background:linear-gradient(135deg,#071428 0%,#0D2040 100%);">
-                    <img src="{{ Storage::disk('public')->url($category->image) }}" 
-                         alt="{{ $category->name }}" 
-                         class="w-full h-full object-contain" 
-                         style="max-height:400px;">
-                </div>
-                @else
-                <div class="relative h-52 flex items-center justify-center overflow-hidden">
-                    <div class="absolute inset-0 opacity-20" style="background:radial-gradient(circle at 30% 50%,#2563EB 0%,transparent 65%);"></div>
-                    <div class="relative text-center">
-                        <div class="text-6xl mb-2">🎮</div>
-                        <div class="text-white font-black text-xl tracking-[0.2em]">STEAM</div>
-                        <div class="text-brand-400 text-sm font-medium mt-1">Gift Card</div>
-                    </div>
-                    <div class="absolute top-0 right-0 w-32 h-32 opacity-5" style="background:radial-gradient(circle,#fff 0%,transparent 70%);"></div>
-                </div>
-                @endif
+            <x-catalog.breadcrumbs class="mb-4" :items="array_values(array_filter([
+                ['label' => 'Home', 'url' => route('home')],
+                $category->mainCategory?->catalogSection ? ['label' => $category->mainCategory->catalogSection->name, 'url' => route('category', $category->mainCategory->catalogSection->slug)] : null,
+                $category->mainCategory ? ['label' => $category->mainCategory->name, 'url' => route('brand', $category->mainCategory->slug)] : null,
+                ['label' => $category->name, 'url' => null],
+            ]))" />
 
-            </div>
+            <div class="flex flex-wrap items-start gap-4">
+                <x-catalog.artwork :image="$_image" :name="$category->name" ratio="aspect-square" eager
+                                   class="w-16 flex-shrink-0 rounded-card border border-surface-3 md:w-20" :width="80" :height="80" />
 
-            {{-- Trust badges --}}
-            <div class="mt-5 grid grid-cols-3 gap-3">
-                @foreach([['⚡','Instant'],['🔒','Secure'],['✅','Genuine']] as [$icon,$label])
-                <div class="text-center bg-white rounded-xl py-3 border border-gray-100" style="box-shadow:0 1px 4px rgba(7,20,40,0.06);">
-                    <div class="text-lg">{{ $icon }}</div>
-                    <div class="text-xs text-gray-500 mt-1 font-medium">{{ $label }}</div>
-                </div>
-                @endforeach
-            </div>
-        </div>
+                <div class="min-w-0 flex-1">
+                    <h1 class="text-title md:text-display font-extrabold text-ink-hi">{{ $category->name }}</h1>
 
-        {{-- Right: Buy Panel --}}
-        <div class="lg:col-span-3"
-             x-data
-             x-init="
-                $store.product.denominations = @js($denominations->map(fn($d) => [
-                    'id'    => $d->id,
-                    'denom' => format_card_denomination($d->denomination, $d->denomination_currency),
-                    'bdt'   => number_format($d->denomination_bdt, 0) . ' BDT',
-                    'price' => $d->price_bdt,
-                    'stock' => $d->stock_count,
-                    'slug'  => $d->slug,
-                ]));
-                $store.product.selected = null;
-                $store.product.qty = 1;
-             ">
+                    <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <x-catalog.rating :rating="$averageRating" :count="$reviewCount" />
 
-            <div class="bg-white rounded-3xl p-7" style="box-shadow:0 4px 24px rgba(7,20,40,0.08); border:1px solid #E8EEF8;">
+                        <span class="inline-flex items-center gap-1.5 text-caption font-medium {{ $_inStock->isNotEmpty() ? 'text-success' : 'text-warning' }}">
+                            <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+                            {{ $_deliveryLabel }}
+                        </span>
 
-                <h1 class="text-2xl font-bold mb-1" style="color:#071428;">{{ $category->name }}</h1>
-                @if($category->description)
-                <p class="text-gray-500 text-sm mb-6 leading-relaxed">{{ $category->description }}</p>
-                @else
-                <p class="text-gray-500 text-sm mb-6 leading-relaxed">Add funds to your Steam Wallet instantly. Valid worldwide on Steam platform.</p>
-                @endif
+                        {{-- Region switcher: the same product in another region is a
+                             separate row, so this moves between pages rather than
+                             filtering this one. --}}
+                        @if($regionalSiblings->isNotEmpty())
+                            <div x-data="{ open: false }" class="relative" @click.outside="open = false" @keydown.escape="open = false">
+                                <button @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                                        class="flex min-h-[32px] items-center gap-1.5 rounded-chip border border-surface-3 bg-surface-2 px-2.5 text-caption font-medium text-ink-hi transition-colors hover:border-accent/50">
+                                    <span aria-hidden="true">{{ $category->regionFlag() ?: '🌐' }}</span>
+                                    <span>{{ $category->regionName() ?: 'Choose region' }}</span>
+                                    <svg class="h-3 w-3 text-ink-low transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </button>
 
-                {{-- Select Amount --}}
-                <div class="mb-6">
-                    <label class="block text-sm font-semibold mb-3" style="color:#071428;">Select Amount</label>
-
-                    @if($denominations->isEmpty())
-                    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
-                        <p class="text-red-500 text-sm font-medium">Currently out of stock. Check back soon.</p>
-                    </div>
-                    @else
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        @foreach($denominations as $index => $denom)
-                        <button
-                            type="button"
-                            @click="$store.product.selected = {{ $index }}; $store.product.qty = 1;"
-                            :class="$store.product.selected === {{ $index }}
-                                ? 'border-brand-500 bg-blue-50 ring-2 ring-brand-500/20'
-                                : 'border-gray-200 bg-white hover:border-brand-400 hover:bg-blue-50/50'"
-                            class="relative text-left p-3.5 rounded-2xl border-2 transition-all duration-150 cursor-pointer"
-                            {{ $denom->stock_count === 0 ? 'disabled' : '' }}
-                            style="{{ $denom->stock_count === 0 ? 'opacity:0.45;cursor:not-allowed;' : '' }}"
-                        >
-                            <div class="font-bold text-sm" style="color:#071428;">{{ format_card_denomination($denom->denomination, $denom->denomination_currency) }}</div>
-                            <div class="text-brand-500 font-semibold text-sm mt-0.5">৳ {{ number_format($denom->price_bdt, 0) }}</div>
-                            @if($denom->stock_count === 0)
-                            <div class="text-xs text-red-400 mt-1">Out of stock</div>
-                            @else
-                            <div class="text-xs text-green-500 mt-1">In stock</div>
-                            @endif
-                            <div x-show="$store.product.selected === {{ $index }}" class="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center" style="background:#2563EB;">
-                                <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                <div x-show="open" x-cloak class="absolute left-0 z-30 mt-2 w-56 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
+                                    <span class="flex items-center gap-2 rounded-control bg-accent/15 px-3 py-2 text-caption font-semibold text-accent-hover">
+                                        <span aria-hidden="true">{{ $category->regionFlag() ?: '🌐' }}</span>
+                                        {{ $category->regionName() ?: $category->name }}
+                                    </span>
+                                    @foreach($regionalSiblings as $sibling)
+                                        <a href="{{ route('product', $sibling->slug) }}"
+                                           class="flex items-center gap-2 rounded-control px-3 py-2 text-caption text-ink-mid transition-colors hover:bg-surface-2 hover:text-ink-hi">
+                                            <span aria-hidden="true">{{ $sibling->regionFlag() ?: '🌐' }}</span>
+                                            <span class="truncate">{{ $sibling->regionName() ?: $sibling->name }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
                             </div>
-                        </button>
-                        @endforeach
+                        @elseif($category->regionName())
+                            <x-catalog.region-chip :region="$category->region" />
+                        @endif
                     </div>
+
+                    @if($category->description)
+                        <p class="mt-3 flex items-start gap-2 text-caption leading-relaxed text-ink-mid">
+                            <svg class="mt-0.5 h-4 w-4 flex-shrink-0 text-ink-low" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span><strong class="text-ink-hi">Important note:</strong> {{ $category->description }}</span>
+                        </p>
                     @endif
                 </div>
 
-                {{-- Quantity + Stock --}}
-                <div x-show="$store.product.selected !== null" x-cloak class="mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="text-sm font-semibold" style="color:#071428;">Quantity</label>
-                        <span class="text-xs font-medium px-2.5 py-1 rounded-full" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0;"
-                              x-text="$store.product.current ? $store.product.current.stock + ' available' : ''"></span>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <div class="flex items-center gap-0 rounded-2xl border-2 border-gray-200 overflow-hidden">
-                            <button type="button"
-                                @click="if ($store.product.qty > 1) $store.product.qty--"
-                                :disabled="$store.product.qty <= 1"
-                                class="w-11 h-11 flex items-center justify-center font-bold text-lg text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                                −
-                            </button>
-                            <span class="w-12 text-center font-bold text-base border-x border-gray-200 py-2.5" style="color:#071428;" x-text="$store.product.qty"></span>
-                            <button type="button"
-                                @click="if ($store.product.current && $store.product.qty < $store.product.current.stock) $store.product.qty++"
-                                :disabled="!$store.product.current || $store.product.qty >= $store.product.current.stock"
-                                class="w-11 h-11 flex items-center justify-center font-bold text-lg text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                                +
-                            </button>
-                        </div>
-                        <span class="text-xs text-gray-400" x-show="$store.product.current && $store.product.qty >= $store.product.current.stock">
-                            Max available
-                        </span>
-                    </div>
-                </div>
-
-                {{-- Price Summary --}}
-                <div x-show="$store.product.selected !== null" x-cloak class="mb-6 rounded-2xl p-4" style="background:#F0F5FF; border:1px solid #DBEAFE;">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Total to pay</div>
-                            <div class="text-2xl font-black mt-0.5" style="color:#071428;"
-                                 x-text="'৳ ' + Number(($store.product.current?.price ?? 0) * $store.product.qty).toLocaleString()"></div>
-                            <div class="text-xs text-gray-400 mt-0.5" x-show="$store.product.qty > 1"
-                                 x-text="'৳ ' + Number($store.product.current?.price ?? 0).toLocaleString() + ' × ' + $store.product.qty"></div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xs text-gray-500 font-medium uppercase tracking-wider">Card value</div>
-                            <div class="text-sm font-bold text-brand-500 mt-0.5" x-text="$store.product.current?.denom ?? ''"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Delivery Method --}}
-                <div class="mb-5 rounded-2xl overflow-hidden" style="border:1px solid #DBEAFE; box-shadow:0 2px 12px rgba(37,99,235,0.08);">
-                    <div class="flex items-center gap-2 px-4 py-2.5" style="background:linear-gradient(135deg,#2563EB 0%,#1D4ED8 100%);">
-                        <svg class="w-3.5 h-3.5 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/></svg>
-                        <span class="text-white text-xs font-bold uppercase tracking-widest">Instant Digital Delivery</span>
-                    </div>
-                    <div class="grid grid-cols-3 divide-x" style="background:#FAFCFF; divide-color:#DBEAFE;">
-                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 style="background:linear-gradient(135deg,#EEF4FF,#DBEAFE);">
-                                <svg class="w-4 h-4" style="color:#2563EB;" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
-                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
-                                </svg>
-                            </div>
-                            <p class="text-xs font-bold leading-tight" style="color:#071428;">Email</p>
-                            <p class="text-[10px] text-gray-400 leading-tight">Sent to your inbox</p>
-                        </div>
-                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 style="background:linear-gradient(135deg,#EEF4FF,#DBEAFE);">
-                                <svg class="w-4 h-4" style="color:#2563EB;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/>
-                                </svg>
-                            </div>
-                            <p class="text-xs font-bold leading-tight" style="color:#071428;">Order Page</p>
-                            <p class="text-[10px] text-gray-400 leading-tight">Always in account</p>
-                        </div>
-                        <div class="flex flex-col items-center gap-1.5 px-3 py-3.5 text-center">
-                            <div class="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);">
-                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
-                            <p class="text-xs font-bold leading-tight text-green-600">Instant</p>
-                            <p class="text-[10px] text-gray-400 leading-tight">After payment</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Action Buttons --}}
-                @if($denominations->isNotEmpty())
-                <div class="mb-4"
-                     x-data="{
-                         submitForm(redirectTo) {
-                             $refs.selectedCardId.value = $store.product.current?.id ?? '';
-                             $refs.selectedQty.value = $store.product.qty;
-                             $refs.redirectTo.value = redirectTo;
-                             $refs.buyForm.submit();
-                         }
-                     }">
-                    <form method="POST" action="{{ route('cart.add') }}" x-ref="buyForm">
+                {{-- Favourites are for signed-in shoppers; a guest is offered the
+                     sign-in that makes the control mean something. --}}
+                @auth
+                    <form method="POST" action="{{ route('favourites.toggle', $category) }}" class="flex-shrink-0">
                         @csrf
-                        <input type="hidden" name="gift_card_id" x-ref="selectedCardId" value="">
-                        <input type="hidden" name="quantity" x-ref="selectedQty" value="1">
-                        <input type="hidden" name="redirect_to" x-ref="redirectTo" value="cart">
-
-                        <div class="flex gap-3">
-                            {{-- Add to Cart --}}
-                            <button type="button"
-                                :disabled="$store.product.selected === null"
-                                @click="submitForm('cart')"
-                                :class="$store.product.selected !== null
-                                    ? 'opacity-100 cursor-pointer hover:bg-blue-50'
-                                    : 'opacity-40 cursor-not-allowed'"
-                                class="flex-1 py-4 rounded-2xl font-bold text-base transition-all duration-200 border-2 border-brand-500 text-brand-500">
-                                🛒 Add to Cart
-                            </button>
-
-                            {{-- Buy Now --}}
-                            <button type="button"
-                                :disabled="$store.product.selected === null"
-                                @click="submitForm('checkout')"
-                                :class="$store.product.selected !== null
-                                    ? 'opacity-100 cursor-pointer hover:opacity-90 hover:shadow-lg'
-                                    : 'opacity-40 cursor-not-allowed'"
-                                class="flex-1 py-4 rounded-2xl font-bold text-white text-base transition-all duration-200"
-                                style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">
-                                ⚡ Buy Now
-                            </button>
-                        </div>
+                        @php $_saved = auth()->user()->hasFavourited($category->id); @endphp
+                        <x-ui.button type="submit" variant="{{ $_saved ? 'outline' : 'secondary' }}" size="sm">
+                            <svg class="h-4 w-4" fill="{{ $_saved ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                            {{ $_saved ? 'Saved' : 'Add to favourite' }}
+                        </x-ui.button>
                     </form>
-                </div>
-                @endif
-
-                {{-- Outside the stock guard on purpose: when a product is out of
-                     stock the buttons above disappear, and that is exactly when a
-                     customer wants to ask when it will be back. --}}
-                <x-product-chat-buttons
-                    :name="$category->name"
-                    :url="route('product', $category->slug)"
-                    :slug="$category->slug" />
-
-                @if($category->mainCategory && $category->mainCategory->how_to_redeem)
-                <div class="mt-4 pt-4" style="border-top:1px solid #EEF2FF;">
-                    <a href="{{ route('brand', $category->mainCategory->slug) }}#how-to-redeem"
-                       class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-semibold text-sm transition-colors"
-                       style="background:#F0F5FF; border:1px solid #DBEAFE; color:#2563EB;"
-                       onmouseover="this.style.background='#E0EAFF'" onmouseout="this.style.background='#F0F5FF'">
-                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                        How to Redeem {{ $category->mainCategory->name }}
-                    </a>
-                </div>
-                @endif
+                @else
+                    <x-ui.button :href="route('login')" variant="secondary" size="sm" class="flex-shrink-0">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                        Add to favourite
+                    </x-ui.button>
+                @endauth
             </div>
         </div>
     </div>
 
-    {{-- Referral teaser --}}
-    @if($referralSettings['enabled'])
-    <div class="mt-6 rounded-2xl p-4 flex items-center gap-4" style="background:linear-gradient(135deg,#071428,#0D2040); border:1px solid rgba(37,99,235,0.25);">
-        <div class="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.18);">
-            <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div class="flex-1 min-w-0">
-            <div class="text-white font-bold text-sm">Earn with referrals</div>
-            <div class="text-gray-400 text-xs mt-0.5 leading-snug">Share your code → friends get a discount at checkout → you earn BDT wallet credit.</div>
-        </div>
-        @if($referralCode)
-        <div x-data="{ refCopied: false }" class="flex items-center gap-2 flex-shrink-0">
-            <span class="font-mono text-brand-400 font-bold text-sm tracking-widest hidden sm:inline">{{ $referralCode }}</span>
-            <button @click="navigator.clipboard.writeText('{{ $referralCode }}'); refCopied = true; setTimeout(() => refCopied = false, 2000)"
-                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap"
-                    :class="refCopied ? 'bg-green-600 text-white' : 'bg-brand-500 hover:bg-brand-600 text-white'">
-                <span x-show="!refCopied">Copy Code</span>
-                <span x-show="refCopied" x-cloak>✓ Copied!</span>
-            </button>
-        </div>
-        @else
-        <a href="{{ route('referral.dashboard') }}"
-           class="flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 transition-colors whitespace-nowrap">
-            Login to earn
-        </a>
-        @endif
-    </div>
-    @endif
+    {{-- ══ Body ══ --}}
+    <div class="mx-auto max-w-shell px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:pb-section-lg">
+        <div class="grid grid-cols-12 gap-5">
 
-    @if($category->long_description)
-    <div class="max-w-5xl mx-auto px-0 pb-10 mt-10">
-        <div class="bg-white rounded-2xl p-6 md:p-8" style="border:1px solid #E8EEF8; box-shadow:0 2px 16px rgba(7,20,40,0.05);">
-            <div class="flex items-center gap-3 mb-5">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                     style="background:linear-gradient(135deg,#2563EB,#1D4ED8);">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                </div>
-                <h2 class="text-base font-black" style="color:#071428;">About {{ $category->name }}</h2>
-            </div>
-            <div class="rich-content">
-                {!! $category->long_description !!}
-            </div>
-        </div>
-    </div>
-    @else
-    <div class="mt-8"></div>
-    @endif
+            {{-- Denominations + content --}}
+            <div class="col-span-12 lg:col-span-8">
 
-    @if($relatedCategories->isNotEmpty())
-    <section class="pb-12" aria-labelledby="related-products-heading">
-        <h2 id="related-products-heading" class="text-base font-black mb-4" style="color:#071428;">More from {{ $category->mainCategory->name }}</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            @foreach($relatedCategories as $related)
-            <a href="{{ route('product', $related->slug) }}"
-               class="group block bg-white rounded-2xl p-4 transition-shadow hover:shadow-md"
-               style="border:1px solid #E8EEF8; box-shadow:0 1px 4px rgba(7,20,40,0.05);">
-                <div class="font-bold text-sm group-hover:text-blue-600 transition-colors" style="color:#071428;">{{ $related->name }}</div>
-                @if($related->min_price_bdt)
-                <div class="text-xs text-gray-400 mt-1">From <span class="font-semibold text-brand-500">৳ {{ number_format($related->min_price_bdt, 0) }}</span></div>
+                @if($denominations->isEmpty())
+                    <div class="rounded-card border border-surface-3 bg-surface-1 p-10 text-center">
+                        <p class="text-body font-semibold text-ink-hi">Currently unavailable</p>
+                        <p class="mt-1.5 text-caption text-ink-low">This product has no denominations on sale right now. Message us and we will tell you when it is back.</p>
+                    </div>
+                @else
+                    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        @foreach($denominations as $index => $denomination)
+                            <x-catalog.denomination-tile :card="$denomination" :index="$index" :image="$denomination->image ?: $_image" />
+                        @endforeach
+                    </div>
                 @endif
-            </a>
-            @endforeach
-        </div>
-    </section>
-    @endif
 
+                @if(! empty($_tabs))
+                    <x-ui.tabs :tabs="$_tabs" class="mt-6 rounded-card border border-surface-3 bg-surface-1 p-4 md:p-5">
+                        @if(isset($_tabs['description']))
+                            <x-ui.tab-panel name="description">
+                                <div class="rich-content">
+                                    {!! $category->long_description ?: e($category->description) !!}
+                                </div>
+                            </x-ui.tab-panel>
+                        @endif
+
+                        @if(isset($_tabs['instructions']))
+                            <x-ui.tab-panel name="instructions">
+                                <div class="rich-content">{!! $category->redemptionInstructions() !!}</div>
+                            </x-ui.tab-panel>
+                        @endif
+
+                        @if(isset($_tabs['faq']))
+                            <x-ui.tab-panel name="faq">
+                                <dl class="divide-y divide-surface-3">
+                                    @foreach($category->faqEntries() as $entry)
+                                        <div x-data="{ open: {{ $loop->first ? 'true' : 'false' }} }" class="py-3 first:pt-0 last:pb-0">
+                                            <dt>
+                                                <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                                                        class="flex w-full items-center justify-between gap-3 text-left text-body font-semibold text-ink-hi">
+                                                    <span>{{ $entry['question'] ?? '' }}</span>
+                                                    <svg class="h-4 w-4 flex-shrink-0 text-ink-low transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                                </button>
+                                            </dt>
+                                            <dd x-show="open" x-cloak class="mt-2 text-caption leading-relaxed text-ink-mid">{{ $entry['answer'] ?? '' }}</dd>
+                                        </div>
+                                    @endforeach
+                                </dl>
+                            </x-ui.tab-panel>
+                        @endif
+                    </x-ui.tabs>
+                @endif
+            </div>
+
+            {{-- Purchase panel --}}
+            <div class="col-span-12 lg:col-span-4">
+                <div class="space-y-4 lg:sticky lg:top-[120px]">
+
+                    @if($denominations->isNotEmpty())
+                        <form method="POST" action="{{ route('cart.add') }}" x-ref="form" class="space-y-4">
+                            @csrf
+                            <input type="hidden" name="gift_card_id" :value="current?.id ?? ''">
+                            <input type="hidden" name="quantity" :value="qty">
+                            <input type="hidden" name="redirect_to" x-ref="redirect" value="cart">
+
+                            @if($category->needsBuyerInput())
+                                <x-catalog.buyer-inputs :schema="$category->buyerInputSchema()" />
+                            @endif
+
+                            <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <label id="qty-label" class="text-body font-semibold text-ink-hi">Quantity</label>
+
+                                    <div class="flex items-center rounded-control border border-surface-3 bg-surface-2">
+                                        <button type="button" @click="dec()" :disabled="!current || qty <= current.min" aria-label="Decrease quantity"
+                                                class="flex h-10 w-10 items-center justify-center text-lede font-bold text-ink-mid transition-colors hover:text-ink-hi disabled:opacity-30 disabled:cursor-not-allowed">&minus;</button>
+                                        <span aria-labelledby="qty-label" aria-live="polite"
+                                              class="w-10 border-x border-surface-3 py-2 text-center text-body font-bold tabular-nums text-ink-hi" x-text="qty"></span>
+                                        <button type="button" @click="inc()" :disabled="!current || qty >= current.max" aria-label="Increase quantity"
+                                                class="flex h-10 w-10 items-center justify-center text-lede font-bold text-ink-mid transition-colors hover:text-ink-hi disabled:opacity-30 disabled:cursor-not-allowed">+</button>
+                                    </div>
+                                </div>
+
+                                <p class="mt-2 text-meta text-ink-low" x-show="current" x-cloak
+                                   x-text="'Purchase limit (' + current.min + ' – ' + current.max + ')'"></p>
+                                <p class="mt-2 text-meta text-warning" x-show="!current" x-cloak>Select a denomination that is in stock.</p>
+                            </div>
+
+                            <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-body font-semibold text-ink-hi">Total</span>
+                                    <span class="text-title font-bold tabular-nums text-success" x-text="totalLabel"></span>
+                                </div>
+                                <p class="mt-1 text-meta text-ink-low" x-show="current && qty > 1" x-cloak
+                                   x-text="unitLabel + ' × ' + qty"></p>
+
+                                <div class="mt-4 flex gap-2">
+                                    <button type="submit" @click="$refs.redirect.value = 'cart'" :disabled="!current"
+                                            aria-label="Add to cart"
+                                            class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-control border border-surface-3 bg-surface-2 text-ink-hi transition-colors hover:border-accent/60 disabled:opacity-40 disabled:cursor-not-allowed">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 6M17 13l1.4 6M9 21h.01M19 21h.01"/></svg>
+                                    </button>
+
+                                    <button type="submit" @click="$refs.redirect.value = 'checkout'" :disabled="!current"
+                                            class="flex h-12 flex-1 items-center justify-center rounded-control bg-success text-body font-bold text-surface-0 transition-[filter] hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed">
+                                        Buy now
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    @endif
+
+                    {{-- Outside the stock guard on purpose: when a product is out
+                         of stock the buttons above disappear, and that is exactly
+                         when a customer wants to ask when it will be back. The
+                         component renders nothing at all when chat is switched
+                         off, so it brings its own frame rather than leaving an
+                         empty card behind. --}}
+                    <x-product-chat-buttons
+                        :name="$category->name"
+                        :url="route('product', $category->slug)"
+                        :slug="$category->slug" />
+
+                    @if($relatedCategories->isNotEmpty())
+                        <section class="rounded-card border border-surface-3 bg-surface-1" aria-labelledby="related-products-heading">
+                            <h2 id="related-products-heading" class="border-b border-surface-3 px-4 py-3 text-body font-bold text-ink-hi">
+                                More from {{ $category->mainCategory->name }}
+                            </h2>
+                            <ul class="p-2">
+                                @foreach($relatedCategories as $related)
+                                    <li>
+                                        <a href="{{ route('product', $related->slug) }}" class="flex items-center gap-2.5 rounded-control px-2 py-2 transition-colors hover:bg-surface-2">
+                                            <x-catalog.artwork :image="$related->image ?: $related->mainCategory?->image" :name="$related->name"
+                                                               ratio="aspect-square" class="w-9 flex-shrink-0 rounded-chip" :width="36" :height="36" />
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate text-caption font-medium text-ink-hi">{{ $related->name }}</span>
+                                                <span class="block text-meta text-ink-low">
+                                                    @if($related->regionName()){{ $related->regionFlag() }} {{ $related->regionName() }}@endif
+                                                    @if($related->min_price_bdt)<span class="text-success">from {{ format_bdt($related->min_price_bdt) }}</span>@endif
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </section>
+                    @endif
+
+                    @if($referralSettings['enabled'])
+                        <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                            <p class="text-caption font-semibold text-ink-hi">Earn with referrals</p>
+                            <p class="mt-1 text-meta leading-relaxed text-ink-low">Share your code, your friend saves at checkout, and your wallet is credited.</p>
+                            @if($referralCode)
+                                <div x-data="{ copied: false }" class="mt-3 flex items-center gap-2">
+                                    <span class="font-mono text-caption font-bold tracking-widest text-accent-hover">{{ $referralCode }}</span>
+                                    <x-ui.button variant="secondary" size="sm"
+                                                 x-on:click="navigator.clipboard.writeText(@js($referralCode)); copied = true; setTimeout(() => copied = false, 1500)">
+                                        <span x-show="!copied">Copy</span><span x-show="copied" x-cloak>Copied</span>
+                                    </x-ui.button>
+                                </div>
+                            @else
+                                <x-ui.button :href="route('referral.dashboard')" variant="secondary" size="sm" class="mt-3">Sign in to earn</x-ui.button>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Mobile purchase bar. The panel above scrolls away on a phone, and this
+         is where the store is mostly used. --}}
+    @if($denominations->isNotEmpty())
+        <div x-show="current" x-cloak
+             class="fixed inset-x-0 bottom-0 z-40 border-t border-surface-3 bg-surface-1/97 px-4 py-3 backdrop-blur lg:hidden">
+            <div class="flex items-center gap-3">
+                <div class="min-w-0 flex-1">
+                    <p class="truncate text-meta text-ink-low" x-text="current?.name ?? ''"></p>
+                    <p class="text-body font-bold tabular-nums text-success" x-text="totalLabel"></p>
+                </div>
+                <button type="button" @click="$refs.redirect.value = 'checkout'; $refs.form.requestSubmit()"
+                        class="flex h-11 flex-shrink-0 items-center rounded-control bg-success px-6 text-body font-bold text-surface-0">
+                    Buy now
+                </button>
+            </div>
+        </div>
+    @endif
 </div>
-</div>
-
-@push('styles')
-<style>
-    body { background: #F8FAFF !important; }
-    [x-cloak] { display: none !important; }
-    /* Rich text content styles */
-    .rich-content { font-size: 0.9rem; line-height: 1.75; color: #374151; }
-    .rich-content h1,.rich-content h2,.rich-content h3,.rich-content h4 { font-weight: 800; color: #111827; margin: 1.2em 0 0.5em; line-height: 1.3; }
-    .rich-content h2 { font-size: 1.2rem; }
-    .rich-content h3 { font-size: 1.05rem; }
-    .rich-content p  { margin: 0.75em 0; color: #4B5563; }
-    .rich-content ul,.rich-content ol { margin: 0.75em 0; padding-left: 1.5em; color: #4B5563; }
-    .rich-content ul { list-style-type: disc; }
-    .rich-content ol { list-style-type: decimal; }
-    .rich-content li { margin: 0.35em 0; }
-    .rich-content strong,.rich-content b { font-weight: 700; color: #1F2937; }
-    .rich-content em,.rich-content i { font-style: italic; }
-    .rich-content a { color: #2563EB; text-decoration: underline; }
-    .rich-content blockquote { border-left: 3px solid #2563EB; margin: 1em 0; padding: 0.5em 1em; background: #EEF4FF; border-radius: 0 8px 8px 0; }
-    .rich-content table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.85rem; }
-    .rich-content th { background: #EEF4FF; color: #1E3A5F; font-weight: 700; padding: 8px 12px; border: 1px solid #DBEAFE; text-align: left; }
-    .rich-content td { padding: 8px 12px; border: 1px solid #E5E7EB; color: #4B5563; }
-    .rich-content tr:nth-child(even) td { background: #F9FAFB; }
-</style>
-@endpush
 
 @push('scripts')
 <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.store('product', {
-            denominations: [],
-            selected: null,
-            qty: 1,
-            get current() {
-                return this.selected !== null ? this.denominations[this.selected] : null;
-            }
-        });
-    });
+document.addEventListener('alpine:init', () => {
+    // The chat buttons live in their own component and need to know what the
+    // shopper picked, so the selection is published to a store rather than
+    // passed down. One writer, any number of readers.
+    Alpine.store('product', { current: null });
+
+    Alpine.data('productPage', (cards, firstInStock) => ({
+        cards,
+        selected: firstInStock,
+        qty: 1,
+
+        init() {
+            if (this.current) this.qty = this.current.min;
+            this.publish();
+        },
+
+        get current() {
+            return this.selected === null || this.selected === undefined ? null : this.cards[this.selected];
+        },
+
+        get total() {
+            return this.current ? this.current.price * this.qty : 0;
+        },
+
+        // Formatted here rather than in the markup so the panel and the mobile
+        // bar can never disagree about what the order costs.
+        get totalLabel() {
+            return '৳ ' + Math.round(this.total).toLocaleString('en-US');
+        },
+
+        get unitLabel() {
+            return '৳ ' + Math.round(this.current?.price ?? 0).toLocaleString('en-US');
+        },
+
+        select(index) {
+            const card = this.cards[index];
+            if (!card || card.max < 1) return;
+            this.selected = index;
+            this.qty = card.min;
+            this.publish();
+        },
+
+        // What a reader outside this component needs: which denomination, at
+        // what price. Nothing else about the panel is anyone else's business.
+        publish() {
+            Alpine.store('product').current = this.current
+                ? { denom: this.current.name, price: this.current.price }
+                : null;
+        },
+
+        inc() { if (this.current && this.qty < this.current.max) this.qty++; },
+        dec() { if (this.current && this.qty > this.current.min) this.qty--; },
+    }));
+});
 </script>
 @endpush
 

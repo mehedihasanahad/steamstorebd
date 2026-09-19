@@ -33,8 +33,16 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
+        // The header menu and the footer brand list appear on every storefront
+        // page. Both come from the cached catalog tree, so binding them here
+        // costs one cache read per request rather than a query per page.
         View::composer(['layouts.storefront', 'errors.404'], function ($view) {
-            $view->with('footerBrands', app(StorefrontCatalog::class)->brands());
+            $catalog = app(StorefrontCatalog::class);
+
+            $view->with([
+                'footerBrands' => $catalog->brands(),
+                'catalogMenu'  => $catalog->menu(),
+            ]);
         });
     }
 }

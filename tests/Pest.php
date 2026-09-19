@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Banner;
+use App\Models\CatalogSection;
 use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
 use App\Models\GiftCardCode;
@@ -117,4 +119,84 @@ function addCodes(GiftCard $card, int $count): GiftCard
     }
 
     return $card;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Storefront fixtures
+|--------------------------------------------------------------------------
+|
+| The rebuilt storefront reads a section -> brand -> product -> card tree, so
+| most of its tests need one. These build it the same way every time, which is
+| what lets a page test say what it is actually about.
+|
+*/
+
+/** A section other than the "Gift Cards" one the backfill migration seeds. */
+function storefrontSection(array $overrides = []): CatalogSection
+{
+    return CatalogSection::create(array_merge([
+        'name'      => 'Game Top-Up',
+        'slug'      => 'game-top-up',
+        'is_active' => true,
+    ], $overrides));
+}
+
+function giftCardsSectionModel(): CatalogSection
+{
+    return CatalogSection::where('slug', 'gift-cards')->firstOrFail();
+}
+
+/** A brand inside a section, ready to hang products off. */
+function sectionBrand(CatalogSection $section, array $overrides = []): MainCategory
+{
+    return seoBrand(array_merge(['catalog_section_id' => $section->id], $overrides));
+}
+
+/**
+ * The whole chain in one call: section -> brand -> product -> stocked card.
+ * Returns the product, which is what page tests usually assert against.
+ */
+function sellableProduct(?CatalogSection $section = null, array $productOverrides = [], array $cardOverrides = [], int $codes = 3): GiftCardCategory
+{
+    $section ??= giftCardsSectionModel();
+    $brand = sectionBrand($section, [
+        'name' => $productOverrides['brand_name'] ?? 'Steam',
+        'slug' => $productOverrides['brand_slug'] ?? 'steam',
+    ]);
+
+    unset($productOverrides['brand_name'], $productOverrides['brand_slug']);
+
+    $product = seoProduct($brand, $productOverrides);
+    seoCard($product, $cardOverrides, $codes);
+
+    return $product->fresh();
+}
+
+/** A card an admin has to fulfil by hand, with `$stock` units available. */
+function manualCard(GiftCardCategory $product, int $stock = 5, array $overrides = []): GiftCard
+{
+    return GiftCard::create(array_merge([
+        'category_id'           => $product->id,
+        'name'                  => 'PUBG 660 UC',
+        'slug'                  => 'pubg-660-uc-' . uniqid(),
+        'denomination'          => 660,
+        'denomination_currency' => 'UC',
+        'denomination_bdt'      => 900,
+        'price_bdt'             => 950,
+        'is_active'             => true,
+        'fulfilment_type'       => GiftCard::FULFILMENT_MANUAL,
+        'manual_stock'          => $stock,
+        'delivery_eta_label'    => '5-30 minutes',
+    ], $overrides));
+}
+
+function visibleBanner(array $overrides = []): Banner
+{
+    return Banner::create(array_merge([
+        'title'     => 'Eid sale',
+        'image'     => 'banners/eid.jpg',
+        'is_active' => true,
+        'sort_order'=> 0,
+    ], $overrides));
 }

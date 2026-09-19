@@ -1,186 +1,110 @@
 @extends('layouts.storefront')
 
 @section('title', 'Contact Us — Steam Store BD')
-@section('meta_description', 'Contact Steam Store BD for help with your Steam gift card order in Bangladesh. Send us a message and get a response within 5–10 minutes.')
+@section('meta_description', 'Contact Steam Store BD about an order, a code or a top-up. Send a message and get a reply within 5–10 minutes.')
 
 @section('content')
 
-{{-- Hero --}}
-<div class="relative overflow-hidden" style="background:linear-gradient(135deg,#071428 0%,#040D1A 100%); border-bottom:1px solid rgba(37,99,235,0.15);">
-    <div class="absolute inset-0 grid-bg opacity-40 pointer-events-none"></div>
-    <div class="orb absolute -top-32 -right-32 w-96 h-96 opacity-10" style="background:radial-gradient(circle,#2563EB,transparent);"></div>
+<div class="mx-auto max-w-4xl px-4 py-5 sm:px-6 lg:px-8 lg:py-section-lg">
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 relative">
-        <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
-            <a href="{{ route('home') }}" class="hover:text-brand-400 transition-colors">Home</a>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="text-gray-400">Contact Us</span>
-        </nav>
+    <x-catalog.breadcrumbs class="mb-4" :items="[
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Contact us', 'url' => null],
+    ]" />
 
-        <div class="flex flex-wrap items-center gap-2 mb-5">
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-green-500/10 text-green-400 border border-green-500/20">⚡ Response within 5–10 min</span>
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">🛡️ Secure & Private</span>
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">💬 Friendly Support</span>
-        </div>
+    <h1 class="text-title md:text-display font-extrabold text-ink-hi">Get in touch</h1>
+    <p class="mt-1 max-w-2xl text-body text-ink-mid">A question about an order, a code or a top-up? Send it over and we will come straight back.</p>
 
-        <h1 class="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
-            Get in Touch<br>
-            <span style="background:linear-gradient(135deg,#60a5fa,#4B8FEF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">We're Here to Help</span>
-        </h1>
-        <p class="text-gray-400 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Have a question about your order or gift card? Send us a message and we'll get back to you fast.
-        </p>
-    </div>
-</div>
-
-{{-- Main --}}
-<div style="background:#040D1A; min-height:60vh;">
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-    {{-- Success message --}}
-    @if(session('success'))
-    <div class="flex items-start gap-4 rounded-2xl p-5 mb-8" style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(34,197,94,0.15);">
-            <svg class="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-        </div>
-        <div>
-            <p class="text-green-400 font-bold text-sm mb-0.5">Message Sent!</p>
-            <p class="text-green-300/80 text-sm">{{ session('success') }}</p>
-        </div>
-    </div>
-    @endif
-
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-
-        {{-- Left: Info cards --}}
-        <div class="lg:col-span-2 flex flex-col gap-4">
-
-            {{-- Response time --}}
-            <div class="rounded-2xl p-5" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.15);">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.15);">
-                        <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <p class="text-white font-bold text-sm">Response Time</p>
-                </div>
-                <p class="text-gray-400 text-sm leading-relaxed">We typically reply within <span class="text-green-400 font-semibold">5–10 minutes</span> during business hours.</p>
-            </div>
-
-            {{-- Order issues --}}
-            <div class="rounded-2xl p-5" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.15);">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.15);">
-                        <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    </div>
-                    <p class="text-white font-bold text-sm">Order Issues?</p>
-                </div>
-                <p class="text-gray-400 text-sm leading-relaxed mb-3">For faster help with an existing order, check your order status first.</p>
-                <a href="{{ route('orders.lookup') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors">
-                    Track My Order
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-
-            {{-- How to redeem --}}
-            <div class="rounded-2xl p-5" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.15);">
-                <div class="flex items-center gap-3 mb-3">
-                    <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.15);">
-                        <svg class="w-4 h-4 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <p class="text-white font-bold text-sm">New to Steam?</p>
-                </div>
-                <p class="text-gray-400 text-sm leading-relaxed mb-3">Learn how to redeem your Steam gift card code step by step.</p>
-                <a href="{{ route('how-to-redeem') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors">
-                    Redemption Guide
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </a>
-            </div>
-
-            {{-- Common topics --}}
-            <div class="rounded-2xl p-5" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.15);">
-                <p class="text-white font-bold text-sm mb-3">Common Topics</p>
-                <ul class="space-y-2">
-                    @foreach(["Didn't receive my code", "Wrong card amount", "Payment not confirmed", "Code already redeemed", "Other question"] as $topic)
-                    <li class="flex items-center gap-2 text-gray-400 text-sm">
-                        <span class="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0"></span>
-                        {{ $topic }}
-                    </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-
-        {{-- Right: Contact form --}}
-        <div class="lg:col-span-3">
-            <div class="rounded-2xl p-6 sm:p-8 h-full" style="background:#071428; border:1px solid rgba(37,99,235,0.15);">
-                <div class="flex items-center gap-3 mb-7">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(37,99,235,0.15);">
-                        <svg class="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-white font-black text-lg">Send a Message</h2>
-                        <p class="text-gray-500 text-xs">We'll reply within 5–10 minutes</p>
-                    </div>
-                </div>
-
-                <form method="POST" action="{{ route('contact.submit') }}" x-data="{ loading: false }" @submit="loading = true">
-                    @csrf
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Name</label>
-                            <input type="text" name="name" value="{{ old('name') }}" required
-                                   placeholder="e.g. Rahim Uddin"
-                                   class="w-full rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none transition-colors"
-                                   style="background:#0A1828; border:1px solid rgba(37,99,235,0.2);"
-                                   onfocus="this.style.borderColor='rgba(37,99,235,0.6)'" onblur="this.style.borderColor='rgba(37,99,235,0.2)'">
-                            @error('name') <p class="text-red-400 text-xs mt-1.5">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Email Address</label>
-                            <input type="email" name="email" value="{{ old('email') }}" required
-                                   placeholder="your@email.com"
-                                   class="w-full rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none transition-colors"
-                                   style="background:#0A1828; border:1px solid rgba(37,99,235,0.2);"
-                                   onfocus="this.style.borderColor='rgba(37,99,235,0.6)'" onblur="this.style.borderColor='rgba(37,99,235,0.2)'">
-                            @error('email') <p class="text-red-400 text-xs mt-1.5">{{ $message }}</p> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Your Message</label>
-                            <textarea name="message" rows="6" required
-                                      placeholder="Describe your issue or question in detail…"
-                                      class="w-full rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none transition-colors resize-none"
-                                      style="background:#0A1828; border:1px solid rgba(37,99,235,0.2);"
-                                      onfocus="this.style.borderColor='rgba(37,99,235,0.6)'" onblur="this.style.borderColor='rgba(37,99,235,0.2)'">{{ old('message') }}</textarea>
-                            @error('message') <p class="text-red-400 text-xs mt-1.5">{{ $message }}</p> @enderror
-                        </div>
-                    </div>
-
-                    <button type="submit" :disabled="loading"
-                            class="w-full mt-6 relative overflow-hidden rounded-2xl font-bold py-3.5 text-white text-sm transition-all"
-                            style="background:linear-gradient(135deg,#2563EB,#1D4ED8); box-shadow:0 4px 20px rgba(37,99,235,0.35);"
-                            :class="loading ? 'opacity-75 cursor-wait' : 'hover:shadow-[0_6px_28px_rgba(37,99,235,0.5)]'">
-                        <span x-show="!loading" class="flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                            Send Message
-                        </span>
-                        <span x-show="loading" x-cloak class="flex items-center justify-center gap-2">
-                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                            Sending…
-                        </span>
-                    </button>
-
-                    <p class="text-center text-gray-600 text-xs mt-4">
-                        By sending a message you agree to our
-                        <a href="{{ route('faq') }}" class="text-gray-500 hover:text-gray-400 underline underline-offset-2 transition-colors">FAQ & policies</a>.
-                    </p>
-                </form>
-            </div>
-        </div>
+    <div class="mt-4 flex flex-wrap gap-2">
+        <x-ui.badge tone="success">Reply in 5–10 minutes</x-ui.badge>
+        <x-ui.badge tone="accent">Every day</x-ui.badge>
     </div>
 
-</div>
+    <div class="mt-6 grid grid-cols-12 gap-5">
+
+        {{-- The three things most messages turn out to be about, answered
+             before the form so nobody has to wait for a reply they could
+             have had immediately. --}}
+        <aside class="col-span-12 space-y-3 lg:col-span-5" aria-label="Before you write">
+            @foreach([
+                ['Checking an order', 'Status, codes and delivery progress are all on your order page.', 'Track my order', route('orders.lookup')],
+                ['Redeeming a code', 'Step-by-step for gift cards, keys, top-ups and subscriptions.', 'Redemption guide', route('how-to-redeem')],
+                ['Payments and refunds', 'What we accept, how long things take, and when we replace a code.', 'Read the FAQ', route('faq')],
+            ] as [$title, $body, $cta, $url])
+                <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                    <p class="text-body font-semibold text-ink-hi">{{ $title }}</p>
+                    <p class="mt-1 text-caption leading-relaxed text-ink-mid">{{ $body }}</p>
+                    <a href="{{ $url }}" class="mt-2 inline-flex items-center gap-1 text-caption font-semibold text-accent-hover hover:underline">
+                        {{ $cta }}
+                        <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+            @endforeach
+
+            @if(site_setting('contact_email') || site_setting('contact_whatsapp'))
+                <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                    <p class="text-body font-semibold text-ink-hi">Reach us directly</p>
+                    <ul class="mt-2 space-y-1 text-caption text-ink-mid">
+                        @if(site_setting('contact_email'))
+                            <li><a href="mailto:{{ site_setting('contact_email') }}" class="text-accent-hover hover:underline">{{ site_setting('contact_email') }}</a></li>
+                        @endif
+                        @if(site_setting('contact_whatsapp'))
+                            <li>{{ site_setting('contact_whatsapp') }}</li>
+                        @endif
+                    </ul>
+                </div>
+            @endif
+        </aside>
+
+        <div class="col-span-12 lg:col-span-7">
+            <form method="POST" action="{{ route('contact.submit') }}"
+                  x-data="{ loading: false }" @submit="loading = true"
+                  class="space-y-4 rounded-card border border-surface-3 bg-surface-1 p-5 md:p-6">
+                @csrf
+
+                <div>
+                    <h2 class="text-lede font-bold text-ink-hi">Send a message</h2>
+                    <p class="mt-1 text-caption text-ink-low">Include your order number if you have one — it saves a round trip.</p>
+                </div>
+
+                <x-ui.input label="Your name" name="name" required
+                            :value="old('name')" placeholder="e.g. Rahim Uddin"
+                            :error="$errors->first('name')" />
+
+                <x-ui.input label="Email address" name="email" type="email" required
+                            :value="old('email')" placeholder="you@example.com"
+                            :error="$errors->first('email')" />
+
+                <div>
+                    <label for="contact-message" class="mb-1.5 block text-caption font-medium text-ink-mid">
+                        Your message <span class="text-danger">*</span>
+                    </label>
+                    <textarea id="contact-message" name="message" rows="6" required
+                              placeholder="What happened, and what were you expecting?"
+                              class="w-full resize-none rounded-control border bg-surface-2 px-3 py-2.5 text-body text-ink-hi placeholder:text-ink-low
+                                     transition-colors focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30
+                                     {{ $errors->has('message') ? 'border-danger' : 'border-surface-3' }}">{{ old('message') }}</textarea>
+                    @error('message')<p class="mt-1.5 text-meta text-danger">{{ $message }}</p>@enderror
+                </div>
+
+                <x-ui.button type="submit" size="lg" class="w-full" x-bind:disabled="loading">
+                    <span x-show="!loading">Send message</span>
+                    <span x-show="loading" x-cloak class="flex items-center gap-2">
+                        <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                        </svg>
+                        Sending
+                    </span>
+                </x-ui.button>
+
+                <p class="text-center text-meta text-ink-low">
+                    By sending a message you agree to our
+                    <a href="{{ route('faq') }}" class="underline underline-offset-2 hover:text-ink-mid">FAQ and policies</a>.
+                </p>
+            </form>
+        </div>
+    </div>
 </div>
 
 @endsection

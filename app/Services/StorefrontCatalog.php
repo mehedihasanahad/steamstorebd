@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CatalogSection;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
+use App\Support\Region;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -26,6 +27,9 @@ class StorefrontCatalog
     /** Sections with their visible brands. Keyed separately so the menu and the homepage share one read. */
     public const SECTIONS_CACHE_KEY = 'storefront_sections';
 
+    /** The header mega-menu, flattened to arrays so rendering it costs no model hydration. */
+    public const MENU_CACHE_KEY = 'storefront_menu';
+
     private const TTL = 300;
 
     /**
@@ -37,6 +41,73 @@ class StorefrontCatalog
     {
         Cache::forget(self::BRANDS_CACHE_KEY);
         Cache::forget(self::SECTIONS_CACHE_KEY);
+        Cache::forget(self::MENU_CACHE_KEY);
+    }
+
+    /**
+     * The whole header menu as plain arrays: sections, the brands under each,
+     * and the regions those brands sell into.
+     *
+     * Derived from the same visible-brand tree the homepage uses and cached in
+     * its own right, so opening the menu costs one cache read and no queries —
+     * and hovering from one section to the next costs nothing at all, because
+     * every section's contents were delivered with the page.
+     *
+     * @return list<array{name: string, slug: string, url: string, brands: list<array<string, mixed>>, regions: list<array<string, mixed>>}>
+     */
+    public function menu(): array
+    {
+        return Cache::remember(self::MENU_CACHE_KEY, self::TTL, fn () => $this->sectionsWithBrands()
+            ->map(fn (CatalogSection $section) => [
+                'name'    => $section->name,
+                'slug'    => $section->slug,
+                'url'     => route('category', $section->slug),
+                'brands'  => $this->menuBrands($section),
+                'regions' => $this->menuRegions($section),
+            ])
+            ->all());
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function menuBrands(CatalogSection $section): array
+    {
+        return $section->mainCategories
+            ->map(fn (MainCategory $brand) => [
+                'name'         => $brand->name,
+                'slug'         => $brand->slug,
+                'url'          => route('brand', $brand->slug),
+                'image'        => $brand->image,
+                'region_count' => $brand->giftCardCategories
+                    ->pluck('region')
+                    ->filter()
+                    ->unique()
+                    ->count(),
+            ])
+            ->all();
+    }
+
+    /**
+     * Regions this section actually sells into, with how many products each
+     * holds. A region nobody stocks is never offered as a filter.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function menuRegions(CatalogSection $section): array
+    {
+        return $section->mainCategories
+            ->flatMap(fn (MainCategory $brand) => $brand->giftCardCategories)
+            ->pluck('region')
+            ->filter(fn (?string $region) => Region::exists($region))
+            ->countBy()
+            ->map(fn (int $count, string $code) => [
+                'code'  => $code,
+                'flag'  => Region::flag($code),
+                'name'  => Region::name($code),
+                'count' => $count,
+            ])
+            ->sortByDesc('count')
+            ->values()
+            ->all();
     }
 
     /**
@@ -60,7 +131,10 @@ class StorefrontCatalog
     public function sectionsWithBrands(): Collection
     {
         return Cache::remember(self::SECTIONS_CACHE_KEY, self::TTL, function () {
-            $brandsBySection = $this->visibleBrands()->groupBy('catalog_section_id');
+            // Read through brands() rather than rebuilding the tree: on a cold
+            // cache a page that wants both would otherwise pay for it twice,
+            // and both entries are dropped together anyway.
+            $brandsBySection = $this->brands()->groupBy('catalog_section_id');
 
             return CatalogSection::active()
                 ->ordered()

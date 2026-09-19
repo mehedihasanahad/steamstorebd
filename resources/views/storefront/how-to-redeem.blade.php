@@ -1,232 +1,143 @@
 @extends('layouts.storefront')
 
-@section('title', 'How to Redeem a Steam Gift Card — Steam Store BD')
-@section('meta_description', 'Simple step-by-step guide to redeem your Steam gift card code in Bangladesh. Works on PC, Mac, and mobile. Add Steam Wallet funds in under 2 minutes.')
+@section('title', 'How to Redeem Your Code — Steam Store BD')
+@section('meta_description', 'Step-by-step guide to redeeming a gift card code, a game key, a top-up or a subscription bought at Steam Store BD. Works on PC, Mac and mobile.')
+
+@php
+    $steps = [
+        ['Open Steam', 'Launch the Steam desktop app on Windows or Mac, or open store.steampowered.com in any browser.', null],
+        ['Sign in to your account', 'Log in with the Steam account you want the funds to land in.', 'The funds go to whichever account is signed in — check before you redeem.'],
+        ['Click your username', 'Top-right corner of the Steam window or website. Click it to open the dropdown.', null],
+        ['Select "Account details"', 'This opens the page showing your current Steam Wallet balance.', null],
+        ['Click "Add funds to your Steam Wallet"', 'It sits just below the balance.', null],
+        ['Choose "Redeem a Steam Gift Card or Wallet Code"', 'Scroll past the card options to the bottom of the list. Do not pick a card method.', null],
+        ['Enter your code', 'Fifteen characters, in the shape XXXXX-XXXXX-XXXXX. Paste it from your e-mail rather than typing it.', 'Copy and paste removes any chance of a typo.'],
+        ['Click "Continue"', 'Confirm, and the full value is credited to your wallet straight away.', null],
+    ];
+
+    $issues = [
+        ['"Code already redeemed"', 'The code has been activated somewhere. Contact support with your order number — we verify every code before sale and will sort it out.'],
+        ['"Invalid code"', 'Check for typos and paste directly from the e-mail. Codes are not case-sensitive, but stray spaces do break them.'],
+        ['"Not available in your region"', 'The code is for a different region than your account. Check the region on the product page, then message us and we will help you swap it.'],
+        ['The e-mail never arrived', 'Check spam and junk first. Your code is also always on your order page under My Orders.'],
+        ['The box will not take the code', 'Remove any leading or trailing space, and make sure you are in the redeem section rather than the payment field.'],
+    ];
+@endphp
+
+@push('schema')
+@php
+$_howToSchema = [
+    '@context'    => 'https://schema.org',
+    '@type'       => 'HowTo',
+    'name'        => 'How to redeem a Steam gift card code',
+    'description' => 'Add your gift card value to a Steam Wallet in eight steps.',
+    'step'        => collect($steps)->map(fn (array $step, int $i) => [
+        '@type'    => 'HowToStep',
+        'position' => $i + 1,
+        'name'     => $step[0],
+        'text'     => $step[1],
+    ])->all(),
+];
+@endphp
+<script type="application/ld+json">{!! json_encode($_howToSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+@endpush
 
 @section('content')
 
-{{-- Hero --}}
-<div class="relative overflow-hidden" style="background:linear-gradient(135deg,#071428 0%,#040D1A 100%); border-bottom:1px solid rgba(37,99,235,0.15);">
-    <div class="absolute inset-0 grid-bg opacity-40 pointer-events-none"></div>
-    <div class="orb absolute -top-32 -right-32 w-96 h-96 opacity-10" style="background:radial-gradient(circle,#2563EB,transparent);"></div>
+<div class="mx-auto max-w-3xl px-4 py-5 sm:px-6 lg:px-8 lg:py-section-lg">
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 relative">
-        <nav class="flex items-center gap-2 text-sm text-gray-500 mb-8">
-            <a href="{{ route('home') }}" class="hover:text-brand-400 transition-colors">Home</a>
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <span class="text-gray-400">How to Redeem</span>
-        </nav>
+    <x-catalog.breadcrumbs class="mb-4" :items="[
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'How to redeem', 'url' => null],
+    ]" />
 
-        <div class="flex flex-wrap items-center gap-2 mb-5">
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-green-500/10 text-green-400 border border-green-500/20">✅ Works for all Steam gift cards</span>
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">⏱ Under 2 minutes</span>
-            <span class="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">🌍 PC · Mac · Mobile</span>
-        </div>
+    <h1 class="text-title md:text-display font-extrabold text-ink-hi">How to redeem your code</h1>
+    <p class="mt-1 max-w-2xl text-body text-ink-mid">
+        What to do once your order arrives — whichever of the four things you bought.
+    </p>
 
-        <h1 class="text-3xl sm:text-4xl font-black text-white leading-tight mb-4">
-            How to Redeem Your<br>
-            <span style="background:linear-gradient(135deg,#60a5fa,#4B8FEF); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Steam Gift Card</span>
-        </h1>
-        <p class="text-gray-400 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Got your code? Follow these simple steps to add funds to your Steam Wallet — no experience needed.
-        </p>
-    </div>
-</div>
-
-{{-- Main --}}
-<div style="background:#040D1A; min-height:60vh;">
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-    {{-- Where to find code info bar --}}
-    <div class="flex items-start gap-4 rounded-2xl p-5 mb-12" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.2);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.15);">
-            <svg class="w-5 h-5 text-brand-400" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
-        </div>
-        <div>
-            <p class="text-white font-bold text-sm mb-1">Where is my Steam code?</p>
-            <p class="text-gray-400 text-sm leading-relaxed">After payment on Steam Store BD, your code is delivered <span class="text-white font-semibold">instantly via email</span>. You can also find it anytime in <a href="{{ route('orders.lookup') }}" class="text-brand-400 hover:text-brand-300 underline underline-offset-2 transition-colors">My Orders</a> after logging in.</p>
-        </div>
+    <div class="mt-4 flex flex-wrap gap-2">
+        <x-ui.badge tone="success">Under 2 minutes</x-ui.badge>
+        <x-ui.badge tone="accent">PC &middot; Mac &middot; Mobile</x-ui.badge>
     </div>
 
-    {{-- Steps --}}
-    <h2 class="text-xl font-bold text-white mb-8">Step-by-Step Redemption Guide</h2>
+    <p class="mt-6 rounded-card border border-surface-3 bg-surface-1 p-4 text-caption leading-relaxed text-ink-mid">
+        <strong class="text-ink-hi">Where is my code?</strong>
+        It is e-mailed the moment your payment clears, and it stays on your
+        <a href="{{ route('orders.lookup') }}" class="text-accent-hover underline underline-offset-2">order page</a> for as long as you have an account.
+    </p>
 
-    @php
-    $steps = [
-        [
-            'num'   => '01',
-            'emoji' => '🖥️',
-            'title' => 'Open Steam',
-            'desc'  => 'Launch the Steam desktop app on your Windows or Mac computer. Alternatively, open any web browser and go to store.steampowered.com.',
-            'tip'   => null,
-        ],
-        [
-            'num'   => '02',
-            'emoji' => '🔑',
-            'title' => 'Sign In to Your Account',
-            'desc'  => 'Log in with your Steam username and password. Make sure you are signed into the correct account you want to add funds to.',
-            'tip'   => 'Important: The funds will go to whichever account is currently signed in.',
-        ],
-        [
-            'num'   => '03',
-            'emoji' => '👤',
-            'title' => 'Click Your Username',
-            'desc'  => 'Look at the top-right corner of the Steam window or website. Click on your username or profile name to open the dropdown menu.',
-            'tip'   => null,
-        ],
-        [
-            'num'   => '04',
-            'emoji' => '⚙️',
-            'title' => 'Select "Account Details"',
-            'desc'  => 'From the dropdown menu, click "Account Details". This opens your wallet page where you can see your current Steam Wallet balance.',
-            'tip'   => null,
-        ],
-        [
-            'num'   => '05',
-            'emoji' => '💰',
-            'title' => 'Click "Add funds to your Steam Wallet"',
-            'desc'  => 'On the Account Details page, you will see your wallet balance. Below it, click the green "Add funds to your Steam Wallet" button.',
-            'tip'   => null,
-        ],
-        [
-            'num'   => '06',
-            'emoji' => '🎁',
-            'title' => 'Choose "Redeem a Steam Gift Card or Wallet Code"',
-            'desc'  => 'A list of payment options will appear. Scroll to the bottom and select "Redeem a Steam Gift Card or Wallet Code" — do not choose a credit card or other method.',
-            'tip'   => null,
-        ],
-        [
-            'num'   => '07',
-            'emoji' => '⌨️',
-            'title' => 'Enter Your Code',
-            'desc'  => 'Type or paste your Steam code into the text box. Your code is 15 characters in the format XXXXX-XXXXX-XXXXX. Copy from your email to avoid typos.',
-            'tip'   => 'Tip: Use Ctrl+C to copy from your email, then Ctrl+V to paste here — no typo risk!',
-        ],
-        [
-            'num'   => '08',
-            'emoji' => '✅',
-            'title' => 'Click "Continue" — Done!',
-            'desc'  => 'Click the Continue button and confirm. Your Steam Wallet balance will be credited immediately with the full gift card value. Start shopping!',
-            'tip'   => null,
-        ],
-    ];
-    @endphp
+    {{-- Each vertical redeems somewhere different, so each gets its own answer
+         rather than one Steam-shaped instruction for all four. --}}
+    <section class="mt-6" aria-labelledby="by-type-heading">
+        <h2 id="by-type-heading" class="text-lede font-bold text-ink-hi">By what you bought</h2>
 
-    <div class="relative">
-        {{-- Connecting line --}}
-        <div class="absolute left-[22px] top-10 bottom-10 w-0.5 hidden sm:block"
-             style="background:linear-gradient(to bottom, #2563EB 0%, rgba(37,99,235,0.08) 100%);"></div>
-
-        <div class="space-y-4">
-            @foreach($steps as $step)
-            <div class="flex gap-4 sm:gap-6 group">
-                {{-- Circle --}}
-                <div class="flex-shrink-0 w-11 h-11 rounded-full z-10 flex items-center justify-center font-black text-white text-xs"
-                     style="background:linear-gradient(135deg,#2563EB,#1D4ED8); box-shadow:0 0 0 4px #040D1A, 0 4px 16px rgba(37,99,235,0.4);">
-                    {{ $step['num'] }}
+        <div class="mt-3 grid gap-3 md:grid-cols-2">
+            @foreach([
+                ['Gift cards', 'Redeem on the platform the card is for — its wallet, billing or "redeem a code" page. The detailed Steam walkthrough below applies to any Steam card.'],
+                ['Game keys and software', 'Activate the key in the store or launcher it belongs to: Steam "Activate a Product", the publisher launcher, or the software vendor\'s account page.'],
+                ['Game top-ups', 'Nothing to redeem. We credit the Player ID you gave at checkout, and your order page shows the progress until it is done.'],
+                ['Subscriptions', 'We send the account details to your order page, masked until you reveal them. Sign in with those on the service and change the password if the plan allows it.'],
+            ] as [$title, $body])
+                <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
+                    <h3 class="text-body font-semibold text-ink-hi">{{ $title }}</h3>
+                    <p class="mt-1.5 text-caption leading-relaxed text-ink-mid">{{ $body }}</p>
                 </div>
+            @endforeach
+        </div>
+    </section>
 
-                {{-- Card --}}
-                <div class="flex-1 mb-0.5 rounded-2xl p-5 transition-all duration-200 group-hover:border-brand-500/30"
-                     style="background:#0E1F35; border:1px solid rgba(37,99,235,0.12);">
-                    <div class="flex items-start gap-3">
-                        <span class="text-2xl leading-none flex-shrink-0 mt-0.5">{{ $step['emoji'] }}</span>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-white font-bold text-sm sm:text-base mb-1.5">{{ $step['title'] }}</h3>
-                            <p class="text-gray-400 text-sm leading-relaxed">{{ $step['desc'] }}</p>
-                            @if($step['tip'])
-                            <div class="mt-3 flex items-start gap-2 text-xs rounded-xl px-3 py-2.5"
-                                 style="background:rgba(234,179,8,0.07); border:1px solid rgba(234,179,8,0.18); color:#fbbf24;">
-                                <span class="flex-shrink-0 mt-0.5">💡</span>
-                                <span>{{ $step['tip'] }}</span>
-                            </div>
-                            @endif
-                        </div>
+    <section class="mt-8" aria-labelledby="steam-steps-heading">
+        <h2 id="steam-steps-heading" class="text-lede font-bold text-ink-hi">Step by step: a Steam wallet code</h2>
+
+        <ol class="mt-3 space-y-2">
+            @foreach($steps as $index => [$title, $desc, $tip])
+                <li class="flex gap-3 rounded-card border border-surface-3 bg-surface-1 p-4">
+                    <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-caption font-bold text-accent-hover">{{ $index + 1 }}</span>
+                    <div class="min-w-0">
+                        <p class="text-body font-semibold text-ink-hi">{{ $title }}</p>
+                        <p class="mt-1 text-caption leading-relaxed text-ink-mid">{{ $desc }}</p>
+                        @if($tip)
+                            <p class="mt-2 rounded-control border border-accent/25 bg-accent/10 px-3 py-2 text-meta text-ink-mid">{{ $tip }}</p>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ol>
+    </section>
+
+    <section class="mt-8" aria-labelledby="issues-heading">
+        <h2 id="issues-heading" class="text-lede font-bold text-ink-hi">Common problems</h2>
+
+        <div x-data="{ open: null }" class="mt-3 space-y-2">
+            @foreach($issues as $idx => [$question, $answer])
+                <div class="rounded-card border bg-surface-1 transition-colors"
+                     :class="open === {{ $idx }} ? 'border-accent/45' : 'border-surface-3'">
+                    <h3>
+                        <button type="button" @click="open = open === {{ $idx }} ? null : {{ $idx }}"
+                                :aria-expanded="open === {{ $idx }} ? 'true' : 'false'"
+                                class="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
+                            <span class="text-body font-semibold text-ink-hi">{{ $question }}</span>
+                            <svg class="h-4 w-4 flex-shrink-0 text-ink-low transition-transform" :class="open === {{ $idx }} ? 'rotate-180' : ''"
+                                 fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+                    </h3>
+                    <div x-show="open === {{ $idx }}" x-cloak class="border-t border-surface-3 px-4 py-4 text-caption leading-relaxed text-ink-mid">
+                        {{ $answer }}
                     </div>
                 </div>
-            </div>
             @endforeach
         </div>
-    </div>
+    </section>
 
-    {{-- Platform support --}}
-    <div class="mt-14">
-        <h2 class="text-xl font-bold text-white mb-5">Works on All Platforms</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            @foreach([
-                ['🖥️', 'Steam Desktop App', 'Windows & Mac', 'The fastest way — full Steam experience'],
-                ['🌐', 'Web Browser', 'store.steampowered.com', 'Chrome, Firefox, Edge — any modern browser'],
-                ['📱', 'Steam Mobile App', 'iOS & Android', 'Free on App Store & Google Play'],
-            ] as [$icon, $title, $sub, $desc])
-            <div class="rounded-2xl p-5 text-center" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.12);">
-                <div class="text-4xl mb-3">{{ $icon }}</div>
-                <p class="text-white font-bold text-sm">{{ $title }}</p>
-                <p class="text-brand-400 text-xs font-medium mt-1">{{ $sub }}</p>
-                <p class="text-gray-500 text-xs mt-2 leading-relaxed">{{ $desc }}</p>
-            </div>
-            @endforeach
+    <div class="mt-8 rounded-card border border-surface-3 bg-surface-1 p-6 text-center">
+        <p class="text-body font-semibold text-ink-hi">Still stuck?</p>
+        <p class="mt-1 text-caption text-ink-low">Send us the order number and we will take it from there.</p>
+        <div class="mt-4 flex flex-col justify-center gap-2 sm:flex-row">
+            <x-ui.button :href="route('contact')">Contact support</x-ui.button>
+            <x-ui.button :href="route('home')" variant="secondary">Browse the catalog</x-ui.button>
         </div>
     </div>
-
-    {{-- Common Issues --}}
-    <div class="mt-14">
-        <h2 class="text-xl font-bold text-white mb-5">Common Issues & Fixes</h2>
-        <div class="space-y-2">
-            @php
-            $issues = [
-                ['"Code already redeemed" error',   'The code was already activated. Contact our support team — we verify every code before shipping and will resolve it quickly.'],
-                ['"Invalid code" error',             'Double-check for typos. Copy and paste the code directly from your email. Steam codes are not case-sensitive.'],
-                ['"Not available in your region"',   'Steam gift cards from Steam Store BD are valid in Bangladesh. If you see this error, please contact support immediately.'],
-                ['I didn\'t receive my email',       'Check your spam or junk folder first. You can also find your code in My Orders after logging into your Steam Store BD account.'],
-                ['Code box won\'t accept my code',   'Remove any spaces before or after the code. Make sure you\'re entering it in the correct "Redeem a Gift Card" section, not the payment field.'],
-            ];
-            @endphp
-            @foreach($issues as [$question, $answer])
-            <div x-data="{ open: false }" class="rounded-2xl overflow-hidden" style="border:1px solid rgba(37,99,235,0.12);">
-                <button @click="open = !open"
-                        class="w-full flex items-center justify-between px-5 py-4 text-left transition-colors"
-                        :style="open ? 'background:#0E1F35;' : 'background:#071428;'">
-                    <span class="text-white text-sm font-semibold pr-4">{{ $question }}</span>
-                    <svg class="w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                    </svg>
-                </button>
-                <div x-show="open" x-cloak style="background:#071428; border-top:1px solid rgba(37,99,235,0.1);">
-                    <p class="px-5 py-4 text-gray-400 text-sm leading-relaxed">{{ $answer }}</p>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-
-    {{-- Still need help --}}
-    <div class="mt-8 flex items-center gap-4 rounded-2xl p-5" style="background:#0E1F35; border:1px solid rgba(37,99,235,0.15);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.15);">
-            <svg class="w-5 h-5 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-        </div>
-        <div class="flex-1">
-            <p class="text-white font-bold text-sm mb-0.5">Still need help?</p>
-            <p class="text-gray-400 text-xs">Our support team is ready to assist you.</p>
-        </div>
-        <a href="{{ route('contact') }}" class="btn-brand px-5 py-2.5 rounded-xl text-sm font-semibold flex-shrink-0">Contact Us</a>
-    </div>
-
-    {{-- CTA --}}
-    <div class="mt-12 rounded-3xl p-8 sm:p-10 text-center overflow-hidden relative"
-         style="background:linear-gradient(135deg,#071428 0%,#0D2040 100%); border:1px solid rgba(37,99,235,0.25);">
-        <div class="absolute inset-0 grid-bg opacity-30 pointer-events-none"></div>
-        <div class="relative">
-            <div class="text-5xl mb-4">🎮</div>
-            <h3 class="text-white font-black text-2xl mb-2">Ready to top up your Steam Wallet?</h3>
-            <p class="text-gray-400 text-sm mb-7 max-w-md mx-auto">Browse Steam gift cards from $5 to $100 USD. Pay with bKash — code delivered instantly.</p>
-            <a href="{{ route('home') }}"
-               class="inline-flex items-center gap-2 btn-brand px-8 py-3.5 rounded-2xl font-bold text-base">
-                Browse Gift Cards →
-            </a>
-        </div>
-    </div>
-
-</div>
 </div>
 
 @endsection

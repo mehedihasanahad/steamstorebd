@@ -62,6 +62,17 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(WalletTransaction::class)->latest();
     }
 
+    /** Products this shopper saved for later. */
+    public function favourites(): HasMany
+    {
+        return $this->hasMany(Favourite::class);
+    }
+
+    public function hasFavourited(int $giftCardCategoryId): bool
+    {
+        return $this->favourites()->where('gift_card_category_id', $giftCardCategoryId)->exists();
+    }
+
     public function referralUsages(): HasMany
     {
         return $this->hasMany(ReferralUsage::class, 'referrer_id')->latest();

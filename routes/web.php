@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\BkashController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SitemapController;
@@ -24,6 +27,8 @@ Route::get('/robots.txt', function () {
         'Disallow: /checkout',
         'Disallow: /cart',
         'Disallow: /auth/',
+        'Disallow: /favourites',
+        'Disallow: /search',
         'Disallow: /bkash/',
         '',
         'Sitemap: ' . url('/sitemap.xml'),
@@ -34,9 +39,20 @@ Route::get('/robots.txt', function () {
 
 // Storefront
 Route::get('/', [StorefrontController::class, 'home'])->name('home');
-Route::get('/brand/{mainCategorySlug}', [StorefrontController::class, 'brand'])->name('brand');
-Route::get('/product/{categorySlug}', [StorefrontController::class, 'product'])->name('product');
-Route::get('/cards/{slug}', [StorefrontController::class, 'cardDetail'])->name('card.detail');
+
+// Catalog. /category/ rather than a bare /{section} because that would collide
+// with /faq, /about and every future static page, and rather than /shop
+// because /shop is already bound to the legacy redirect handler below.
+Route::get('/category/{sectionSlug}', [CatalogController::class, 'section'])->name('category');
+Route::get('/brand/{mainCategorySlug}', [CatalogController::class, 'brand'])->name('brand');
+Route::get('/product/{categorySlug}', [CatalogController::class, 'product'])->name('product');
+Route::get('/cards/{slug}', [CatalogController::class, 'cardDetail'])->name('card.detail');
+
+// Search
+Route::get('/search', [SearchController::class, 'index'])->name('search');
+Route::get('/search/suggest', [SearchController::class, 'suggest'])
+    ->middleware('throttle:60,1')
+    ->name('search.suggest');
 Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');
 Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name('how-to-redeem');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
@@ -60,14 +76,15 @@ Route::middleware('throttle:30,1')->group(function () {
 
 // Legacy shop URLs (permanent, so search engines move rankings to the new pages)
 Route::permanentRedirect('/shop', '/')->name('shop');
-Route::get('/shop/{any}', [StorefrontController::class, 'legacyShop'])->name('shop.category')->where('any', '.*');
+Route::get('/shop/{any}', [CatalogController::class, 'legacyShop'])->name('shop.category')->where('any', '.*');
 
 // Cart & Checkout (guest accessible)
 Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/cart', [CheckoutController::class, 'cart'])->name('cart');
     Route::post('/cart/add', [CheckoutController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update-quantity', [CheckoutController::class, 'updateQuantity'])->name('cart.update-quantity');
-    Route::delete('/cart/{giftCardId}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
+    Route::post('/cart/update-selection', [CheckoutController::class, 'updateSelection'])->name('cart.update-selection');
+    Route::delete('/cart/{cartKey}', [CheckoutController::class, 'removeFromCart'])->name('cart.remove');
     Route::get('/checkout/success/{orderNumber}', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/pending/{orderNumber}', [CheckoutController::class, 'pending'])->name('checkout.pending');
     Route::get('/checkout/failed', [CheckoutController::class, 'failed'])->name('checkout.failed');
@@ -99,6 +116,12 @@ Route::middleware('throttle:30,1')->group(function () {
 Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/orders/{orderNumber}', [OrderLookupController::class, 'show'])->name('orders.show');
     Route::post('/orders/{orderNumber}/review', [ReviewController::class, 'store'])->name('reviews.store')->middleware('throttle:3,1');
+});
+
+// Favourites (auth)
+Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+    Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourites');
+    Route::post('/favourites/{giftCardCategory}', [FavouriteController::class, 'toggle'])->name('favourites.toggle');
 });
 
 // Referral

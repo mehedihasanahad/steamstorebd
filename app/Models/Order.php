@@ -89,7 +89,17 @@ class Order extends Model
 
     public function isPaid(): bool
     {
-        return in_array($this->status, ['paid', 'completed']);
+        return in_array($this->status, ['paid', 'completed', 'processing']);
+    }
+
+    /**
+     * Paid, but still holding a line an admin has to top up or send
+     * credentials for. The code-pool lines on such an order have already
+     * reached the customer, which is why it is not simply "pending".
+     */
+    public function isAwaitingFulfilment(): bool
+    {
+        return $this->items->contains(fn (OrderItem $item) => $item->needsFulfilment());
     }
 
     public function isPendingReview(): bool

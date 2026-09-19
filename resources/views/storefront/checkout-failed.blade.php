@@ -2,35 +2,34 @@
 
 @section('title', 'Payment Failed — Steam Store BD')
 @section('robots', 'noindex, nofollow')
+@section('meta_description', 'Your payment could not be processed.')
 
 @section('content')
-<div class="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-red-500/10 border-2 border-red-500 mb-6">
-        <svg class="w-12 h-12 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-    </div>
-    <h1 class="text-3xl font-bold text-white mb-3">Payment Failed</h1>
-    <p class="text-gray-400 mb-8">Your payment could not be processed. Your cart items have been released.</p>
 
-    <div class="bg-gray-900 rounded-2xl border border-gray-700/50 p-5 mb-8 text-left space-y-2">
-        <p class="text-gray-400 text-sm"><span class="text-white">Why did this happen?</span></p>
-        <ul class="text-gray-500 text-sm space-y-1 list-disc list-inside">
-            <li>Payment was cancelled or timed out</li>
-            <li>Insufficient bKash balance</li>
-            <li>Network error during payment</li>
+<div class="mx-auto max-w-md px-4 py-section text-center sm:px-6 lg:px-8 lg:py-section-lg">
+
+    <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-danger bg-danger/10" aria-hidden="true">
+        <svg class="h-8 w-8 text-danger" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </span>
+
+    <h1 class="mt-5 text-title md:text-display font-extrabold text-ink-hi">Payment failed</h1>
+    <p class="mt-2 text-body text-ink-mid">Your payment did not go through, and everything in your cart has been released.</p>
+
+    <div class="mt-6 rounded-card border border-surface-3 bg-surface-1 p-5 text-left">
+        <p class="text-caption font-semibold text-ink-hi">Why this happens</p>
+        <ul class="mt-2 list-inside list-disc space-y-1 text-caption text-ink-low">
+            <li>The payment was cancelled or timed out</li>
+            <li>Not enough balance in the wallet</li>
+            <li>A network error partway through</li>
         </ul>
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-4">
-        <a href="{{ route('checkout') }}" class="flex-1 text-center font-bold py-4 rounded-xl text-white transition-all hover:shadow-lg" style="background-color: #E2136E;">
-            Try Again with bKash
-        </a>
-        <a href="{{ route('home') }}" class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 rounded-xl transition-colors">
-            Browse Cards
-        </a>
+    <div class="mt-6 flex flex-col gap-2 sm:flex-row">
+        <x-ui.button :href="route('checkout')" size="lg" class="flex-1">Try again</x-ui.button>
+        <x-ui.button :href="route('home')" variant="secondary" size="lg" class="flex-1">Browse the catalog</x-ui.button>
     </div>
 
-    <p class="text-gray-500 text-xs mt-6">Need help? <a href="{{ route('contact') }}" class="text-brand-400 hover:underline">Contact us</a></p>
+    <p class="mt-5 text-meta text-ink-low">Need help? <a href="{{ route('contact') }}" class="text-accent-hover hover:underline">Contact us</a></p>
 </div>
+
 @endsection

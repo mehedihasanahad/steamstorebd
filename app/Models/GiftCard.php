@@ -25,6 +25,21 @@ class GiftCard extends Model
         self::FULFILMENT_CREDENTIALS => 'Credentials (admin sends account details)',
     ];
 
+    /**
+     * Mirror the schema defaults, so a card built in memory behaves the same
+     * as one read back from the database. Without this a freshly created
+     * model reports no fulfilment type and no purchase limits until it is
+     * refreshed, and the order pipeline branches on exactly those.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'fulfilment_type' => self::FULFILMENT_CODE_POOL,
+        'manual_stock'    => 0,
+        'min_quantity'    => 1,
+        'max_quantity'    => 10,
+    ];
+
     protected $fillable = [
         'category_id',
         'name',
@@ -80,10 +95,16 @@ class GiftCard extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    /** Is this card delivered from the pre-stocked code pool? */
+    /**
+     * Is this card delivered from the pre-stocked code pool?
+     *
+     * An absent value reads as code_pool, which is both the column default and
+     * what every row written before manual fulfilment existed is. Treating
+     * null as "manual" would quietly route a gift card into the admin queue.
+     */
     public function usesCodePool(): bool
     {
-        return $this->fulfilment_type === self::FULFILMENT_CODE_POOL;
+        return ($this->fulfilment_type ?? self::FULFILMENT_CODE_POOL) === self::FULFILMENT_CODE_POOL;
     }
 
     /** Does an admin have to do something before the buyer gets this? */
@@ -128,7 +149,7 @@ class GiftCard extends Model
      */
     public function maxOrderableQuantity(): int
     {
-        return max(0, min($this->max_quantity, $this->stock_count));
+        return max(0, min((int) ($this->max_quantity ?? 10), $this->stock_count));
     }
 
     /** Cards with a compare-at price above their selling price. */

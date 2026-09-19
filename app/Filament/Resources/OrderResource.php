@@ -123,6 +123,16 @@ class OrderResource extends Resource
                                 \Filament\Infolists\Components\TextEntry::make('giftCard.name')->label('Product'),
                                 \Filament\Infolists\Components\TextEntry::make('quantity'),
                                 \Filament\Infolists\Components\TextEntry::make('unit_price_bdt')->label('Price (BDT)')->money('BDT'),
+                                \Filament\Infolists\Components\TextEntry::make('fulfilment_status')
+                                    ->label('Fulfilment')
+                                    ->badge()
+                                    ->placeholder('Code pool')
+                                    ->color(fn (?string $state) => $state === \App\Models\OrderItem::FULFILMENT_FULFILLED ? 'success' : 'warning'),
+                                \Filament\Infolists\Components\TextEntry::make('buyer_inputs')
+                                    ->label('Buyer details')
+                                    ->placeholder('—')
+                                    ->formatStateUsing(fn ($state) => FulfilmentResource::describeInputs($state))
+                                    ->columnSpan(2),
                             ])->columns(3),
                     ]),
             ]);
@@ -159,7 +169,9 @@ class OrderResource extends Resource
                 Tables\Columns\BadgeColumn::make('status')
                     ->colors([
                         'gray'    => 'pending',
-                        'warning' => 'pending_review',
+                        // Both states mean "waiting on someone": the customer's
+                        // money in one case, our own fulfilment in the other.
+                        'warning' => fn ($state) => \in_array($state, ['pending_review', 'processing']),
                         'primary' => 'payment_initiated',
                         'info'    => 'paid',
                         'success' => 'completed',

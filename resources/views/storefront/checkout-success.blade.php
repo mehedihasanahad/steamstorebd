@@ -2,96 +2,97 @@
 
 @section('title', 'Order Confirmed — Steam Store BD')
 @section('robots', 'noindex, nofollow')
+@section('meta_description', 'Your order is confirmed.')
 
 @section('content')
-<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-    {{-- Success animation --}}
-    <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-500/10 border-2 border-green-500 mb-4">
-            <svg class="w-12 h-12 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-        </div>
-        <h1 class="text-3xl font-bold text-white mb-2">Payment Successful!</h1>
-        <p class="text-gray-400">Order <span class="text-brand-400 font-mono font-bold">#{{ $order->order_number }}</span></p>
-        <p class="text-gray-400 text-sm mt-1">Your codes have been sent to <span class="text-black">{{ $order->customer_email }}</span></p>
+@php
+    $codeItems     = $order->items->filter(fn ($item) => $item->orderItemCodes->isNotEmpty());
+    $awaitingItems = $order->items->filter(fn ($item) => $item->needsFulfilment());
+@endphp
+
+<div class="mx-auto max-w-2xl px-4 py-section sm:px-6 lg:px-8 lg:py-section-lg">
+
+    <div class="text-center">
+        <span class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-success bg-success/10" aria-hidden="true">
+            <svg class="h-8 w-8 text-success" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </span>
+
+        <h1 class="mt-5 text-title md:text-display font-extrabold text-ink-hi">Payment successful</h1>
+        <p class="mt-2 text-body text-ink-mid">
+            Order <span class="font-mono font-bold text-ink-hi">#{{ $order->order_number }}</span>
+        </p>
+        <p class="mt-1 text-caption text-ink-low">A copy has been e-mailed to {{ $order->customer_email }}</p>
     </div>
 
-    {{-- Codes --}}
-    <div class="bg-gray-900 rounded-2xl border border-gray-700/50 p-6 mb-6">
-        <h2 class="text-xl font-bold text-white mb-5">Your Gift Card Codes</h2>
+    @if($codeItems->isNotEmpty())
+        <section class="mt-6 rounded-card border border-surface-3 bg-surface-1 p-5" aria-labelledby="codes-heading">
+            <h2 id="codes-heading" class="text-lede font-bold text-ink-hi">Your codes</h2>
 
-        @foreach($order->items as $item)
-        <div class="mb-6">
-            <p class="text-gray-400 text-sm mb-3">{{ $item->giftCard->name }} × {{ $item->quantity }}</p>
-            @foreach($item->orderItemCodes as $itemCode)
-            <div x-data="{ copied: false }" class="flex items-center gap-3 mb-3">
-                <div class="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-4 py-3 font-mono text-brand-400 font-bold tracking-widest text-sm">
-                    {{ $itemCode->giftCardCode->code }}
+            @foreach($codeItems as $item)
+                <div class="mt-4">
+                    <p class="text-caption text-ink-low">{{ $item->giftCard->name }} &times; {{ $item->quantity }}</p>
+
+                    <ul class="mt-2 space-y-2">
+                        @foreach($item->orderItemCodes as $itemCode)
+                            <li x-data="{ copied: false }" class="flex items-center gap-2">
+                                <code class="flex-1 truncate rounded-control border border-surface-3 bg-surface-2 px-3 py-3 font-mono text-caption font-bold tracking-wider text-ink-hi">{{ $itemCode->giftCardCode->code }}</code>
+                                <x-ui.button variant="secondary"
+                                             x-on:click="navigator.clipboard.writeText(@js($itemCode->giftCardCode->code)); copied = true; setTimeout(() => copied = false, 2000)">
+                                    <span x-show="!copied">Copy</span>
+                                    <span x-show="copied" x-cloak>Copied</span>
+                                </x-ui.button>
+                            </li>
+                        @endforeach
+                    </ul>
                 </div>
-                <button @click="navigator.clipboard.writeText('{{ $itemCode->giftCardCode->code }}'); copied = true; setTimeout(() => copied = false, 2000)"
-                        class="flex-shrink-0 btn-steam px-4 py-3 rounded-xl text-sm font-semibold transition-all">
-                    <span x-show="!copied">Copy</span>
-                    <span x-show="copied" x-cloak class="text-green-800">✓ Copied!</span>
-                </button>
-            </div>
             @endforeach
-        </div>
-        @endforeach
-    </div>
-
-    <div class="bg-brand-500/10 border border-brand-500/20 rounded-xl p-4 text-center mb-6">
-        <p class="text-brand-400 text-sm">📧 A copy of your codes has been emailed to <strong>{{ $order->customer_email }}</strong></p>
-    </div>
-
-    {{-- Referral share nudge --}}
-    @if($referralSettings['enabled'])
-    <div class="rounded-2xl p-5 mb-6" style="background:linear-gradient(135deg,#0A1A35,#0D2040); border:1px solid rgba(37,99,235,0.3);">
-        <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:rgba(37,99,235,0.18);">
-                <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-            </div>
-            <div class="flex-1 min-w-0">
-                <div class="text-white font-bold text-sm mb-1">Share your code — earn together!</div>
-                <p class="text-gray-400 text-xs leading-relaxed mb-3">Your friend uses your referral code at checkout → they get an instant discount → you earn wallet credit once their order is confirmed.</p>
-                @if($referralCode)
-                <div x-data="{ codeCopied: false }" class="flex items-center gap-2">
-                    <div class="flex-1 bg-gray-800 border border-gray-600 rounded-xl px-3 py-2 font-mono text-brand-400 font-bold tracking-widest text-sm text-center">
-                        {{ $referralCode }}
-                    </div>
-                    <button @click="navigator.clipboard.writeText('{{ $referralCode }}'); codeCopied = true; setTimeout(() => codeCopied = false, 2000)"
-                            class="flex-shrink-0 px-4 py-2 rounded-xl text-xs font-bold transition-all"
-                            :class="codeCopied ? 'bg-green-600 text-white' : 'bg-brand-500 hover:bg-brand-600 text-white'">
-                        <span x-show="!codeCopied">Copy Code</span>
-                        <span x-show="codeCopied" x-cloak>✓ Copied!</span>
-                    </button>
-                    <a href="{{ route('referral.dashboard') }}"
-                       class="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
-                       style="background:rgba(37,99,235,0.15); color:#93C5FD; border:1px solid rgba(37,99,235,0.3);">
-                        Dashboard
-                    </a>
-                </div>
-                @else
-                <a href="{{ route('register') }}"
-                   class="inline-block px-4 py-2 rounded-xl text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 transition-colors">
-                    Create account to get your referral code
-                </a>
-                @endif
-            </div>
-        </div>
-    </div>
+        </section>
     @endif
 
-    <div class="flex flex-col sm:flex-row gap-4">
-        <a href="{{ route('home') }}" class="flex-1 text-center bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 rounded-xl transition-colors">
-            ← Back to Home
-        </a>
-        <a href="{{ route('home') }}" class="flex-1 text-center btn-steam font-semibold py-3 rounded-xl transition-all hover:shadow-steam-glow">
-            Buy More Cards
-        </a>
+    {{-- A partly-delivered order says so here rather than leaving the buyer to
+         wonder why one of the things they paid for has no code. --}}
+    @if($awaitingItems->isNotEmpty())
+        <section class="mt-4 rounded-card border border-warning/40 bg-surface-1 p-5" aria-labelledby="awaiting-heading">
+            <h2 id="awaiting-heading" class="text-lede font-bold text-ink-hi">Being delivered by our team</h2>
+            <p class="mt-1 text-caption text-ink-mid">These are paid for and in our queue. We will e-mail you the moment each one is done.</p>
+
+            <ul class="mt-4 space-y-2">
+                @foreach($awaitingItems as $item)
+                    <li class="flex flex-wrap items-center justify-between gap-2 rounded-control border border-surface-3 bg-surface-2 p-3">
+                        <span class="text-caption font-semibold text-ink-hi">{{ $item->giftCard->name }} &times; {{ $item->quantity }}</span>
+                        <x-ui.badge tone="warning">{{ $item->giftCard->delivery_eta_label ?: 'In progress' }}</x-ui.badge>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
+    @if($referralSettings['enabled'])
+        <section class="mt-4 rounded-card border border-surface-3 bg-surface-1 p-5" aria-labelledby="share-heading">
+            <h2 id="share-heading" class="text-lede font-bold text-ink-hi">Share your code, earn together</h2>
+            <p class="mt-1 text-caption text-ink-mid">Your friend uses it at checkout and saves; your wallet is credited once their order is confirmed.</p>
+
+            @if($referralCode)
+                <div x-data="{ copied: false }" class="mt-4 flex flex-wrap items-center gap-2">
+                    <span class="rounded-control border border-surface-3 bg-surface-2 px-4 py-2.5 font-mono text-body font-bold tracking-widest text-ink-hi">{{ $referralCode }}</span>
+                    <x-ui.button variant="secondary" size="sm"
+                                 x-on:click="navigator.clipboard.writeText(@js($referralCode)); copied = true; setTimeout(() => copied = false, 2000)">
+                        <span x-show="!copied">Copy code</span>
+                        <span x-show="copied" x-cloak>Copied</span>
+                    </x-ui.button>
+                    <x-ui.button :href="route('referral.dashboard')" size="sm">Dashboard</x-ui.button>
+                </div>
+            @else
+                <x-ui.button :href="route('register')" size="sm" class="mt-4">Create an account to get your code</x-ui.button>
+            @endif
+        </section>
+    @endif
+
+    <div class="mt-6 flex flex-col gap-2 sm:flex-row">
+        <x-ui.button :href="route('orders.show', $order->order_number)" variant="secondary" size="lg" class="flex-1">View this order</x-ui.button>
+        <x-ui.button :href="route('home')" size="lg" class="flex-1">Keep shopping</x-ui.button>
     </div>
 </div>
+
 @endsection
