@@ -24,6 +24,8 @@ class GiftCardCategory extends Model
         'image',
         'sort_order',
         'is_active',
+        'is_featured',
+        'featured_sort',
         'main_category_id',
     ];
 
@@ -31,6 +33,8 @@ class GiftCardCategory extends Model
     {
         return [
             'is_active'          => 'boolean',
+            'is_featured'        => 'boolean',
+            'featured_sort'      => 'integer',
             'buyer_input_fields' => 'array',
             'sort_order'       => 'integer',
             'main_category_id' => 'integer',
@@ -93,6 +97,15 @@ class GiftCardCategory extends Model
     public function regionFlag(): ?string
     {
         return Region::flag($this->region);
+    }
+
+    /** Admin-curated products for the homepage featured rail. */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+            ->where('is_active', true)
+            ->orderBy('featured_sort')
+            ->orderBy('name');
     }
 
     public function giftCards(): HasMany

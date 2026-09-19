@@ -64,6 +64,15 @@ class GiftCardCategoryResource extends Resource
                 ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Toggle::make('is_featured')
+                ->label('Featured')
+                ->default(false)
+                ->helperText('Show this product in the homepage Featured rail.'),
+            Forms\Components\TextInput::make('featured_sort')
+                ->numeric()
+                ->default(0)
+                ->label('Featured order')
+                ->helperText('Lower numbers appear first in the Featured rail.'),
 
             Forms\Components\Section::make('Buyer Inputs')
                 ->description('Details the buyer must supply before this product can be fulfilled — a Player ID for a top-up, an account e-mail for a subscription. Leave empty for gift cards.')
@@ -147,9 +156,11 @@ class GiftCardCategoryResource extends Resource
                 Tables\Columns\TextColumn::make('giftCards.id')->label('Cards')->counts('giftCards'),
                 Tables\Columns\TextColumn::make('sort_order')->sortable(),
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
+                Tables\Columns\IconColumn::make('is_featured')->boolean()->label('Featured'),
             ])
             ->defaultSort('sort_order')
             ->filters([
+                Tables\Filters\TernaryFilter::make('is_featured')->label('Featured'),
                 Tables\Filters\SelectFilter::make('region')->options(Region::options()),
                 Tables\Filters\SelectFilter::make('main_category_id')
                     ->label('Brand')

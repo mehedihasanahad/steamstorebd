@@ -65,10 +65,16 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'gift_card_id' => ['required', 'exists:gift_cards,id'],
-            'quantity'     => ['required', 'integer', 'min:1', 'max:10'],
+            'quantity'     => ['required', 'integer', 'min:1'],
         ]);
 
         $giftCard = GiftCard::findOrFail($request->gift_card_id);
+
+        $request->validate(
+            ['quantity' => $this->quantityRules($giftCard)],
+            [],
+            ['quantity' => 'quantity'],
+        );
 
         if ($giftCard->stock_count < $request->quantity) {
             return back()->with('error', 'Only ' . $giftCard->stock_count . ' available in stock.');
@@ -93,10 +99,12 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'gift_card_id' => ['required', 'exists:gift_cards,id'],
-            'quantity'     => ['required', 'integer', 'min:1', 'max:10'],
+            'quantity'     => ['required', 'integer', 'min:1'],
         ]);
 
         $giftCard = GiftCard::findOrFail($request->gift_card_id);
+
+        $request->validate(['quantity' => $this->quantityRules($giftCard)]);
 
         if ($giftCard->stock_count < $request->quantity) {
             return response()->json(['error' => 'Only ' . $giftCard->stock_count . ' available in stock.'], 422);
@@ -268,6 +276,23 @@ class CheckoutController extends Controller
     public function failed()
     {
         return view('storefront.checkout-failed');
+    }
+
+    /**
+     * How many of this card a buyer may take in one line. Cards default to
+     * min 1 / max 10, which is the cap this controller used to hardcode, so
+     * every existing card behaves exactly as it did.
+     *
+     * @return list<string>
+     */
+    private function quantityRules(GiftCard $giftCard): array
+    {
+        return [
+            'required',
+            'integer',
+            'min:' . max(1, $giftCard->min_quantity),
+            'max:' . max(1, $giftCard->max_quantity),
+        ];
     }
 
     private function enabledPaymentMethods(): array

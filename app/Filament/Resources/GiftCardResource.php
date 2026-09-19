@@ -61,6 +61,22 @@ class GiftCardResource extends Resource
                     ->label('Buy Price (Cost)')
                     ->helperText('Your purchase cost — used to calculate profit'),
                 Forms\Components\TextInput::make('price_bdt')->numeric()->required()->prefix('৳')->label('Sell Price'),
+                Forms\Components\TextInput::make('compare_at_price_bdt')
+                    ->numeric()
+                    ->nullable()
+                    ->prefix('৳')
+                    ->label('Compare-at Price')
+                    ->helperText('Shown struck through above the sell price. Leave blank for no discount badge.'),
+                Forms\Components\TextInput::make('min_quantity')
+                    ->numeric()
+                    ->minValue(1)
+                    ->default(1)
+                    ->label('Minimum per order'),
+                Forms\Components\TextInput::make('max_quantity')
+                    ->numeric()
+                    ->minValue(1)
+                    ->default(10)
+                    ->label('Maximum per order'),
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             ])->columns(2),
 
@@ -110,7 +126,10 @@ class GiftCardResource extends Resource
                     ->formatStateUsing(fn($state) => $state ? format_bdt($state) : '—'),
                 Tables\Columns\TextColumn::make('price_bdt')
                     ->label('Sell Price')
-                    ->formatStateUsing(fn($state) => format_bdt($state)),
+                    ->formatStateUsing(fn($state) => format_bdt($state))
+                    ->description(fn (GiftCard $record) => $record->isDeal()
+                        ? 'was ' . format_bdt($record->compare_at_price_bdt) . ' (-' . $record->discountPercent() . '%)'
+                        : null),
                 Tables\Columns\TextColumn::make('profit_margin')
                     ->label('Margin')
                     ->getStateUsing(fn($record) => $record->buy_price_bdt

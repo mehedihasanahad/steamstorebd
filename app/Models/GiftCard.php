@@ -34,6 +34,9 @@ class GiftCard extends Model
         'denomination_bdt',
         'buy_price_bdt',
         'price_bdt',
+        'compare_at_price_bdt',
+        'min_quantity',
+        'max_quantity',
         'description',
         'badge_text',
         'image',
@@ -52,6 +55,9 @@ class GiftCard extends Model
             'denomination_bdt' => 'decimal:2',
             'buy_price_bdt' => 'decimal:2',
             'price_bdt' => 'decimal:2',
+            'compare_at_price_bdt' => 'decimal:2',
+            'min_quantity' => 'integer',
+            'max_quantity' => 'integer',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
             'stock_count' => 'integer',
@@ -84,6 +90,52 @@ class GiftCard extends Model
     public function needsManualFulfilment(): bool
     {
         return ! $this->usesCodePool();
+    }
+
+    /**
+     * Is this card discounted? Derived from the two prices rather than a flag,
+     * so a deal can never be advertised after its price has moved back.
+     */
+    public function isDeal(): bool
+    {
+        return $this->compare_at_price_bdt !== null
+            && (float) $this->compare_at_price_bdt > (float) $this->price_bdt;
+    }
+
+    /** Whole percent off, or null when this card is not a deal. */
+    public function discountPercent(): ?int
+    {
+        if (! $this->isDeal()) {
+            return null;
+        }
+
+        $was = (float) $this->compare_at_price_bdt;
+
+        return (int) round((($was - (float) $this->price_bdt) / $was) * 100);
+    }
+
+    /** Taka saved, or null when this card is not a deal. */
+    public function discountAmount(): ?float
+    {
+        return $this->isDeal()
+            ? (float) $this->compare_at_price_bdt - (float) $this->price_bdt
+            : null;
+    }
+
+    /**
+     * The most a buyer may take in one order: their own cap, never more than
+     * what is actually in stock.
+     */
+    public function maxOrderableQuantity(): int
+    {
+        return max(0, min($this->max_quantity, $this->stock_count));
+    }
+
+    /** Cards with a compare-at price above their selling price. */
+    public function scopeDeals(Builder $query): Builder
+    {
+        return $query->whereNotNull('compare_at_price_bdt')
+            ->whereColumn('compare_at_price_bdt', '>', 'price_bdt');
     }
 
     public function availableCodesCount(): int
