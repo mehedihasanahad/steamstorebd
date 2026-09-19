@@ -506,7 +506,7 @@ class CatalogDemoSeeder extends Seeder
 
             Banner::updateOrCreate(['title' => $headline], [
                 'image'        => $path,
-                'mobile_image' => $path,
+                'mobile_image' => $this->artwork->mobileBanner($slug, $headline, $subline, $brandSlug),
                 'alt_text'     => $headline,
                 'link_url'     => $link,
                 'sort_order'   => $sort,

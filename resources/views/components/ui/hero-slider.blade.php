@@ -6,10 +6,10 @@
     the edges; <x-ui.rail-script> supplies the drag, the autoplay and the
     current-slide index the dots read.
 
-    Every slide is 16:5 at every width — a phone gets the same picture, only
-    shorter. Cropping it to a taller shape on small screens would mean one
-    upload could not serve both, and object-cover would decide for itself
-    which third of the artwork to discard.
+    The slider takes the shape of whatever it is showing: 4:3 on a phone when
+    the slide has mobile artwork, 16:5 otherwise. Nothing is ever cropped to
+    fit, because the shape follows the picture rather than the other way
+    round — the admin holds both uploads to their fixed dimensions.
 --}}
 <x-ui.rail-script />
 
@@ -29,6 +29,11 @@
                 $hasMobile = filled($banner->mobile_image);
                 $alt       = $banner->alt_text ?: $banner->title;
                 $tag       = $banner->link_url ? 'a' : 'div';
+
+                // A phone is shown the 4:3 artwork and the box matches it. With
+                // no mobile upload it keeps the desktop slide's own 16:5, since
+                // squeezing that into a taller box would crop a third of it away.
+                $ratio = $hasMobile ? 'aspect-[4/3] md:aspect-[16/5]' : 'aspect-[16/5]';
             @endphp
 
             <{{ $tag }} @if($banner->link_url) href="{{ $banner->link_url }}" @endif
@@ -42,7 +47,7 @@
                     <img src="{{ $desktop }}"
                          alt="{{ $alt }}"
                          width="1600" height="500"
-                         class="w-full aspect-[16/5] object-cover"
+                         class="w-full {{ $ratio }} object-cover"
                          @if($i === 0) fetchpriority="high" @else loading="lazy" @endif
                          decoding="async">
                 </picture>

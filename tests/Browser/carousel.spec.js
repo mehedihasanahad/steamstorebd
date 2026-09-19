@@ -132,17 +132,24 @@ test.describe('the hero slide', () => {
         await expect(page).toHaveURL(/\/$/);
     });
 
-    test('keeps one shape on a phone, only shorter', async ({ page }) => {
+    test('takes the 4:3 shape of the phone artwork', async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
         await gotoStable(page, '/');
 
         const image = heroRail(page).locator('img').first();
         const box = await image.boundingBox();
 
-        // 16:5 at every width: the same upload serves both screens, and
-        // nothing is cropped away to make it fit.
+        // The box follows the picture rather than cropping it: every fixture
+        // slide has a 4:3 phone cut, so the slider is 4:3 here.
+        expect(box.width / box.height).toBeCloseTo(4 / 3, 1);
+    });
+
+    test('is 16:5 on a desktop, where the desktop artwork is shown', async ({ page }) => {
+        await gotoStable(page, '/');
+
+        const box = await heroRail(page).locator('img').first().boundingBox();
+
         expect(box.width / box.height).toBeCloseTo(16 / 5, 1);
-        expect(box.height).toBeLessThan(200);
     });
 });
 

@@ -90,6 +90,18 @@ class ArtworkFactory
         return $this->write("banners/{$slug}.svg", $this->heroSlide($brandSlug, $headline, $subline));
     }
 
+    /**
+     * The 4:3 phone cut of a slide.
+     *
+     * Not the same picture scaled down: a headline set for a 1600px canvas is
+     * unreadable at 390, so this one wraps and is set proportionally larger.
+     * That is the whole reason the admin offers a separate mobile upload.
+     */
+    public function mobileBanner(string $slug, string $headline, string $subline, string $brandSlug): string
+    {
+        return $this->write("banners/{$slug}-mobile.svg", $this->mobileSlide($brandSlug, $headline, $subline));
+    }
+
     private function write(string $path, string $svg): string
     {
         Storage::disk('public')->put($path, $svg);
@@ -184,6 +196,46 @@ class ArtworkFactory
                 <rect width="1600" height="500" fill="url(#s{$id})"/>
                 <text x="90" y="238" font-family="Inter, Segoe UI, sans-serif" font-size="66" font-weight="800" fill="#FFFFFF">{$this->escape($headline)}</text>
                 <text x="92" y="296" font-family="Inter, Segoe UI, sans-serif" font-size="28" font-weight="500" fill="#FFFFFF" fill-opacity="0.82">{$this->escape($subline)}</text>
+            </svg>
+            SVG;
+    }
+
+    /** The same slide at 800x600, with the headline wrapped to the narrow canvas. */
+    private function mobileSlide(string $slug, string $headline, string $subline): string
+    {
+        [$from, $to] = $this->colours($slug);
+        $id = Str::slug($slug) . '-hero-m';
+
+        $lines = $this->wrapLines($headline, 20);
+        $top   = 300 - (((count($lines) - 1) * 62) / 2);
+
+        $headlines = collect($lines)
+            ->map(fn (string $line, int $i) => sprintf(
+                '<text x="60" y="%d" font-family="Inter, Segoe UI, sans-serif" font-size="52" font-weight="800" fill="#FFFFFF">%s</text>',
+                $top + ($i * 62),
+                $this->escape($line),
+            ))
+            ->implode("
+                ");
+
+        $sublineY = $top + (count($lines) * 62) + 14;
+
+        return <<<SVG
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="{$this->escape($headline)}">
+                <defs>
+                    <linearGradient id="g{$id}" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stop-color="{$from}"/>
+                        <stop offset="100%" stop-color="{$to}"/>
+                    </linearGradient>
+                    <radialGradient id="s{$id}" cx="0.72" cy="0.22" r="0.7">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.20"/>
+                        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+                <rect width="800" height="600" fill="url(#g{$id})"/>
+                <rect width="800" height="600" fill="url(#s{$id})"/>
+                {$headlines}
+                <text x="62" y="{$sublineY}" font-family="Inter, Segoe UI, sans-serif" font-size="26" font-weight="500" fill="#FFFFFF" fill-opacity="0.82">{$this->escape($subline)}</text>
             </svg>
             SVG;
     }

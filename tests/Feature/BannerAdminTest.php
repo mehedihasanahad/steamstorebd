@@ -63,11 +63,11 @@ describe('the aspect-ratio rule', function () {
         ))->toContain('at least 1600px');
     });
 
-    it('holds phone artwork to the same shape, at a smaller size', function () {
-        // A slide keeps one shape on every screen, so the phone version is the
-        // same 16:5 — only lighter.
-        expect(ratioFailure(new ImageAspectRatio(16, 5, 800), UploadedFile::fake()->image('m.png', 800, 250)))->toBeNull();
-        expect(ratioFailure(new ImageAspectRatio(16, 5, 800), UploadedFile::fake()->image('m.png', 800, 600)))->toContain('16:5');
+    it('holds phone artwork to its own 4:3 shape', function () {
+        // The phone upload is a different cut, not the desktop one scaled: the
+        // slider takes this shape on small screens.
+        expect(ratioFailure(new ImageAspectRatio(4, 3, 800), UploadedFile::fake()->image('m.png', 800, 600)))->toBeNull();
+        expect(ratioFailure(new ImageAspectRatio(4, 3, 800), UploadedFile::fake()->image('m.png', 1600, 500)))->toContain('4:3');
     });
 
     it('passes over a stored path, so editing a record leaves its image alone', function () {
