@@ -16,6 +16,67 @@
 
 ---
 
+## Implementation Status — 2026-09-19
+
+Phases 0–6 are implemented on branch `v2`. Suites:
+
+- **574 tests, 1418 assertions, green** (`php artisan test --parallel`), against
+  a Phase 0 baseline of 352.
+- **124 browser tests, green** (`npx playwright test`) — every public page, the
+  mega-menu and search, 23 reference-layout assertions and 31 visual baselines,
+  on desktop (1440×900) and a Pixel 7.
+
+| Phase | State | Where it landed |
+|---|---|---|
+| 0 Characterisation | Done | `tests/Feature/CheckoutCharacterisationTest.php`, unedited through the Phase 5 refactor |
+| 1 Section layer | Done | `catalog_sections`, `MainCategory.catalog_section_id`, `CatalogSectionSeeder`, `StorefrontCatalog` |
+| 2 Admin & schema | Done | `CatalogSectionResource`, `BannerResource`, fulfilment/region/merchandising/content columns |
+| 3 Design system | Done | `resources/css/storefront.css` tokens, `tailwind.storefront.config.js`, `components/ui/*`, `components/catalog/*`, `DesignSystemTest` |
+| 4 Storefront rebuild | Done | header + mega-menu + search, homepage, `storefront/catalog.blade.php` (section **and** brand), product page, cart |
+| 5 Fulfilment engine | Done | `BuyerInputSchema`, `Cart`, `AddToCartRequest`, `OrderService` branch, `FulfilmentService`, `FulfilmentResource`, order-detail + e-mail branches |
+| 6 Re-theme & retire | Done | checkout, order pages, account, programme and content pages, auth, e-mails; legacy navy palette and glow shadows removed from the Tailwind config |
+
+**Decisions taken during implementation, beyond the plan as written:**
+
+1. **Mega-menu trigger.** The spec called for one `CATALOG` trigger; the supplied
+   reference screenshots show a trigger per section. Implemented as one panel
+   with the section list as column 1, opened from any section trigger — the
+   reference's interaction over the spec's single data source, not two menus.
+2. **Favourites shipped rather than deferred** (redesign spec §4.8, flagged for a
+   decision). "Add to favourite" is in the reference product hero, and the
+   feature is one additive table, one toggle route and one page. Guests see the
+   control and are sent to sign in.
+3. **`order_items.fulfilment_status` is nullable with no default.** Null means
+   "delivered from the code pool", which is what every pre-existing row is. Any
+   default would have claimed something untrue about six months of orders.
+4. **`sectionsWithBrands()` now reads through `brands()`** rather than rebuilding
+   the visible-brand tree, so a cold cache builds it once instead of twice.
+5. **Section pages are in the sitemap**; `/search` is not — it is `noindex` and
+   disallowed in robots.txt, so advertising it would contradict both.
+6. **The browser suite ignores `public/hot` and disables Laravel Boost**
+   (`STOREFRONT_IGNORE_VITE_HOT`, `BOOST_ENABLED=false` in
+   `playwright.config.js`; the hot file is redirected in `AppServiceProvider`).
+   A developer's running `npm run dev` was attaching Vite's HMR client to every
+   page under test, and HMR answers a file change with a full page reload —
+   which cancelled whatever navigation was in flight and read as three flaky
+   navigation tests. Boost's browser-log watcher was separately posting 2s
+   requests to a dev server that answers one at a time. With both out of the
+   way the navigation suite went from 3.4 minutes with retries to 57 seconds
+   with none, and the suite now tests the assets that actually ship.
+
+**Still outstanding (needs a person, not code):**
+
+- Lighthouse mobile comparison against the Phase 0 baseline (Task 0.2 never
+  recorded one, so there is nothing to compare against yet).
+- Rehearsal against a restored production snapshot, and the deploy runbook
+  below — migrate, deploy, `cache:clear`, `queue:restart`.
+- One real order end-to-end on staging through both bKash-online and send-money.
+- Region flags render as emoji. Android and iOS show them; Windows desktop does
+  not render regional-indicator pairs at all, so the region **name** is always
+  shown beside the flag. Swap to flag images if desktop parity matters.
+
+---
+
 ## Global Constraints
 
 - **No existing public URL changes.** `/brand/{slug}` and `/product/{slug}` keep their exact shapes and content. Only `/category/{slug}` and `/search` are added. Any task that proposes re-nesting these URLs is out of scope — see AD-2.
