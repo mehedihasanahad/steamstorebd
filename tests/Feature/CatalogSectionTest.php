@@ -96,6 +96,31 @@ describe('catalog section model', function () {
     });
 });
 
+describe('catalog section seeder', function () {
+    it('creates the four launch sections', function () {
+        $this->seed(Database\Seeders\CatalogSectionSeeder::class);
+
+        expect(CatalogSection::ordered()->pluck('slug')->all())
+            ->toBe(['gift-cards', 'software', 'subscriptions', 'game-top-up']);
+    });
+
+    it('is safe to run twice', function () {
+        $this->seed(Database\Seeders\CatalogSectionSeeder::class);
+        $this->seed(Database\Seeders\CatalogSectionSeeder::class);
+
+        expect(CatalogSection::count())->toBe(4);
+    });
+
+    it('never overwrites copy an admin has edited', function () {
+        $this->seed(Database\Seeders\CatalogSectionSeeder::class);
+        giftCardsSection()->update(['tagline' => 'Our own words']);
+
+        $this->seed(Database\Seeders\CatalogSectionSeeder::class);
+
+        expect(giftCardsSection()->tagline)->toBe('Our own words');
+    });
+});
+
 describe('catalog section relations', function () {
     it('holds its brands', function () {
         $section = section();

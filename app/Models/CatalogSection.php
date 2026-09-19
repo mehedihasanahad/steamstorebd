@@ -6,7 +6,6 @@ use App\Services\StorefrontCatalog;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * The top level of the catalog: Gift Cards, Software, Subscriptions, Game
@@ -63,8 +62,8 @@ class CatalogSection extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
-        static::deleted(fn () => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
+        static::saved(fn () => StorefrontCatalog::flush());
+        static::deleted(fn () => StorefrontCatalog::flush());
         static::updated(function (CatalogSection $section) {
             if ($section->wasChanged('slug')) {
                 SlugRedirect::rememberSlugChange($section);

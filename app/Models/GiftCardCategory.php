@@ -6,7 +6,6 @@ use App\Services\StorefrontCatalog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Cache;
 
 class GiftCardCategory extends Model
 {
@@ -50,8 +49,8 @@ class GiftCardCategory extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn() => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
-        static::deleted(fn() => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
+        static::saved(fn() => StorefrontCatalog::flush());
+        static::deleted(fn() => StorefrontCatalog::flush());
         static::updated(function (GiftCardCategory $category) {
             if ($category->wasChanged('slug')) {
                 SlugRedirect::rememberSlugChange($category);
