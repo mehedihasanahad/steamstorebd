@@ -92,6 +92,10 @@ export default defineConfig({
         {
             name: 'desktop',
             use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
+
+            // responsive.spec.js is about what happens below the lg breakpoint,
+            // which a 1440px viewport never reaches.
+            testIgnore: /responsive\.spec\.js/,
             dependencies: ['setup'],
         },
         {
