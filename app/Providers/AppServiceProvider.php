@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\StorefrontCatalog;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -14,6 +15,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // See config/storefront.php: the browser suite must be served the
+        // built assets, not a developer's live HMR session.
+        if (config('storefront.ignore_vite_hot_file')) {
+            Vite::useHotFile(storage_path('framework/vite-hot-disabled'));
+        }
+
         Password::defaults(function () {
             return Password::min(8)
                 ->letters()

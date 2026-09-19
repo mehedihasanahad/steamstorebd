@@ -16,6 +16,8 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/browser-tests
+/storage/browser-tests.sqlite
 /storage/pail
 /vendor
 Homestead.json
