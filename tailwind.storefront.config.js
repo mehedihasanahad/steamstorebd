@@ -1,5 +1,3 @@
-import defaultTheme from 'tailwindcss/defaultTheme';
-
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
@@ -11,52 +9,73 @@ export default {
             fontFamily: {
                 sans: ['Inter', 'ui-sans-serif', 'system-ui'],
             },
+
+            /*
+             | Every colour below resolves to a CSS custom property declared in
+             | resources/css/storefront.css. The variables hold bare RGB
+             | channels so Tailwind's opacity modifiers (bg-surface-1/60) keep
+             | working, which is what lets the whole palette live in one place
+             | instead of being re-typed across the views.
+             */
             colors: {
-                brand: {
-                    50:  '#EEF4FF',
-                    100: '#D9E8FF',
-                    200: '#B3CFFF',
-                    300: '#7AAFF5',
-                    400: '#4B8FEF',
-                    500: '#2563EB',
-                    600: '#1D4ED8',
-                    700: '#1E40AF',
-                    800: '#1E3A8A',
-                    900: '#1E3074',
+                surface: {
+                    0: 'rgb(var(--surface-0) / <alpha-value>)',
+                    1: 'rgb(var(--surface-1) / <alpha-value>)',
+                    2: 'rgb(var(--surface-2) / <alpha-value>)',
+                    3: 'rgb(var(--surface-3) / <alpha-value>)',
                 },
-                gray: {
-                    50:  '#EEF4FF',
-                    100: '#D4E0F5',
-                    200: '#9BB5D5',
-                    300: '#7898BB',
-                    400: '#557AA0',
-                    500: '#3A5E80',
-                    600: '#214263',
-                    700: '#152E4F',
-                    800: '#0E1F35',
-                    900: '#071428',
-                    950: '#040D1A',
+                ink: {
+                    hi:  'rgb(var(--text-hi) / <alpha-value>)',
+                    mid: 'rgb(var(--text-mid) / <alpha-value>)',
+                    low: 'rgb(var(--text-low) / <alpha-value>)',
                 },
+                accent: {
+                    DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
+                    hover:   'rgb(var(--accent-hover) / <alpha-value>)',
+                },
+                success: 'rgb(var(--success) / <alpha-value>)',
+                warning: 'rgb(var(--warning) / <alpha-value>)',
+                danger:  'rgb(var(--danger) / <alpha-value>)',
+
+                /* Payment and chat brand marks. Not part of the design system —
+                   these are other companies' colours and may not be re-tinted. */
                 'bkash-pink': '#E2136E',
+                whatsapp:     '#25D366',
+                messenger:    '#0099FF',
             },
+
+            /* 30 / 22 / 17 / 15 / 13 / 11 — redesign spec section 2.2. Named
+               rather than numbered so a size can never drift from its role. */
+            fontSize: {
+                display: ['30px', { lineHeight: '1.15', letterSpacing: '-0.02em' }],
+                title:   ['22px', { lineHeight: '1.25', letterSpacing: '-0.015em' }],
+                lede:    ['17px', { lineHeight: '1.45' }],
+                body:    ['15px', { lineHeight: '1.6' }],
+                caption: ['13px', { lineHeight: '1.5' }],
+                meta:    ['11px', { lineHeight: '1.45', letterSpacing: '0.01em' }],
+            },
+
+            borderRadius: {
+                card:    '10px',
+                control: '8px',
+                chip:    '6px',
+            },
+
+            /* Exactly two, both neutral black. No coloured glows: the old
+               theme's glow was what made every surface read as a light source. */
             boxShadow: {
-                'brand-glow':    '0 0 24px rgba(37,99,235,0.45)',
-                'brand-glow-lg': '0 0 48px rgba(37,99,235,0.35)',
-                'card':          '0 4px 24px rgba(0,0,0,0.4)',
+                card:  '0 1px 2px rgba(0,0,0,0.30)',
+                hover: '0 8px 24px rgba(0,0,0,0.45)',
             },
-            keyframes: {
-                float: {
-                    '0%, 100%': { transform: 'translateY(0px)' },
-                    '50%':      { transform: 'translateY(-12px)' },
-                },
-                'pulse-slow': {
-                    '0%, 100%': { opacity: '0.6' },
-                    '50%':      { opacity: '1' },
-                },
+
+            /* Section rhythm: 36px mobile, 56px desktop. */
+            spacing: {
+                section:    '36px',
+                'section-lg': '56px',
             },
-            animation: {
-                float:        'float 3s ease-in-out infinite',
-                'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+
+            maxWidth: {
+                shell: '1280px',
             },
         },
     },
