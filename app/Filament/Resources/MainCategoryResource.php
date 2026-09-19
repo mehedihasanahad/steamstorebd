@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\MainCategoryResource\Pages;
+use App\Models\CatalogSection;
 use App\Models\MainCategory;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -24,6 +25,14 @@ class MainCategoryResource extends Resource
         return $form->schema([
             Forms\Components\Section::make('Brand Info')
                 ->schema([
+                    Forms\Components\Select::make('catalog_section_id')
+                        ->label('Section')
+                        ->options(fn () => CatalogSection::orderBy('sort_order')->pluck('name', 'id'))
+                        ->searchable()
+                        ->nullable()
+                        ->placeholder('— Select section —')
+                        ->helperText('Which top-level section this brand lives under.')
+                        ->columnSpanFull(),
                     Forms\Components\TextInput::make('name')
                         ->required()
                         ->live(onBlur: true)
@@ -84,6 +93,12 @@ class MainCategoryResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('catalogSection.name')
+                    ->label('Section')
+                    ->badge()
+                    ->color('success')
+                    ->placeholder('—')
+                    ->sortable(),
                 Tables\Columns\ImageColumn::make('image')
                     ->disk('public')
                     ->height(48)
@@ -97,6 +112,11 @@ class MainCategoryResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')->boolean(),
             ])
             ->defaultSort('sort_order')
+            ->filters([
+                Tables\Filters\SelectFilter::make('catalog_section_id')
+                    ->label('Section')
+                    ->options(fn () => CatalogSection::orderBy('sort_order')->pluck('name', 'id')),
+            ])
             ->actions([Tables\Actions\EditAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
