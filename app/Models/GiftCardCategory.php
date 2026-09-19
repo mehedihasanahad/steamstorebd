@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\StorefrontCatalog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -49,8 +50,8 @@ class GiftCardCategory extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn() => Cache::forget('home_main_categories'));
-        static::deleted(fn() => Cache::forget('home_main_categories'));
+        static::saved(fn() => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
+        static::deleted(fn() => Cache::forget(StorefrontCatalog::BRANDS_CACHE_KEY));
         static::updated(function (GiftCardCategory $category) {
             if ($category->wasChanged('slug')) {
                 SlugRedirect::rememberSlugChange($category);
