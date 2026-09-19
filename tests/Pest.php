@@ -1,5 +1,10 @@
 <?php
 
+use App\Models\GiftCard;
+use App\Models\GiftCardCategory;
+use App\Models\GiftCardCode;
+use App\Models\MainCategory;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +49,72 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/*
+|--------------------------------------------------------------------------
+| Catalog fixtures
+|--------------------------------------------------------------------------
+|
+| Shared by every feature test that needs a brand -> product -> card -> code
+| chain. They live here rather than in one test file so the characterisation
+| suite and the SEO suite build their catalogs the same way.
+|
+*/
+
+function seoBrand(array $overrides = []): MainCategory
 {
-    // ..
+    return MainCategory::create(array_merge([
+        'name'      => 'Steam',
+        'slug'      => 'steam',
+        'is_active' => true,
+    ], $overrides));
+}
+
+function seoProduct(?MainCategory $brand = null, array $overrides = []): GiftCardCategory
+{
+    return GiftCardCategory::create(array_merge([
+        'name'             => 'Steam Wallet',
+        'slug'             => 'steam-wallet',
+        'is_active'        => true,
+        'main_category_id' => $brand?->id,
+    ], $overrides));
+}
+
+function seoCard(GiftCardCategory $category, array $overrides = [], int $codes = 0): GiftCard
+{
+    $card = GiftCard::create(array_merge([
+        'category_id'           => $category->id,
+        'name'                  => 'Steam Wallet $10',
+        'slug'                  => 'steam-wallet-10',
+        'denomination'          => 10,
+        'denomination_currency' => 'USD',
+        'denomination_bdt'      => 1200,
+        'price_bdt'             => 1250,
+        'is_active'             => true,
+    ], $overrides));
+
+    return addCodes($card, $codes);
+}
+
+/**
+ * Stock a card with available codes. Returns the card so it can be chained.
+ * Code values are unique per call, so a card can be topped up more than once.
+ */
+function addCodes(GiftCard $card, int $count): GiftCard
+{
+    if ($count < 1) {
+        return $card;
+    }
+
+    $admin = User::factory()->create();
+
+    for ($i = 0; $i < $count; $i++) {
+        GiftCardCode::create([
+            'gift_card_id'      => $card->id,
+            'code'              => $card->slug . '-CODE-' . uniqid() . '-' . $i,
+            'status'            => 'available',
+            'added_by_admin_id' => $admin->id,
+        ]);
+    }
+
+    return $card;
 }

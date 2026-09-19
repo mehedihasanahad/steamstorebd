@@ -7,52 +7,6 @@ use App\Models\MainCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
-function seoBrand(array $overrides = []): MainCategory
-{
-    return MainCategory::create(array_merge([
-        'name'      => 'Steam',
-        'slug'      => 'steam',
-        'is_active' => true,
-    ], $overrides));
-}
-
-function seoProduct(?MainCategory $brand = null, array $overrides = []): GiftCardCategory
-{
-    return GiftCardCategory::create(array_merge([
-        'name'             => 'Steam Wallet',
-        'slug'             => 'steam-wallet',
-        'is_active'        => true,
-        'main_category_id' => $brand?->id,
-    ], $overrides));
-}
-
-function seoCard(GiftCardCategory $category, array $overrides = [], int $codes = 0): GiftCard
-{
-    $card = GiftCard::create(array_merge([
-        'category_id'           => $category->id,
-        'name'                  => 'Steam Wallet $10',
-        'slug'                  => 'steam-wallet-10',
-        'denomination'          => 10,
-        'denomination_currency' => 'USD',
-        'denomination_bdt'      => 1200,
-        'price_bdt'             => 1250,
-        'is_active'             => true,
-    ], $overrides));
-
-    $admin = $codes > 0 ? User::factory()->create() : null;
-
-    for ($i = 0; $i < $codes; $i++) {
-        GiftCardCode::create([
-            'gift_card_id'      => $card->id,
-            'code'              => "{$card->slug}-CODE-{$i}",
-            'status'            => 'available',
-            'added_by_admin_id' => $admin->id,
-        ]);
-    }
-
-    return $card;
-}
-
 describe('sitemap', function () {
     it('lists visible brands, products and policy pages but never card redirect urls', function () {
         $brand   = seoBrand();
