@@ -70,6 +70,22 @@ body {
 .rail::-webkit-scrollbar { display: none; }
 .rail > * { scroll-snap-align: start; flex: 0 0 auto; }
 
+/* A rail can be dragged with the mouse, so it says so. Touch devices already
+   scroll it by hand and have no cursor to change. */
+@media (hover: hover) and (pointer: fine) {
+    .rail { cursor: grab; }
+}
+
+/* While a drag is in progress the snap and the smooth scrolling have to stand
+   aside: both fight a scrollLeft that is being set on every pointermove. The
+   browser snaps to the nearest slide again the moment the class comes off. */
+.rail--dragging {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+    cursor: grabbing;
+    user-select: none;
+}
+
 /* A hero slide is the viewport minus the peek on either side, which is what
    makes the neighbouring slides show through at the edges. */
 .hero-rail > * { scroll-snap-align: center; width: 100%; }

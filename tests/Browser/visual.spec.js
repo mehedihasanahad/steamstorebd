@@ -13,6 +13,14 @@ import { waitForAlpine, addToCart, gotoStable } from './helpers.js';
  *     npx playwright test visual.spec.js --update-snapshots
  */
 
+/*
+ | Every rail autoplays, so a baseline taken a second later would catch a
+ | different slide. Asking for reduced motion is not a trick to hold them
+ | still: it is the code path a reader with that preference gets, and it is
+ | the one that guarantees a rail is where the page put it.
+ */
+test.use({ reducedMotion: 'reduce' });
+
 /** Things that legitimately differ run to run and would make every diff fail. */
 async function freezePage(page) {
     await waitForAlpine(page);
@@ -26,8 +34,8 @@ async function freezePage(page) {
                 transition-delay: 0s !important;
                 caret-color: transparent !important;
             }
-            /* The hero autoplays; a baseline has to catch it on slide one. */
-            .hero-rail { scroll-behavior: auto !important; }
+            /* Belt and braces with reducedMotion above: no rail may glide. */
+            .rail { scroll-behavior: auto !important; }
         `,
     });
 

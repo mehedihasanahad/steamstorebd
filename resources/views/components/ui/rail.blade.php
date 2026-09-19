@@ -1,26 +1,24 @@
 @props([
-    'arrows' => true,
-    'gap'    => 'gap-3',
+    'arrows'   => true,
+    'gap'      => 'gap-3',
+    'autoplay' => 5000,
 ])
 
 {{--
     A horizontal catalog row. CSS scroll-snap does the scrolling and the
-    momentum; Alpine only nudges scrollLeft and decides whether each arrow is
-    still useful. Works with JavaScript off — it is a scroll container.
+    momentum; the shared `rail` component (resources/js/app.js) adds the mouse
+    drag, the one-item-at-a-time autoplay and the arrow state. Works with
+    JavaScript off — it is a scroll container.
+
+    Autoplay pauses while the pointer or the keyboard is inside the rail, while
+    the tab is in the background, and never starts at all for a reader who has
+    asked for reduced motion.
 --}}
-<div x-data="{
-        atStart: true,
-        atEnd: false,
-        sync() {
-            const el = $refs.track;
-            this.atStart = el.scrollLeft <= 4;
-            this.atEnd   = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
-        },
-        nudge(dir) {
-            $refs.track.scrollBy({ left: dir * Math.round($refs.track.clientWidth * 0.8), behavior: 'smooth' });
-        },
-     }"
-     x-init="sync(); $nextTick(() => sync())"
+<x-ui.rail-script />
+
+<div x-data="rail({ autoplay: {{ (int) $autoplay }} })"
+     @mouseenter="paused = true" @mouseleave="paused = false"
+     @focusin="paused = true" @focusout="paused = false"
      class="relative group/rail">
 
     <div x-ref="track" @scroll.debounce.100ms="sync()" {{ $attributes->class(['rail', $gap]) }}>

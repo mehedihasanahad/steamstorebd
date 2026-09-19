@@ -1,9 +1,15 @@
 @props(['banners'])
 
 @if($banners->isNotEmpty())
+{{--
+    The hero carousel. Slides snap to the centre so the neighbours peek in at
+    the edges; the shared `rail` component (resources/js/app.js) supplies the
+    drag, the autoplay and the current-slide index the dots read.
+--}}
+<x-ui.rail-script />
+
 <section aria-label="Promotions"
-         x-data="heroSlider({{ $banners->count() }})"
-         x-init="init()"
+         x-data="rail({ autoplay: 6000, centred: true })"
          @mouseenter="paused = true" @mouseleave="paused = false"
          @focusin="paused = true" @focusout="paused = false"
          class="relative">
@@ -14,10 +20,15 @@
 
         @foreach($banners as $i => $banner)
             @php
-                $desktop = Storage::disk('public')->url($banner->image);
-                $mobile  = Storage::disk('public')->url($banner->imageForMobile());
-                $alt     = $banner->alt_text ?: $banner->title;
-                $tag     = $banner->link_url ? 'a' : 'div';
+                $desktop   = Storage::disk('public')->url($banner->image);
+                $hasMobile = filled($banner->mobile_image);
+                $alt       = $banner->alt_text ?: $banner->title;
+                $tag       = $banner->link_url ? 'a' : 'div';
+
+                // A phone gets the 4:3 crop only when there is artwork drawn
+                // for it. Squeezing the 16:5 desktop slide into that box would
+                // throw away a third of the picture, so it keeps its own shape.
+                $ratio = $hasMobile ? 'aspect-[4/3] md:aspect-[16/5]' : 'aspect-[16/5]';
             @endphp
 
             <{{ $tag }} @if($banner->link_url) href="{{ $banner->link_url }}" @endif
@@ -25,11 +36,13 @@
                 aria-roledescription="slide"
                 aria-label="Slide {{ $i + 1 }} of {{ $banners->count() }}">
                 <picture>
-                    <source media="(max-width: 767px)" srcset="{{ $mobile }}">
+                    @if($hasMobile)
+                        <source media="(max-width: 767px)" srcset="{{ Storage::disk('public')->url($banner->mobile_image) }}">
+                    @endif
                     <img src="{{ $desktop }}"
                          alt="{{ $alt }}"
                          width="1600" height="500"
-                         class="w-full aspect-[4/3] md:aspect-[16/5] object-cover"
+                         class="w-full {{ $ratio }} object-cover"
                          @if($i === 0) fetchpriority="high" @else loading="lazy" @endif
                          decoding="async">
                 </picture>
@@ -49,48 +62,4 @@
         </div>
     @endif
 </section>
-
-@once
-@push('scripts')
-<script>
-document.addEventListener('alpine:init', () => {
-    Alpine.data('heroSlider', (count) => ({
-        current: 0,
-        paused: false,
-        timer: null,
-
-        init() {
-            // Autoplay is a nicety, not the mechanism. A reader who has asked
-            // the system to stop moving things gets a plain scroller.
-            if (count < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-            this.timer = setInterval(() => {
-                if (!this.paused && !document.hidden) this.go((this.current + 1) % count);
-            }, 6000);
-
-            this.$el.addEventListener('alpine:destroyed', () => clearInterval(this.timer));
-        },
-
-        go(index) {
-            this.current = index;
-            const slide = this.$refs.track.children[index];
-            if (slide) this.$refs.track.scrollTo({ left: slide.offsetLeft - this.$refs.track.offsetLeft, behavior: 'smooth' });
-        },
-
-        // Keeps the dots honest when the reader swipes instead of tapping.
-        sync() {
-            const track = this.$refs.track;
-            const middle = track.scrollLeft + track.clientWidth / 2;
-            let best = 0, bestGap = Infinity;
-            Array.from(track.children).forEach((slide, i) => {
-                const gap = Math.abs(slide.offsetLeft + slide.clientWidth / 2 - track.offsetLeft - middle);
-                if (gap < bestGap) { bestGap = gap; best = i; }
-            });
-            this.current = best;
-        },
-    }));
-});
-</script>
-@endpush
-@endonce
 @endif

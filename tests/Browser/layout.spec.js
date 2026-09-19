@@ -10,6 +10,10 @@ import { waitForAlpine, gotoStable, addToCart } from './helpers.js';
  * A pixel baseline catches a change; this catches a change that is wrong.
  */
 
+// The rails autoplay; an assertion about where a card sits needs them to stay
+// where the page put them. This is the real reduced-motion path, not a stub.
+test.use({ reducedMotion: 'reduce' });
+
 /** Where an element actually is on screen, in page coordinates. */
 async function box(locator) {
     const rect = await locator.boundingBox();
