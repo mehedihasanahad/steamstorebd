@@ -3,8 +3,13 @@
 @if($banners->isNotEmpty())
 {{--
     The hero carousel. Slides snap to the centre so the neighbours peek in at
-    the edges; the shared `rail` component (resources/js/app.js) supplies the
-    drag, the autoplay and the current-slide index the dots read.
+    the edges; <x-ui.rail-script> supplies the drag, the autoplay and the
+    current-slide index the dots read.
+
+    Every slide is 16:5 at every width — a phone gets the same picture, only
+    shorter. Cropping it to a taller shape on small screens would mean one
+    upload could not serve both, and object-cover would decide for itself
+    which third of the artwork to discard.
 --}}
 <x-ui.rail-script />
 
@@ -24,11 +29,6 @@
                 $hasMobile = filled($banner->mobile_image);
                 $alt       = $banner->alt_text ?: $banner->title;
                 $tag       = $banner->link_url ? 'a' : 'div';
-
-                // A phone gets the 4:3 crop only when there is artwork drawn
-                // for it. Squeezing the 16:5 desktop slide into that box would
-                // throw away a third of the picture, so it keeps its own shape.
-                $ratio = $hasMobile ? 'aspect-[4/3] md:aspect-[16/5]' : 'aspect-[16/5]';
             @endphp
 
             <{{ $tag }} @if($banner->link_url) href="{{ $banner->link_url }}" @endif
@@ -42,7 +42,7 @@
                     <img src="{{ $desktop }}"
                          alt="{{ $alt }}"
                          width="1600" height="500"
-                         class="w-full {{ $ratio }} object-cover"
+                         class="w-full aspect-[16/5] object-cover"
                          @if($i === 0) fetchpriority="high" @else loading="lazy" @endif
                          decoding="async">
                 </picture>

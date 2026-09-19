@@ -63,9 +63,11 @@ describe('the aspect-ratio rule', function () {
         ))->toContain('at least 1600px');
     });
 
-    it('checks the mobile shape by the same rule', function () {
-        expect(ratioFailure(new ImageAspectRatio(4, 3, 800), UploadedFile::fake()->image('m.png', 800, 600)))->toBeNull();
-        expect(ratioFailure(new ImageAspectRatio(4, 3, 800), UploadedFile::fake()->image('m.png', 1600, 500)))->toContain('4:3');
+    it('holds phone artwork to the same shape, at a smaller size', function () {
+        // A slide keeps one shape on every screen, so the phone version is the
+        // same 16:5 — only lighter.
+        expect(ratioFailure(new ImageAspectRatio(16, 5, 800), UploadedFile::fake()->image('m.png', 800, 250)))->toBeNull();
+        expect(ratioFailure(new ImageAspectRatio(16, 5, 800), UploadedFile::fake()->image('m.png', 800, 600)))->toContain('16:5');
     });
 
     it('passes over a stored path, so editing a record leaves its image alone', function () {

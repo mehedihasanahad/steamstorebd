@@ -54,7 +54,7 @@ class BannerResource extends Resource
                         ->imageEditor()
                         ->imageEditorAspectRatios(['16:5'])
                         ->rules([new ImageAspectRatio(16, 5, 1600)])
-                        ->helperText('16:5 — 1600×500 or larger. Wrong shape? Upload it anyway and crop with the pencil.'),
+                        ->helperText('16:5 — 1600×500 or larger. Shown at this shape on every screen; a phone gets the same picture, only shorter. Wrong shape? Upload it anyway and crop with the pencil.'),
                     Forms\Components\FileUpload::make('mobile_image')
                         ->label('Mobile image')
                         ->image()
@@ -63,9 +63,9 @@ class BannerResource extends Resource
                         ->maxSize(5120)
                         ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
                         ->imageEditor()
-                        ->imageEditorAspectRatios(['4:3'])
-                        ->rules([new ImageAspectRatio(4, 3, 800)])
-                        ->helperText('4:3 — 800×600 or larger. Optional; without it a phone shows the desktop slide uncropped.'),
+                        ->imageEditorAspectRatios(['16:5'])
+                        ->rules([new ImageAspectRatio(16, 5, 800)])
+                        ->helperText('16:5 as well — the same shape, from 800px wide. Optional: only worth uploading for a lighter file or bolder text on phones.'),
                     Forms\Components\TextInput::make('alt_text')
                         ->label('Alt text')
                         ->maxLength(255)

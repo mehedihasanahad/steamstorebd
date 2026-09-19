@@ -105,6 +105,47 @@ test.describe('autoplay and reduced motion', () => {
     });
 });
 
+test.describe('the hero slide', () => {
+    // A click is a click; autoplay sliding underneath it is a different test.
+    test.use({ reducedMotion: 'reduce' });
+
+    test('opens what it advertises', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        const slide = page.getByRole('region', { name: 'Promotions' }).getByRole('link').first();
+        const href = await slide.getAttribute('href');
+
+        expect(href, 'a slide that advertises something must link somewhere').toBeTruthy();
+
+        await slide.click();
+
+        await page.waitForURL(href);
+    });
+
+    test('is not opened by a drag that happens to end on it', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        await drag(page, heroRail(page), 600);
+
+        await expect(page).toHaveURL(/\/$/);
+    });
+
+    test('keeps one shape on a phone, only shorter', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await gotoStable(page, '/');
+
+        const image = heroRail(page).locator('img').first();
+        const box = await image.boundingBox();
+
+        // 16:5 at every width: the same upload serves both screens, and
+        // nothing is cropped away to make it fit.
+        expect(box.width / box.height).toBeCloseTo(16 / 5, 1);
+        expect(box.height).toBeLessThan(200);
+    });
+});
+
 test.describe('dragging', () => {
     // A drag is a deliberate gesture; autoplay would muddy what moved it.
     test.use({ reducedMotion: 'reduce' });

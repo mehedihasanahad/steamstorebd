@@ -493,20 +493,22 @@ class CatalogDemoSeeder extends Seeder
 
     private function banners(): void
     {
+        // A slide that advertises something has to be able to take the reader
+        // there: without a link the storefront renders it as a plain picture.
         $slides = [
-            ['eid', 'Enjoy 7.5% off your first order', 'bKash, Nagad and Rocket accepted · 1–31 December', 'playstation'],
-            ['steam', 'Steam Wallet codes, delivered in minutes', 'HKD, USD and TRY regions in stock right now', 'steam'],
-            ['pubg', 'Top up PUBG UC without a card', 'Give us your Player ID — we credit it in 5 to 30 minutes', 'pubg'],
+            ['eid', 'Enjoy 7.5% off your first order', 'bKash, Nagad and Rocket accepted · 1–31 December', 'playstation', route('category', 'gift-cards')],
+            ['steam', 'Steam Wallet codes, delivered in minutes', 'HKD, USD and TRY regions in stock right now', 'steam', route('brand', 'steam')],
+            ['pubg', 'Top up PUBG UC without a card', 'Give us your Player ID — we credit it in 5 to 30 minutes', 'pubg', route('brand', 'pubg')],
         ];
 
-        foreach ($slides as $sort => [$slug, $headline, $subline, $brandSlug]) {
+        foreach ($slides as $sort => [$slug, $headline, $subline, $brandSlug, $link]) {
             $path = $this->artwork->banner($slug, $headline, $subline, $brandSlug);
 
             Banner::updateOrCreate(['title' => $headline], [
                 'image'        => $path,
                 'mobile_image' => $path,
                 'alt_text'     => $headline,
-                'link_url'     => null,
+                'link_url'     => $link,
                 'sort_order'   => $sort,
                 'is_active'    => true,
             ]);
