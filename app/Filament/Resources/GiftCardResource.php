@@ -64,6 +64,31 @@ class GiftCardResource extends Resource
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             ])->columns(2),
 
+            Forms\Components\Section::make('Fulfilment')
+                ->description('How this card reaches the buyer after payment.')
+                ->schema([
+                    Forms\Components\Select::make('fulfilment_type')
+                        ->label('Delivery method')
+                        ->options(GiftCard::FULFILMENT_TYPES)
+                        ->default(GiftCard::FULFILMENT_CODE_POOL)
+                        ->required()
+                        ->live()
+                        ->helperText('Gift cards and software keys use the code pool. Top-ups and subscriptions need an admin.'),
+                    Forms\Components\TextInput::make('delivery_eta_label')
+                        ->label('Delivery time shown to buyers')
+                        ->placeholder('Instant  /  5–30 minutes')
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('manual_stock')
+                        ->label('Stock on hand')
+                        ->numeric()
+                        ->minValue(0)
+                        ->default(0)
+                        ->helperText('How many you can still fulfil. Code-pool cards count their codes instead.')
+                        // Hidden for code-pool cards: their stock comes from the
+                        // code table, so an editable number here would be ignored.
+                        ->visible(fn (Forms\Get $get) => $get('fulfilment_type') !== GiftCard::FULFILMENT_CODE_POOL),
+                ])->columns(2),
+
             Forms\Components\Section::make('Details')->schema([
                 Forms\Components\Textarea::make('description')->rows(4)->columnSpanFull(),
                 Forms\Components\Toggle::make('is_active')->default(true),
@@ -92,6 +117,16 @@ class GiftCardResource extends Resource
                         ? format_bdt($record->price_bdt - $record->buy_price_bdt)
                         : '—')
                     ->color(fn($record) => $record->buy_price_bdt && ($record->price_bdt - $record->buy_price_bdt) > 0 ? 'success' : 'gray'),
+                Tables\Columns\TextColumn::make('fulfilment_type')
+                    ->label('Delivery')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state) => match ($state) {
+                        GiftCard::FULFILMENT_MANUAL      => 'Manual',
+                        GiftCard::FULFILMENT_CREDENTIALS => 'Credentials',
+                        default                          => 'Code pool',
+                    })
+                    ->color(fn (string $state) => $state === GiftCard::FULFILMENT_CODE_POOL ? 'gray' : 'warning')
+                    ->toggleable(),
                 Tables\Columns\BadgeColumn::make('stock_count')
                     ->label('Stock')
                     ->color(fn($state) => $state > 5 ? 'success' : ($state > 0 ? 'warning' : 'danger')),

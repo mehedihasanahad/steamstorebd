@@ -52,6 +52,51 @@ class GiftCardCategoryResource extends Resource
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             Forms\Components\Toggle::make('is_active')->default(true),
 
+            Forms\Components\Section::make('Buyer Inputs')
+                ->description('Details the buyer must supply before this product can be fulfilled — a Player ID for a top-up, an account e-mail for a subscription. Leave empty for gift cards.')
+                ->schema([
+                    Forms\Components\Repeater::make('buyer_input_fields')
+                        ->label('')
+                        ->schema([
+                            Forms\Components\TextInput::make('key')
+                                ->required()
+                                ->maxLength(40)
+                                ->placeholder('player_id')
+                                ->helperText('Lowercase, no spaces. Stored with the order.'),
+                            Forms\Components\TextInput::make('label')
+                                ->required()
+                                ->maxLength(80)
+                                ->placeholder('Player ID'),
+                            Forms\Components\Select::make('type')
+                                ->required()
+                                ->default('text')
+                                ->live()
+                                ->options([
+                                    'text'   => 'Text',
+                                    'number' => 'Number',
+                                    'email'  => 'Email',
+                                    'select' => 'Dropdown',
+                                ]),
+                            Forms\Components\Toggle::make('required')
+                                ->default(true),
+                            Forms\Components\TextInput::make('help')
+                                ->maxLength(160)
+                                ->placeholder('Find it in-game under Profile, top-left')
+                                ->columnSpanFull(),
+                            Forms\Components\TagsInput::make('options')
+                                ->helperText('The choices for the dropdown.')
+                                ->visible(fn (Forms\Get $get) => $get('type') === 'select')
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(0)
+                        ->addActionLabel('Add a field')
+                        ->collapsed()
+                        ->itemLabel(fn (array $state): ?string => $state['label'] ?? null),
+                ])
+                ->columnSpanFull()
+                ->collapsed(),
+
             Forms\Components\Section::make('SEO')
                 ->description('Search engine settings for this product page (/product/{slug}). Leave empty to use the automatic title and description.')
                 ->schema([

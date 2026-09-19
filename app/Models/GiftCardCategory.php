@@ -14,6 +14,7 @@ class GiftCardCategory extends Model
         'slug',
         'description',
         'long_description',
+        'buyer_input_fields',
         'seo_title',
         'seo_description',
         'icon',
@@ -26,7 +27,8 @@ class GiftCardCategory extends Model
     protected function casts(): array
     {
         return [
-            'is_active'        => 'boolean',
+            'is_active'          => 'boolean',
+            'buyer_input_fields' => 'array',
             'sort_order'       => 'integer',
             'main_category_id' => 'integer',
         ];
@@ -35,6 +37,22 @@ class GiftCardCategory extends Model
     public function mainCategory(): BelongsTo
     {
         return $this->belongsTo(MainCategory::class, 'main_category_id');
+    }
+
+    /**
+     * What this product must ask the buyer for before it can be fulfilled.
+     * Always an array, so callers never null-check.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function buyerInputSchema(): array
+    {
+        return $this->buyer_input_fields ?? [];
+    }
+
+    public function needsBuyerInput(): bool
+    {
+        return $this->buyerInputSchema() !== [];
     }
 
     public function giftCards(): HasMany
