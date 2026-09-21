@@ -35,12 +35,13 @@
 
                     <ul class="mt-2 space-y-2">
                         @foreach($item->orderItemCodes as $itemCode)
-                            <li x-data="{ copied: false }" class="flex items-center gap-2">
+                            <x-ui.copy-script />
+                            <li x-data="copyable(@js($itemCode->giftCardCode->code))" class="flex items-center gap-2">
                                 <code class="flex-1 truncate rounded-control border border-surface-3 bg-surface-2 px-3 py-3 font-mono text-caption font-bold tracking-wider text-ink-hi">{{ $itemCode->giftCardCode->code }}</code>
-                                <x-ui.button variant="secondary"
-                                             x-on:click="navigator.clipboard.writeText(@js($itemCode->giftCardCode->code)); copied = true; setTimeout(() => copied = false, 2000)">
-                                    <span x-show="!copied">Copy</span>
+                                <x-ui.button variant="secondary" x-on:click="copy()">
+                                    <span x-show="! copied && ! failed">Copy</span>
                                     <span x-show="copied" x-cloak>Copied</span>
+                                    <span x-show="failed" x-cloak>Failed</span>
                                 </x-ui.button>
                             </li>
                         @endforeach
@@ -74,12 +75,13 @@
             <p class="mt-1 text-caption text-ink-mid">Your friend uses it at checkout and saves; your wallet is credited once their order is confirmed.</p>
 
             @if($referralCode)
-                <div x-data="{ copied: false }" class="mt-4 flex flex-wrap items-center gap-2">
+                <x-ui.copy-script />
+                <div x-data="copyable(@js($referralCode))" class="mt-4 flex flex-wrap items-center gap-2">
                     <span class="rounded-control border border-surface-3 bg-surface-2 px-4 py-2.5 font-mono text-body font-bold tracking-widest text-ink-hi">{{ $referralCode }}</span>
-                    <x-ui.button variant="secondary" size="sm"
-                                 x-on:click="navigator.clipboard.writeText(@js($referralCode)); copied = true; setTimeout(() => copied = false, 2000)">
-                        <span x-show="!copied">Copy code</span>
+                    <x-ui.button variant="secondary" size="sm" x-on:click="copy()">
+                        <span x-show="! copied && ! failed">Copy code</span>
                         <span x-show="copied" x-cloak>Copied</span>
+                        <span x-show="failed" x-cloak>Failed</span>
                     </x-ui.button>
                     <x-ui.button :href="route('referral.dashboard')" size="sm">Dashboard</x-ui.button>
                 </div>

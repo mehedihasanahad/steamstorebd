@@ -363,11 +363,11 @@
                             <p class="text-caption font-semibold text-ink-hi">Earn with referrals</p>
                             <p class="mt-1 text-meta leading-relaxed text-ink-low">Share your code, your friend saves at checkout, and your wallet is credited.</p>
                             @if($referralCode)
-                                <div x-data="{ copied: false }" class="mt-3 flex items-center gap-2">
+                                <x-ui.copy-script />
+                                <div x-data="copyable(@js($referralCode))" class="mt-3 flex items-center gap-2">
                                     <span class="font-mono text-caption font-bold tracking-widest text-accent-hover">{{ $referralCode }}</span>
-                                    <x-ui.button variant="secondary" size="sm"
-                                                 x-on:click="navigator.clipboard.writeText(@js($referralCode)); copied = true; setTimeout(() => copied = false, 1500)">
-                                        <span x-show="!copied">Copy</span><span x-show="copied" x-cloak>Copied</span>
+                                    <x-ui.button variant="secondary" size="sm" x-on:click="copy()">
+                                        <span x-show="! copied && ! failed">Copy</span><span x-show="copied" x-cloak>Copied</span><span x-show="failed" x-cloak>Failed</span>
                                     </x-ui.button>
                                 </div>
                             @else

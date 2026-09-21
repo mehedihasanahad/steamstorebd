@@ -29,7 +29,8 @@
     <div class="mt-5 grid gap-4 md:grid-cols-2">
 
         {{-- Referral code --}}
-        <section class="rounded-card border border-surface-3 bg-surface-1 p-5" aria-labelledby="code-heading" x-data="{ copied: false }">
+        <x-ui.copy-script />
+        <section class="rounded-card border border-surface-3 bg-surface-1 p-5" aria-labelledby="code-heading" x-data="copyable(@js($user->referral_code))">
             <h2 id="code-heading" class="text-lede font-bold text-ink-hi">Your referral code</h2>
             <p class="mt-1 text-caption text-ink-low">Share it with friends to earn wallet credit.</p>
 
@@ -47,10 +48,10 @@
 
                 <div class="mt-3 flex items-center gap-2 rounded-control border border-surface-3 bg-surface-2 p-3">
                     <span class="flex-1 font-mono text-title font-bold tracking-widest text-ink-hi">{{ $user->referral_code }}</span>
-                    <x-ui.button size="sm"
-                                 x-on:click="navigator.clipboard.writeText(@js($user->referral_code)); copied = true; setTimeout(() => copied = false, 2000)">
-                        <span x-show="!copied">Copy</span>
+                    <x-ui.button size="sm" x-on:click="copy()">
+                        <span x-show="! copied && ! failed">Copy</span>
                         <span x-show="copied" x-cloak>Copied</span>
+                        <span x-show="failed" x-cloak>Failed</span>
                     </x-ui.button>
                 </div>
 

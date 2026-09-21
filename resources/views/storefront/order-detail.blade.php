@@ -50,12 +50,13 @@
 
                         <ul class="mt-2 space-y-2">
                             @foreach($item->orderItemCodes as $itemCode)
-                                <li x-data="{ copied: false }" class="flex items-center gap-2">
+                                <x-ui.copy-script />
+                                <li x-data="copyable(@js($itemCode->giftCardCode->code))" class="flex items-center gap-2">
                                     <code class="flex-1 truncate rounded-control border border-surface-3 bg-surface-2 px-3 py-3 font-mono text-caption font-bold text-ink-hi">{{ $itemCode->giftCardCode->code }}</code>
-                                    <x-ui.button variant="secondary"
-                                                 x-on:click="navigator.clipboard.writeText(@js($itemCode->giftCardCode->code)); copied = true; setTimeout(() => copied = false, 2000)">
-                                        <span x-show="!copied">Copy</span>
+                                    <x-ui.button variant="secondary" x-on:click="copy()">
+                                        <span x-show="! copied && ! failed">Copy</span>
                                         <span x-show="copied" x-cloak>Copied</span>
+                                        <span x-show="failed" x-cloak>Failed</span>
                                     </x-ui.button>
                                 </li>
                             @endforeach
@@ -72,7 +73,7 @@
                 <h2 id="delivered-heading" class="text-lede font-bold text-ink-hi">Your account details</h2>
 
                 @foreach($deliveredItems as $item)
-                    <div x-data="{ revealed: false, copied: false }" class="mt-4">
+                    <div x-data="{ revealed: false }" class="mt-4">
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <p class="text-caption text-ink-low">{{ $item->deliveryLabel() }} &times; {{ $item->quantity }}</p>
                             <div class="flex gap-2">
@@ -80,11 +81,14 @@
                                     <span x-show="!revealed">Reveal</span>
                                     <span x-show="revealed" x-cloak>Hide</span>
                                 </x-ui.button>
-                                <x-ui.button variant="secondary" size="sm"
-                                             x-on:click="navigator.clipboard.writeText(@js($item->delivered_payload)); copied = true; setTimeout(() => copied = false, 2000)">
-                                    <span x-show="!copied">Copy</span>
-                                    <span x-show="copied" x-cloak>Copied</span>
-                                </x-ui.button>
+                                <x-ui.copy-script />
+                                <span x-data="copyable(@js($item->delivered_payload))">
+                                    <x-ui.button variant="secondary" size="sm" x-on:click="copy()">
+                                        <span x-show="! copied && ! failed">Copy</span>
+                                        <span x-show="copied" x-cloak>Copied</span>
+                                        <span x-show="failed" x-cloak>Failed</span>
+                                    </x-ui.button>
+                                </span>
                             </div>
                         </div>
 

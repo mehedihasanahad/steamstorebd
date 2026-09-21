@@ -178,13 +178,13 @@ $_schema = [
 
             <div class="mt-6">
                 @auth
-                    <div x-data="{ copied: false }" class="flex flex-wrap items-center gap-3">
+                    <x-ui.copy-script />
+                    <div x-data="copyable(@js(auth()->user()->referral_code ?? ''))" class="flex flex-wrap items-center gap-3">
                         <span class="rounded-control border border-surface-3 bg-surface-2 px-4 py-2.5 font-mono text-body font-bold tracking-widest text-ink-hi">
                             {{ auth()->user()->referral_code ?? '—' }}
                         </span>
-                        <x-ui.button variant="secondary" size="sm"
-                                     x-on:click="navigator.clipboard.writeText(@js(auth()->user()->referral_code ?? '')); copied = true; setTimeout(() => copied = false, 1500)">
-                            <span x-show="!copied">Copy code</span>
+                        <x-ui.button variant="secondary" size="sm" x-on:click="copy()">
+                            <span x-show="! copied && ! failed">Copy code</span>
                             <span x-show="copied" x-cloak>Copied</span>
                         </x-ui.button>
                         <x-ui.button :href="route('referral.dashboard')" size="sm">View dashboard</x-ui.button>
