@@ -28,8 +28,10 @@ async function drag(page, locator, distance) {
     // Start near the right edge and clamp the finish to the viewport: a card
     // sitting at the left of the rail has no 300px of room to its left.
     const viewport = page.viewportSize();
-    const from = Math.min(box.x + box.width * 0.8, viewport.width - 10);
-    const to = Math.max(10, from - distance);
+    const from = distance < 0
+        ? Math.max(box.x + box.width * 0.2, 10)
+        : Math.min(box.x + box.width * 0.8, viewport.width - 10);
+    const to = Math.min(viewport.width - 10, Math.max(10, from - distance));
 
     await page.mouse.move(from, y);
     await page.mouse.down();
@@ -179,6 +181,69 @@ test.describe('dragging', () => {
         await drag(page, rail, 600);
 
         await expect(page.getByRole('tab', { name: 'Go to slide 2' })).toHaveAttribute('aria-selected', 'true');
+    });
+
+    test('a small hero drag finishes the slide instead of springing back', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        const rail = heroRail(page);
+
+        // A nudge, far less than half a slide. Mandatory snap left to itself
+        // would return to the slide it came from, because that is the nearest
+        // snap point.
+        await drag(page, rail, 40);
+
+        await expect(page.getByRole('tab', { name: 'Go to slide 2' }))
+            .toHaveAttribute('aria-selected', 'true');
+
+        // And it arrives squarely, not resting between two slides.
+        const railBox = await rail.boundingBox();
+        const slide = await rail.locator('[aria-roledescription="slide"]').nth(1).boundingBox();
+
+        const railMiddle = railBox.x + railBox.width / 2;
+        const slideMiddle = slide.x + slide.width / 2;
+
+        expect(Math.abs(slideMiddle - railMiddle)).toBeLessThan(4);
+    });
+
+    test('a drag too small to be meant settles back', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        // Under the commit threshold: a twitch is not a gesture.
+        await drag(page, heroRail(page), 12);
+
+        await expect(page.getByRole('tab', { name: 'Go to slide 1' }))
+            .toHaveAttribute('aria-selected', 'true');
+    });
+
+    test('dragging the hero back returns to the previous slide', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        const rail = heroRail(page);
+
+        await drag(page, rail, 40);
+        await expect(page.getByRole('tab', { name: 'Go to slide 2' })).toHaveAttribute('aria-selected', 'true');
+
+        await drag(page, rail, -40);
+
+        await expect(page.getByRole('tab', { name: 'Go to slide 1' }))
+            .toHaveAttribute('aria-selected', 'true');
+    });
+
+    test('a catalog rail keeps the distance dragged, not whole cards', async ({ page }) => {
+        await gotoStable(page, '/');
+        await waitForAlpine(page);
+
+        const rail = railUnder(page, 'Special deals');
+
+        await drag(page, rail, 250);
+
+        // Free scrolling is the point of a rail of cards: it settles near
+        // where it was dragged rather than jumping a fixed step.
+        await expect.poll(() => scrollLeft(rail)).toBeGreaterThan(100);
     });
 
     test('dragging off a product card does not open it', async ({ page }) => {

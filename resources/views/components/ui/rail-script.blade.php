@@ -16,15 +16,25 @@ document.addEventListener('alpine:init', () => {
     // click. Below this, a shaky hand on a product card still opens the product.
     const DRAG_SLOP = 6;
 
+    // And how far before a whole-slide rail commits to the next slide. Past
+    // this the gesture was meant, so the slide completes rather than sliding
+    // back to where it started -- which is what mandatory snap does on its
+    // own, since the nearest snap point after a nudge is the one you left.
+    const DRAG_COMMIT = 24;
+
     /**
      * Options:
      *   autoplay  milliseconds between steps; 0 never moves on its own
      *   centred   true when the rail snaps slides to its centre (the hero)
      *             rather than to its left edge (every other rail)
+     *   wholeSlides  true when a drag moves in whole slides rather than by the
+     *             distance dragged -- right for a hero of full-width slides,
+     *             wrong for a rail of cards, where free scrolling is the point
      */
     Alpine.data('rail', (options = {}) => ({
         autoplay: options.autoplay ?? 0,
         centred: options.centred ?? false,
+        wholeSlides: options.wholeSlides ?? false,
 
         current: 0,
         atStart: true,
@@ -89,9 +99,20 @@ document.addEventListener('alpine:init', () => {
 
             if (! item) return;
 
+            const offset = item.offsetLeft - track.offsetLeft;
+
+            // A centred rail has to be scrolled to where the slide's middle
+            // meets the rail's, not to its left edge. Scrolling to the edge
+            // overshoots by half the leftover width, and the snap then pulls
+            // it back to the slide it started on -- so the dots would light up
+            // for a slide the rail never reached.
+            const left = this.centred
+                ? offset - ((track.clientWidth - item.clientWidth) / 2)
+                : offset;
+
             this.current = index;
             track.scrollTo({
-                left: item.offsetLeft - track.offsetLeft,
+                left: Math.max(0, left),
                 behavior: reducedMotion.matches ? 'auto' : 'smooth',
             });
         },
@@ -128,6 +149,7 @@ document.addEventListener('alpine:init', () => {
 
             let startX = 0;
             let startLeft = 0;
+            let startIndex = 0;
             let travelled = 0;
             let dragging = false;
             let captured = false;
@@ -146,6 +168,11 @@ document.addEventListener('alpine:init', () => {
                 travelled = 0;
                 startX = event.clientX;
                 startLeft = track.scrollLeft;
+
+                // Where the gesture began, so its end is measured from there
+                // rather than from wherever a debounced sync last landed.
+                this.sync();
+                startIndex = this.current;
 
                 track.classList.add('rail--dragging');
             };
@@ -179,15 +206,35 @@ document.addEventListener('alpine:init', () => {
                 if (! dragging) return;
 
                 dragging = false;
+
+                // Measure the travel BEFORE restoring the snap. Putting
+                // scroll-snap back makes the browser jump to the nearest snap
+                // point that instant, so a delta read afterwards is zero --
+                // and only looked right because the jump happens to be
+                // animated unless the reader has asked for reduced motion.
+                const delta = track.scrollLeft - startLeft;
+
                 track.classList.remove('rail--dragging');
 
                 if (captured && track.hasPointerCapture(event.pointerId)) {
                     track.releasePointerCapture(event.pointerId);
                 }
 
-                // Dropping the snap during the drag leaves the rail resting
-                // between two snap points; nudging it by nothing lets the
-                // browser settle it onto the nearest one.
+                if (this.wholeSlides) {
+                    // Past DRAG_COMMIT the gesture was meant, so the slide
+                    // completes; short of it the rail settles back. One slide
+                    // per gesture: a drag cannot reach beyond the screen, so
+                    // there is no second slide's width to cross.
+                    const step = Math.abs(delta) < DRAG_COMMIT ? 0 : Math.sign(delta);
+
+                    this.go(Math.min(this.items().length - 1, Math.max(0, startIndex + step)));
+
+                    return;
+                }
+
+                // Free-scrolling rails keep the distance dragged. Dropping the
+                // snap during the drag left the rail resting between two snap
+                // points; nudging it by nothing settles it onto the nearest.
                 track.scrollBy({ left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
                 this.sync();
             };

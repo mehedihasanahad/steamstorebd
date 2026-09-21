@@ -14,7 +14,7 @@
 <x-ui.rail-script />
 
 <section aria-label="Promotions"
-         x-data="rail({ autoplay: 6000, centred: true })"
+         x-data="rail({ autoplay: 6000, centred: true, wholeSlides: true })"
          @mouseenter="paused = true" @mouseleave="paused = false"
          @focusin="paused = true" @focusout="paused = false"
          class="relative">
