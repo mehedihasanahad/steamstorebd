@@ -77,6 +77,19 @@ class Order extends Model
         return $query->where('status', 'paid');
     }
 
+    /**
+     * Orders waiting on someone here, rather than on the customer.
+     *
+     * `pending_review` is money the customer says they sent and an admin has
+     * to verify; `processing` is money taken for something an admin still has
+     * to fulfil by hand. A `pending` order is neither — it is an abandoned
+     * checkout, and nothing anyone here does will move it.
+     */
+    public function scopeAwaitingAction($query)
+    {
+        return $query->whereIn('status', ['pending_review', 'processing']);
+    }
+
     public function scopeCompleted($query)
     {
         return $query->where('status', 'completed');

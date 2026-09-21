@@ -24,7 +24,10 @@ class StatsOverviewWidget extends BaseWidget
 
         $totalStock = GiftCardCode::available()->count();
 
-        $pendingOrders = Order::where('status', 'pending')->count();
+        // Not `pending`: that is a checkout the customer walked away from, and
+        // it stayed on nought while a send-money order sat waiting to be
+        // approved — which is the one thing this tile should have been showing.
+        $awaitingAction = Order::awaitingAction()->count();
 
         $totalSold = GiftCardCode::sold()->count();
 
@@ -79,10 +82,10 @@ class StatsOverviewWidget extends BaseWidget
                 ->color($totalStock < 10 ? 'danger' : 'success')
                 ->icon('heroicon-o-key'),
 
-            Stat::make('Pending Orders', $pendingOrders)
-                ->description('Awaiting payment')
-                ->color($pendingOrders > 0 ? 'warning' : 'gray')
-                ->icon('heroicon-o-clock'),
+            Stat::make('Needs Your Action', $awaitingAction)
+                ->description('Payments to verify, or items to fulfil')
+                ->color($awaitingAction > 0 ? 'warning' : 'gray')
+                ->icon('heroicon-o-bell-alert'),
 
             Stat::make('Total Codes Sold', $totalSold)
                 ->description('All-time sold codes')
