@@ -68,6 +68,14 @@ class CatalogSectionResource extends Resource
                         ->numeric()
                         ->default(0)
                         ->helperText('Lower numbers appear first.'),
+                    Forms\Components\Radio::make('display_mode')
+                        ->label('Homepage layout')
+                        ->options(CatalogSection::DISPLAY_MODES)
+                        ->default(CatalogSection::DISPLAY_SLIDER)
+                        ->required()
+                        ->in(array_keys(CatalogSection::DISPLAY_MODES))
+                        ->helperText('How this section draws its brands on the homepage. A slider keeps the section one row tall however many brands it holds; a grid shows them all at once and grows the page instead. Cards are the same size either way, and the section page is unaffected.')
+                        ->columnSpanFull(),
                     Forms\Components\Toggle::make('is_active')
                         ->default(true)
                         ->helperText('A hidden section disappears from the menu, homepage and sitemap.'),
@@ -121,6 +129,11 @@ class CatalogSectionResource extends Resource
                     ->color('info'),
                 Tables\Columns\TextColumn::make('sort_order')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('display_mode')
+                    ->label('Homepage')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => ucfirst($state ?? CatalogSection::DISPLAY_SLIDER))
+                    ->color(fn (?string $state) => $state === CatalogSection::DISPLAY_GRID ? 'warning' : 'gray'),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),
             ])

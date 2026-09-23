@@ -7,6 +7,7 @@
  */
 
 use App\Models\Banner;
+use App\Models\CatalogSection;
 use App\Models\GiftCard;
 use App\Models\Review;
 use App\Models\SiteSetting;
@@ -132,6 +133,22 @@ describe('featured products', function () {
     });
 });
 
+/**
+ * One homepage section's markup, sliced out by its id.
+ *
+ * The homepage carries other rails — deals, featured, reviews — so asserting
+ * on the whole page could not tell whether the rail it found was the section's
+ * own. A section holds no nested <section>, so the first closing tag is its.
+ */
+function homeSectionMarkup(string $html, string $slug): string
+{
+    $start = strpos($html, 'id="section-' . $slug . '"');
+
+    expect($start)->not->toBeFalse("the homepage has no section-{$slug}");
+
+    return substr($html, $start, strpos($html, '</section>', $start) - $start);
+}
+
 describe('catalog section rails', function () {
     it('renders one rail per section, each linking to its own page', function () {
         sellableProduct(giftCardsSectionModel());
@@ -152,6 +169,54 @@ describe('catalog section rails', function () {
         $this->get(route('home'))
             ->assertSuccessful()
             ->assertDontSee(route('category', 'subscriptions'), false);
+    });
+
+    it('scrolls a section sideways unless it is told otherwise', function () {
+        sellableProduct(giftCardsSectionModel());
+
+        $html = $this->get(route('home'))->assertSuccessful()->getContent();
+
+        expect(homeSectionMarkup($html, 'gift-cards'))
+            ->toContain('rail(')
+            ->not->toContain('lg:grid-cols-6');
+    });
+
+    it('wraps a section onto rows when it is set to grid', function () {
+        $section = giftCardsSectionModel();
+        $section->update(['display_mode' => CatalogSection::DISPLAY_GRID]);
+        sellableProduct($section);
+
+        $html = $this->get(route('home'))->assertSuccessful()->getContent();
+
+        // No rail means no Alpine component, no drag, no autoplay: the cards
+        // are a plain grid, which is the whole point of the setting.
+        expect(homeSectionMarkup($html, 'gift-cards'))
+            ->toContain('lg:grid-cols-6')
+            ->not->toContain('rail(');
+    });
+
+    it('lets one section be a grid while the next stays a slider', function () {
+        $grid = giftCardsSectionModel();
+        $grid->update(['display_mode' => CatalogSection::DISPLAY_GRID]);
+        sellableProduct($grid);
+        sellableProduct(storefrontSection(), ['brand_name' => 'PUBG', 'brand_slug' => 'pubg', 'name' => 'PUBG UC', 'slug' => 'pubg-uc'], ['slug' => 'pubg-uc-660']);
+
+        $html = $this->get(route('home'))->assertSuccessful()->getContent();
+
+        expect(homeSectionMarkup($html, 'gift-cards'))->not->toContain('rail(')
+            ->and(homeSectionMarkup($html, 'game-top-up'))->toContain('rail(');
+    });
+
+    it('keeps the section page a grid whichever shape the homepage uses', function () {
+        $section = giftCardsSectionModel();
+        $section->update(['display_mode' => CatalogSection::DISPLAY_SLIDER]);
+        sellableProduct($section);
+
+        // display_mode is a homepage setting. The section's own page has
+        // always been a grid and does not read it.
+        $this->get(route('category', 'gift-cards'))
+            ->assertSuccessful()
+            ->assertSee('md:grid-cols-3', false);
     });
 
     it('builds every rail from a bounded number of catalog queries', function () {

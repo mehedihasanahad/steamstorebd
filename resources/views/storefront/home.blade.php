@@ -71,16 +71,31 @@ $_schema = [
         </x-catalog.section-rail>
     @endif
 
-    {{-- ══ 4 · One rail per catalog section ══ --}}
+    {{-- ══ 4 · One row per catalog section ══ --}}
+    {{-- Slider or grid is the section's own choice, made in admin: how many
+         brands a vertical holds is what decides which shape reads better, and
+         that is known where the catalog is filled, not here. The rail fixes
+         its cards' width; the grid lets the column set it. --}}
     @foreach($sections as $section)
-        <x-catalog.section-rail :title="$section->name"
-                                :view-all="route('category', $section->slug)"
-                                :id="'section-' . $section->slug"
-                                class="mt-section md:mt-section-lg">
-            @foreach($section->mainCategories as $brand)
-                <x-catalog.brand-card :brand="$brand" />
-            @endforeach
-        </x-catalog.section-rail>
+        @if($section->isGrid())
+            <x-catalog.section-grid :title="$section->name"
+                                    :view-all="route('category', $section->slug)"
+                                    :id="'section-' . $section->slug"
+                                    class="mt-section md:mt-section-lg">
+                @foreach($section->mainCategories as $brand)
+                    <x-catalog.brand-card :brand="$brand" width="w-full" />
+                @endforeach
+            </x-catalog.section-grid>
+        @else
+            <x-catalog.section-rail :title="$section->name"
+                                    :view-all="route('category', $section->slug)"
+                                    :id="'section-' . $section->slug"
+                                    class="mt-section md:mt-section-lg">
+                @foreach($section->mainCategories as $brand)
+                    <x-catalog.brand-card :brand="$brand" />
+                @endforeach
+            </x-catalog.section-rail>
+        @endif
     @endforeach
 
     {{-- The safety net: a database with no sections configured still shows

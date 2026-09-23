@@ -17,6 +17,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CatalogSection extends Model
 {
+    /** The section's brands sit in one row the reader scrolls sideways. */
+    public const DISPLAY_SLIDER = 'slider';
+
+    /** The section's brands wrap onto as many rows as they need. */
+    public const DISPLAY_GRID = 'grid';
+
+    /** @var array<string, string> */
+    public const DISPLAY_MODES = [
+        self::DISPLAY_SLIDER => 'Slider — one row, scrolled sideways',
+        self::DISPLAY_GRID   => 'Grid — wraps onto as many rows as it needs',
+    ];
+
     protected $fillable = [
         'name',
         'slug',
@@ -26,6 +38,7 @@ class CatalogSection extends Model
         'image',
         'accent_color',
         'sort_order',
+        'display_mode',
         'is_active',
         'seo_title',
         'seo_description',
@@ -38,6 +51,16 @@ class CatalogSection extends Model
             'is_active'  => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    /**
+     * Whether the homepage should wrap this section's brands instead of
+     * scrolling them. Null for a row cached before the column existed, which
+     * reads as the slider every section had until then.
+     */
+    public function isGrid(): bool
+    {
+        return $this->display_mode === self::DISPLAY_GRID;
     }
 
     public function mainCategories(): HasMany

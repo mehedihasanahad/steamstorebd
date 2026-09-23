@@ -99,6 +99,46 @@ describe('editing a section', function () {
     });
 });
 
+describe('the homepage layout setting', function () {
+    beforeEach(function () {
+        $this->actingAs(admin());
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+    });
+
+    it('offers a new section the slider', function () {
+        Livewire::test(CatalogSectionResource\Pages\CreateCatalogSection::class)
+            ->assertFormSet(['display_mode' => CatalogSection::DISPLAY_SLIDER]);
+    });
+
+    it('stores the grid choice', function () {
+        $section = giftCardsSectionModel();
+
+        Livewire::test(CatalogSectionResource\Pages\EditCatalogSection::class, ['record' => $section->getKey()])
+            ->fillForm(['display_mode' => CatalogSection::DISPLAY_GRID])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect($section->fresh()->isGrid())->toBeTrue();
+    });
+
+    it('refuses a layout that is neither', function () {
+        $section = giftCardsSectionModel();
+
+        Livewire::test(CatalogSectionResource\Pages\EditCatalogSection::class, ['record' => $section->getKey()])
+            ->fillForm(['display_mode' => 'carousel'])
+            ->call('save')
+            ->assertHasFormErrors(['display_mode']);
+
+        expect($section->fresh()->display_mode)->toBe(CatalogSection::DISPLAY_SLIDER);
+    });
+
+    it('leaves a section created before the setting existed on the slider', function () {
+        // The column defaults rather than being backfilled, so a row written
+        // by the original create migration reads as a slider.
+        expect(giftCardsSectionModel()->isGrid())->toBeFalse();
+    });
+});
+
 describe('brand admin', function () {
     beforeEach(function () {
         $this->actingAs(admin());
