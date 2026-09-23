@@ -20,7 +20,7 @@
         {{-- The product's own cover, not the denomination icon: a deal is
              recognised by its brand, and the value is already in the price. --}}
         <x-catalog.artwork :image="$product->image ?: $product->mainCategory?->image ?: $card->image"
-                           :name="$card->name" ratio="aspect-[16/10]" :width="240" :height="150" />
+                           :name="$card->name" ratio="aspect-[4/3]" :width="240" :height="180" />
         @if($saved)
             <span class="absolute top-2 left-2 rounded-chip bg-success px-2 py-0.5 text-meta font-bold leading-none text-surface-0">
                 {{ number_format($saved, 0) }}tk off

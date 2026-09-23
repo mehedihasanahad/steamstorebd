@@ -1,9 +1,9 @@
 @props([
     'image'  => null,
     'name'   => '',
-    'ratio'  => 'aspect-[16/10]',
+    'ratio'  => 'aspect-[4/3]',
     'width'  => 320,
-    'height' => 200,
+    'height' => 240,
     'eager'  => false,
 ])
 

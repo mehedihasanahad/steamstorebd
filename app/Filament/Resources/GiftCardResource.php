@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiftCardResource\Pages;
 use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
+use App\Rules\ImageAspectRatio;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -34,12 +35,20 @@ class GiftCardResource extends Resource
                 Forms\Components\TextInput::make('slug')->required()->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('badge_text')->placeholder('Best Value'),
                 Forms\Components\FileUpload::make('image')
-                    ->label('Gift Card Image (1057×1488px)')
+                    ->label('Gift Card Image')
                     ->image()
                     ->disk('public')
                     ->directory('images/gift-cards')
                     ->maxSize(5120)
-                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
+                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                    ->imageResizeMode('cover')
+                    ->imageResizeTargetWidth('160')
+                    ->imageResizeTargetHeight('160')
+                    ->imageResizeUpscale(false)
+                    ->imageEditor()
+                    ->imageEditorAspectRatios(['1:1'])
+                    ->rules([new ImageAspectRatio(1, 1, 160)])
+                    ->helperText('Square — 160×160. A denomination is only ever drawn as a 40–48px square tile in the picker, cart and checkout, never as a card, so it wants a square and needs far fewer pixels than a product image. Leave this empty to reuse the product artwork.'),
             ])->columns(2),
 
             Forms\Components\Section::make('Pricing')->schema([

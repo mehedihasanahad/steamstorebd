@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GiftCardCategoryResource\Pages;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
+use App\Rules\ImageAspectRatio;
 use App\Support\Region;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -56,12 +57,20 @@ class GiftCardCategoryResource extends Resource
                 ->columnSpanFull(),
             Forms\Components\TextInput::make('icon')->placeholder('heroicon-o-tag'),
             Forms\Components\FileUpload::make('image')
-                ->label('Category Image (1057×1488px)')
+                ->label('Product Image')
                 ->image()
                 ->disk('public')
                 ->directory('images/categories')
                 ->maxSize(5120)
-                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
+                ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                ->imageResizeMode('cover')
+                ->imageResizeTargetWidth('560')
+                ->imageResizeTargetHeight('420')
+                ->imageResizeUpscale(false)
+                ->imageEditor()
+                ->imageEditorAspectRatios(['4:3'])
+                ->rules([new ImageAspectRatio(4, 3, 560)])
+                ->helperText('4:3 landscape — 560×420. The grid card is a 4:3 box, and it measures 278×209 at its widest, so this is exactly twice that for sharpness on a retina screen. Anything bigger is shrunk on upload. Portrait artwork loses its top and bottom here — upload it anyway and pick the crop with the pencil.'),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             Forms\Components\Toggle::make('is_active')->default(true),
             Forms\Components\Toggle::make('is_featured')

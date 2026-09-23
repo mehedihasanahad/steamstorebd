@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MainCategoryResource\Pages;
 use App\Models\CatalogSection;
 use App\Models\MainCategory;
+use App\Rules\ImageAspectRatio;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -45,12 +46,20 @@ class MainCategoryResource extends Resource
                     Forms\Components\TextInput::make('icon')
                         ->placeholder('🎮  or  heroicon-o-tag'),
                     Forms\Components\FileUpload::make('image')
-                        ->label('Brand Cover Image (1057×1488px portrait)')
+                        ->label('Brand Cover Image')
                         ->image()
                         ->disk('public')
                         ->directory('images/main-categories')
                         ->maxSize(5120)
-                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp']),
+                        ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/webp'])
+                        ->imageResizeMode('cover')
+                        ->imageResizeTargetWidth('560')
+                        ->imageResizeTargetHeight('420')
+                        ->imageResizeUpscale(false)
+                        ->imageEditor()
+                        ->imageEditorAspectRatios(['4:3'])
+                        ->rules([new ImageAspectRatio(4, 3, 560)])
+                        ->helperText('4:3 landscape — 560×420, the same as a product image, because this stands in for one wherever a product has none of its own. The homepage brand rail is a slightly wider 16:10 box, so a thin strip of the top and bottom is trimmed there. Anything bigger is shrunk on upload.'),
                     Forms\Components\TextInput::make('sort_order')
                         ->numeric()
                         ->default(0),
