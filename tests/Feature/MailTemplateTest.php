@@ -303,6 +303,21 @@ describe('a rendered message', function () {
             ->and(mailFor($key)->render())->not->toContain('font-family: &#039;');
     })->with('every message');
 
+    it('writes its plain-text half without HTML entities', function (string $key) {
+        // Blade escapes for HTML whatever the view is for, so a URL with a
+        // query string arrives in a text/plain part with &amp; in it and the
+        // link no longer works.
+        $mail    = mailFor($key);
+        $content = $mail->content();
+
+        $text = view($content->text, array_merge($mail->buildViewData(), $content->with))->render();
+
+        expect($text)->not->toContain('&amp;')
+            ->and($text)->not->toContain('&quot;')
+            ->and($text)->not->toContain('&#039;')
+            ->and($text)->not->toContain('&lt;');
+    })->with('every message');
+
     it('ships a plain-text alternative that exists', function (string $key) {
         $text = mailFor($key)->content()->text;
 

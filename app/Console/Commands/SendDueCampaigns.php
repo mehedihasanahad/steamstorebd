@@ -4,7 +4,9 @@ namespace App\Console\Commands;
 
 use App\Models\EmailCampaign;
 use App\Services\CampaignSender;
+use App\Support\Campaigns\PublicUrl;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Starts the campaigns whose time has come.
@@ -25,6 +27,16 @@ class SendDueCampaigns extends Command
 
         if ($due->isEmpty()) {
             return self::SUCCESS;
+        }
+
+        // Whoever scheduled these was warned at the time, so they go out.
+        // Recorded all the same: if the links are unreachable the messages are
+        // very likely to be discarded, and this is the only trace of why.
+        if ($problem = PublicUrl::problem()) {
+            $this->warn('Links may be unreachable: ' . $problem);
+            Log::warning('Campaign sent with unreachable links: ' . $problem, [
+                'campaigns' => $due->pluck('id')->all(),
+            ]);
         }
 
         foreach ($due as $campaign) {

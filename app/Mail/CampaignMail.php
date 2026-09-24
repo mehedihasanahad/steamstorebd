@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\EmailCampaign;
 use App\Models\EmailCampaignRecipient;
 use App\Support\Campaigns\MergeTags;
+use App\Support\Campaigns\PublicUrl;
 use App\Support\EmailRichText;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -39,6 +40,13 @@ class CampaignMail extends Mailable
      */
     public function headers(): Headers
     {
+        // Omitted rather than sent broken: a provider that checks this header
+        // and cannot resolve it treats the message as malformed bulk mail and
+        // discards it after accepting, which is worse than not declaring it.
+        if (! PublicUrl::isRoutable()) {
+            return new Headers;
+        }
+
         return new Headers(text: [
             'List-Unsubscribe' => '<' . $this->unsubscribeUrl() . '>',
         ]);

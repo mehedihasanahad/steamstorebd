@@ -10,6 +10,7 @@ use App\Services\CampaignSender;
 use App\Support\Campaigns\AudienceField;
 use App\Support\Campaigns\AudienceSchema;
 use App\Support\Campaigns\MergeTags;
+use App\Support\Campaigns\PublicUrl;
 use Filament\Actions;
 use Filament\Actions\MountableAction;
 use Filament\Forms;
@@ -357,7 +358,8 @@ class EmailCampaignResource extends Resource
                 'heading'     => 'Send this campaign?',
                 'description' => fn (EmailCampaign $record) => 'This will e-mail '
                     . number_format(app(CampaignAudience::class)->count($record))
-                    . ' people. It cannot be undone, though a send in progress can be stopped.',
+                    . ' people. It cannot be undone, though a send in progress can be stopped.'
+                    . (($problem = PublicUrl::problem()) ? "\n\nWARNING: {$problem}" : ''),
                 'submit'      => 'Send it',
                 'handle'      => function (EmailCampaign $record) {
                     $total = app(CampaignSender::class)->send($record);
@@ -380,10 +382,22 @@ class EmailCampaignResource extends Resource
                         ->seconds(false)
                         ->minDate(now())
                         ->required()
-                        ->helperText('The audience is worked out when it sends, not now.'),
+                        ->helperText(fn () => 'The audience is worked out when it sends, not now.'
+                            . (($problem = PublicUrl::problem()) ? ' — ' . $problem : '')),
                 ],
                 'handle' => function (EmailCampaign $record, array $data) {
                     app(CampaignSender::class)->schedule($record, Carbon::parse($data['scheduled_for']));
+
+                    if ($problem = PublicUrl::problem()) {
+                        Notification::make()
+                            ->title('Scheduled — but the links will not work')
+                            ->body($problem)
+                            ->warning()
+                            ->persistent()
+                            ->send();
+
+                        return;
+                    }
 
                     Notification::make()->title('Scheduled')->success()->send();
                 },
