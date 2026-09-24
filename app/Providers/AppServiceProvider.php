@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Services\StorefrontCatalog;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -29,6 +31,23 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('email-campaign', fn () => Limit::perMinute(
             max(1, (int) config('mail.campaign.rate_per_minute', 60)),
         ));
+
+        /*
+         | A queue worker is a long-running process, and Laravel caches the
+         | resolved mailer -- so every job after the first reuses one SMTP
+         | connection. Orders arrive minutes apart, by which time the provider
+         | has closed its side, and the next job gets
+         | "451 4.4.2 Timeout waiting for data from client" on MAIL FROM.
+         |
+         | Symfony's own keepalive does not catch it: it pings with NOOP and
+         | only reconnects if the NOOP throws, and this server answers the NOOP
+         | quite happily before refusing the transaction that follows.
+         |
+         | So the mailer is dropped before every job and each one dials afresh.
+         | The handshake costs a few hundred milliseconds against a customer
+         | otherwise waiting a full retry backoff for the code they paid for.
+         */
+        Queue::before(fn () => Mail::forgetMailers());
 
         Password::defaults(function () {
             return Password::min(8)
