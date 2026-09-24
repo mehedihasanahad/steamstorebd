@@ -1,5 +1,4 @@
-{{ site_setting('site_name', 'Steam Store BD') }} — RESELLER PROGRAM
-Application {{ $application->application_number }}
+@include('emails.partials.plain-header', ['eyebrow' => 'Reseller Program', 'heading' => 'Application received — ' . $application->application_number])
 
 Hi {{ $application->name }},
 
@@ -8,13 +7,13 @@ Our team will review your application and get back to you {{ $responseTime }}.
 
 YOUR APPLICATION
 ----------------
-Application ID  : {{ $application->application_number }}
-Name            : {{ $application->name }}
-Email           : {{ $application->email }}
-Phone           : {{ $application->phone }}
-WhatsApp        : {{ $application->whatsapp_number }}
-Selling Platform: {{ $application->platformLabel() }}
-Gift Cards      : {{ $application->giftCardTypesLabel() }}
+Application ID   : {{ $application->application_number }}
+Name             : {{ $application->name }}
+Email            : {{ $application->email }}
+Phone            : {{ $application->phone }}
+WhatsApp         : {{ $application->whatsapp_number }}
+Selling platform : {{ $application->platformLabel() }}
+Gift cards       : {{ $application->giftCardTypesLabel() }}
 
 WHAT HAPPENS NEXT
 -----------------
@@ -22,7 +21,4 @@ WHAT HAPPENS NEXT
 2. We contact you on WhatsApp to verify your business
 3. Once approved, you receive your reseller pricing and can start ordering
 
-Keep this email — your application ID is {{ $application->application_number }}.
-
-Questions? {{ route('contact') }}
-{{ site_setting('site_name', 'Steam Store BD') }} — {{ route('home') }}
+@include('emails.partials.plain-footer', ['disclaimer' => 'Keep this email — your application ID is ' . $application->application_number . '.'])

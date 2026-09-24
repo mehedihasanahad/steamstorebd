@@ -117,4 +117,25 @@ return [
 
     'admin_notification_email' => env('ADMIN_NOTIFICATION_EMAIL', env('MAIL_FROM_ADDRESS', 'hello@example.com')),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Markdown Mail Settings
+    |--------------------------------------------------------------------------
+    |
+    | Laravel builds its own messages — the password reset link, and anything
+    | else sent as a MailMessage — from markdown components rather than from
+    | the components under resources/views/components/email. The theme below
+    | re-skins them from the same palette so they do not arrive in the
+    | framework default while every other message is on brand.
+    |
+    */
+
+    'markdown' => [
+        'theme' => 'ash',
+
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
+
 ];

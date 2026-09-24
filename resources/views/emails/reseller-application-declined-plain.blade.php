@@ -1,5 +1,4 @@
-{{ site_setting('site_name', 'Steam Store BD') }} — RESELLER PROGRAM
-Application {{ $application->application_number }}
+@include('emails.partials.plain-header', ['eyebrow' => 'Reseller Program', 'heading' => 'Application update — ' . $application->application_number])
 
 Hi {{ $application->name }},
 
@@ -18,5 +17,4 @@ YOU ARE WELCOME TO APPLY AGAIN
 
 Apply again: {{ route('reseller') }}
 
-Reference: {{ $application->application_number }}
-Questions? {{ route('contact') }}
+@include('emails.partials.plain-footer', ['disclaimer' => 'Reference: ' . $application->application_number])

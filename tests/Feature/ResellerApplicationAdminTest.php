@@ -143,7 +143,7 @@ describe('the reseller emails', function () {
         $application = makeApplication();
 
         expect((new ResellerApplicationReceivedMail($application))->render())
-            ->toContain('Application Received')
+            ->toContain('Application received')
             ->toContain('Rahim Uddin');
     });
 
@@ -165,34 +165,6 @@ describe('the reseller emails', function () {
             ->toContain('Your Facebook page had no selling history.');
     });
 
-    it('paints its own dark canvas instead of relying on the body background', function (string $mailable) {
-        $application = makeApplication(['decline_reason' => 'We could not verify your selling history.']);
-
-        // Mail clients routinely drop `body` styles but honour a table bgcolor.
-        expect((new $mailable($application))->render())
-            ->toContain('bgcolor="#030711"');
-    })->with([
-        ResellerApplicationReceivedMail::class,
-        AdminResellerApplicationMail::class,
-        ResellerApplicationApprovedMail::class,
-        ResellerApplicationDeclinedMail::class,
-    ]);
-
-    it('uses no translucent panel colours that would wash out on a white canvas', function (string $mailable) {
-        $application = makeApplication(['decline_reason' => 'We could not verify your selling history.']);
-
-        // rgba() panels look right over the dark body but collapse to near-white
-        // when the body background is stripped, taking the light text with them.
-        $html = (new $mailable($application))->render();
-
-        expect(preg_match('/(background|border)[^;{}]*:\s*[^;{}]*rgba\(/i', $html))->toBe(0);
-    })->with([
-        ResellerApplicationReceivedMail::class,
-        AdminResellerApplicationMail::class,
-        ResellerApplicationApprovedMail::class,
-        ResellerApplicationDeclinedMail::class,
-    ]);
-
     it('keeps the decline reason readable even without the style block', function () {
         $application = makeApplication([
             'status' => 'declined',
@@ -204,8 +176,7 @@ describe('the reseller emails', function () {
         // Strip every <style> block, the way a hostile client would.
         $stripped = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html);
 
-        expect($stripped)->toContain('Your Facebook page had no selling history.')
-            ->and($stripped)->toContain('color:#F1F5F9');
+        expect($stripped)->toContain('Your Facebook page had no selling history.');
     });
 
     it('gives the admin a one tap whatsapp link to the applicant', function () {

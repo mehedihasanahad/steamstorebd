@@ -140,4 +140,18 @@ class Order extends Model
             default              => $this->payment_method,
         };
     }
+
+    /**
+     * Just the wallet, without how it was paid — the name of the app an admin
+     * opens to check the transaction against.
+     */
+    public function walletLabel(): string
+    {
+        return match ($this->payment_method) {
+            'bkash_online', 'bkash_send_money' => 'bKash',
+            'nagad_send_money'                 => 'Nagad',
+            'rocket_send_money'                => 'Rocket',
+            default                            => $this->paymentMethodLabel(),
+        };
+    }
 }

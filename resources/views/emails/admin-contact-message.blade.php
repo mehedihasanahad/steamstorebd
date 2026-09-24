@@ -1,61 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Contact Message</title>
-    @include('emails.partials.reseller-styles')
-</head>
-<body style="margin:0; padding:0; background-color:#030711;">
-<table role="presentation" class="email-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#030711" style="background-color:#030711;">
-<tr>
-<td align="center" style="padding:32px 16px;">
-<div class="container">
-    <div class="header">
-        <div class="logo">{{ site_setting('site_name', 'Steam Store BD') }}</div>
-        <p class="tagline">Admin Notification</p>
-    </div>
+<x-email.layout
+    title="New contact message"
+    :preheader="$contactMessage->name . ' sent a message through the contact form.'"
+    eyebrow="Admin notification"
+>
 
-    <div class="info-box info-pending">
-        <h2>✉️ New Contact Message</h2>
-        <p><strong style="color:#fff;">{{ $contactMessage->name }}</strong> sent a message through the contact form.<br>
-        Reply to this email to answer them directly.</p>
-    </div>
+    <x-email.banner tone="info" heading="New contact message">
+        <x-email.em>{{ $contactMessage->name }}</x-email.em> sent a message through the contact form.<br>
+        Reply to this email to answer them directly.
+    </x-email.banner>
 
-    <div class="section">
-        <h3>👤 Sender</h3>
-        <div class="detail-row">
-            <span class="label">Name</span>
-            <span class="value">{{ $contactMessage->name }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Email</span>
-            <span class="value">{{ $contactMessage->email }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Received</span>
-            <span class="value">{{ $contactMessage->created_at->format('d M Y, h:i A') }}</span>
-        </div>
-        @if($contactMessage->ip_address)
-        <div class="detail-row">
-            <span class="label">IP Address</span>
-            <span class="value" style="font-family:monospace;">{{ $contactMessage->ip_address }}</span>
-        </div>
-        @endif
-    </div>
+    <x-email.panel title="Sender">
+        <x-email.rows>
+            <x-email.row label="Name">{{ $contactMessage->name }}</x-email.row>
+            <x-email.row label="Email">{{ $contactMessage->email }}</x-email.row>
+            <x-email.row label="Received" :divider="(bool) $contactMessage->ip_address">{{ $contactMessage->created_at->format('d M Y, h:i A') }}</x-email.row>
+            @if($contactMessage->ip_address)
+            <x-email.row label="IP address" mono :divider="false">{{ $contactMessage->ip_address }}</x-email.row>
+            @endif
+        </x-email.rows>
+    </x-email.panel>
 
-    <div class="section">
-        <h3>💬 Message</h3>
-        <p style="margin:0; color:#CBD5E1; line-height:1.6; white-space:pre-line;">{{ $contactMessage->message }}</p>
-    </div>
+    <x-email.panel title="Message">
+        {{-- pre-line so the sender's own paragraphs survive the trip. --}}
+        <x-email.text tone="hi" lines="pre-line">{{ $contactMessage->message }}</x-email.text>
+    </x-email.panel>
 
-    <div class="footer">
-        <p>Mark this message as read under Contact Messages in the admin panel.</p>
-        <p style="margin-top: 8px;">{{ site_setting('site_name', 'Steam Store BD') }} — <a href="{{ route('home') }}">{{ parse_url(config('app.url'), PHP_URL_HOST) ?: 'steamstorebd.com' }}</a></p>
-    </div>
-</div>
-</td>
-</tr>
-</table>
-</body>
-</html>
+    <x-slot:footer>
+        <p style="margin:0;">Mark this message as read under Contact Messages in the admin panel.</p>
+    </x-slot:footer>
+
+</x-email.layout>

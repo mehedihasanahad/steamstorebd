@@ -3,19 +3,21 @@
     $deliveredItems = $order->items->filter(fn ($item) => $item->isFulfilled() && filled($item->delivered_payload));
     $awaitingItems  = $order->items->filter(fn ($item) => $item->needsFulfilment());
 @endphp
-Steam Store BD — Order Confirmation
-Order #{{ $order->order_number }}
+@include('emails.partials.plain-header', ['eyebrow' => 'Order confirmation', 'heading' => 'Order #' . $order->order_number])
 
-Hello {{ $order->customer_name }},
-
+Hi {{ $order->customer_name }},
 @if($awaitingItems->isNotEmpty())
-Your payment was confirmed. Everything we can deliver instantly is below; the rest is with our team now.
+
+Your payment was confirmed. Everything we can deliver instantly is below; the
+rest is with our team now.
 @else
+
 Your payment was confirmed and your order is below.
 @endif
 @if($codeItems->isNotEmpty())
 
-=== YOUR CODES ===
+YOUR CODES
+----------
 @foreach($codeItems as $item)
 {{ $item->giftCard->name }} (x{{ $item->quantity }}) — {{ $item->deliveryLabel() }}:
 @foreach($item->orderItemCodes as $itemCode)
@@ -23,7 +25,8 @@ Your payment was confirmed and your order is below.
 @endforeach
 @endforeach
 
-=== HOW TO REDEEM ===
+REDEEMING YOUR CODE
+-------------------
 1. Sign in to the platform the code is for
 2. Open its wallet, billing or redeem page
 3. Choose "Redeem a code" or "Add funds"
@@ -33,9 +36,10 @@ Per-brand guides: {{ route('how-to-redeem') }}
 @endif
 @if($deliveredItems->isNotEmpty())
 
-=== YOUR ACCOUNT DETAILS ===
+YOUR ACCOUNT DETAILS
+--------------------
 @foreach($deliveredItems as $item)
-{{ $item->giftCard->name }} (x{{ $item->quantity }}):
+{{ $item->giftCard->name }} (x{{ $item->quantity }}) — {{ $item->deliveryLabel() }}:
 {{ $item->delivered_payload }}
 @endforeach
 
@@ -43,7 +47,8 @@ Keep these private. Anyone with them can use the account.
 @endif
 @if($awaitingItems->isNotEmpty())
 
-=== STILL BEING DELIVERED ===
+STILL BEING DELIVERED
+---------------------
 @foreach($awaitingItems as $item)
 {{ $item->giftCard->name }} x{{ $item->quantity }} — {{ $item->giftCard->delivery_eta_label ?: 'In progress' }}
 @endforeach
@@ -51,16 +56,16 @@ Keep these private. Anyone with them can use the account.
 We will e-mail you again as soon as these are done.
 @endif
 
-=== ORDER SUMMARY ===
+ORDER SUMMARY
+-------------
 @foreach($order->items as $item)
 {{ $item->giftCard->name }} x{{ $item->quantity }}: ৳ {{ number_format($item->subtotal_bdt, 0, '.', ',') }}
 @endforeach
-Total: ৳ {{ number_format($order->total_bdt, 0, '.', ',') }}
+Total paid: ৳ {{ number_format($order->total_bdt, 0, '.', ',') }}
 
-=== LEAVE A REVIEW ===
+LEAVE A REVIEW
+--------------
 Happy with your purchase? A short review helps the next buyer decide.
 {{ route('orders.show', $order->order_number) }}
 
-Need help? Visit {{ route('contact') }}
-
-Steam Store BD is an independent reseller and is not affiliated with Valve Corporation.
+@include('emails.partials.plain-footer', ['disclaimer' => site_setting('site_name', 'Steam Store BD') . ' is an independent reseller and is not affiliated with Valve Corporation. All brand names are property of their respective owners.'])
