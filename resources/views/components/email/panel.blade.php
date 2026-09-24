@@ -1,7 +1,7 @@
 @props(['title' => null, 'align' => 'left'])
 @php
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
 @endphp
 <tr>
 <td class="e-pad" style="background-color:{{ $c['card'] }}; border:1px solid {{ $c['border'] }}; border-radius:10px; padding:20px 24px; text-align:{{ $align }}; font-family:{!! $font !!};">

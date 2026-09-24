@@ -119,6 +119,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Campaign Sending
+    |--------------------------------------------------------------------------
+    |
+    | Bulk e-mail runs on its own queue so it can never get in front of a
+    | customer waiting for the code they just paid for -- the worker is told to
+    | drain the default queue first. The rate is whatever the sending provider
+    | will take without throttling or blocking; the queue releases jobs back
+    | rather than dropping them when the limit is reached.
+    |
+    */
+
+    'campaign' => [
+        'queue'           => env('MAIL_CAMPAIGN_QUEUE', 'campaigns'),
+        'rate_per_minute' => (int) env('MAIL_CAMPAIGN_RATE_PER_MINUTE', 60),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |

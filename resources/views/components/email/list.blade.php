@@ -1,7 +1,7 @@
 @props(['title' => null, 'ordered' => true])
 @php
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
     $tag  = $ordered ? 'ol' : 'ul';
 @endphp
 <tr>

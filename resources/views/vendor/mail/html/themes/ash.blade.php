@@ -11,7 +11,7 @@
      | the hex by hand, and then there would be two places to change.
      */
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
 @endphp
 /* Base */
 

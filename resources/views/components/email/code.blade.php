@@ -1,8 +1,8 @@
 @props(['label' => null])
 @php
     $c     = \App\Support\EmailTheme::palette();
-    $font  = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
-    $monoF = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, 'Courier New', monospace";
+    $font  = \App\Support\EmailTheme::FONT;
+    $monoF = \App\Support\EmailTheme::MONO;
 @endphp
 {{-- The payload is the whole reason the message was sent, so its colours are
      inline and opaque: it stays readable in a client that keeps nothing else. --}}

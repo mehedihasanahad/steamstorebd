@@ -22,6 +22,13 @@ use InvalidArgumentException;
  */
 final class EmailTheme
 {
+    /**
+     * The two stacks every message uses. Inter first, to match the storefront,
+     * then the system faces a mail client will actually have.
+     */
+    public const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    public const MONO = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, 'Courier New', monospace";
+
     /** Bare RGB channels, mirroring the `:root` block of storefront.css. */
     public const TOKENS = [
         'surface-0'    => [15, 15, 17],

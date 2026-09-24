@@ -8,7 +8,7 @@
 ])
 @php
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
 
     [$px, $lh] = match ($size) {
         'caption' => ['13px', '1.6'],

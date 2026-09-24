@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Services\StorefrontCatalog;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\View;
@@ -20,6 +22,13 @@ class AppServiceProvider extends ServiceProvider
         if (config('storefront.ignore_vite_hot_file')) {
             Vite::useHotFile(storage_path('framework/vite-hot-disabled'));
         }
+
+        // Paces bulk sending to whatever the mail provider will accept. The
+        // queue middleware releases a limited job back instead of failing it,
+        // so a campaign slows down rather than losing recipients.
+        RateLimiter::for('email-campaign', fn () => Limit::perMinute(
+            max(1, (int) config('mail.campaign.rate_per_minute', 60)),
+        ));
 
         Password::defaults(function () {
             return Password::min(8)

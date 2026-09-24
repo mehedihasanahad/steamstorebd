@@ -1,7 +1,7 @@
 @props(['url'])
 @php
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
 @endphp
 {{-- bgcolor on the cell as well as on the anchor: a client that drops the
      anchor background still shows the label on the accent, not on nothing. --}}

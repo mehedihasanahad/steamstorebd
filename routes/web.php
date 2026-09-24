@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BkashController;
 use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\EmailUnsubscribeController;
 use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReferralController;
@@ -129,6 +130,13 @@ Route::middleware(['auth', 'throttle:30,1'])->group(function () {
     Route::get('/referral', [ReferralController::class, 'dashboard'])->name('referral.dashboard');
     Route::post('/referral/apply', [ReferralController::class, 'applyCode'])->name('referral.apply')->middleware('throttle:20,1');
     Route::post('/referral/withdraw', [ReferralController::class, 'requestWithdrawal'])->name('referral.withdraw')->middleware('throttle:5,1');
+});
+
+// Unsubscribing from campaign e-mail. The link is signed, and the confirmation
+// posts back to the same URL so link scanners cannot unsubscribe anyone.
+Route::middleware(['signed', 'throttle:30,1'])->group(function () {
+    Route::get('/email/unsubscribe', [EmailUnsubscribeController::class, 'show'])->name('email.unsubscribe');
+    Route::post('/email/unsubscribe', [EmailUnsubscribeController::class, 'store'])->name('email.unsubscribe.confirm');
 });
 
 // Google OAuth

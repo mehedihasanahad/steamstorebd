@@ -19,6 +19,7 @@
 use App\Mail\AdminContactMessageMail;
 use App\Mail\AdminNewOrderMail;
 use App\Mail\AdminResellerApplicationMail;
+use App\Mail\CampaignMail;
 use App\Mail\OrderCodesMail;
 use App\Mail\OrderPendingMail;
 use App\Mail\ResellerApplicationApprovedMail;
@@ -26,6 +27,8 @@ use App\Mail\ResellerApplicationDeclinedMail;
 use App\Mail\ResellerApplicationReceivedMail;
 use App\Models\BkashPayment;
 use App\Models\ContactMessage;
+use App\Models\EmailCampaign;
+use App\Models\EmailCampaignRecipient;
 use App\Models\Order;
 use App\Models\ResellerApplication;
 use App\Models\User;
@@ -137,7 +140,32 @@ function mailFor(string $key): Illuminate\Mail\Mailable
         'reseller-received'          => new ResellerApplicationReceivedMail(mailApplication()),
         'reseller-approved'          => new ResellerApplicationApprovedMail(mailApplication(['status' => 'approved'])),
         'reseller-declined'          => new ResellerApplicationDeclinedMail(mailApplication(['status' => 'declined'])),
+        'campaign'                   => mailCampaign(),
     };
+}
+
+/** A campaign message, which is the one whose body an admin wrote. */
+function mailCampaign(): CampaignMail
+{
+    $campaign = EmailCampaign::create([
+        'name'      => 'September promo',
+        'subject'   => 'A little something for you',
+        'preheader' => 'Ten percent off every Steam card this week.',
+        'body'      => '<h2>Ten percent off</h2><p>Hi {{ first_name }}, here is <strong>10% off</strong>'
+            . ' every Steam card this week. <a href="https://example.test">Have a look</a>.</p>'
+            . '<ul><li>No code needed</li><li>Ends Sunday</li></ul>',
+        'cta_label' => 'Shop the sale',
+        'cta_url'   => 'https://example.test/sale',
+        'audience'  => EmailCampaign::AUDIENCE_BUYERS,
+    ]);
+
+    $recipient = $campaign->recipients()->create([
+        'email'  => 'rahim@example.com',
+        'name'   => 'Rahim Uddin',
+        'status' => EmailCampaignRecipient::STATUS_PENDING,
+    ]);
+
+    return new CampaignMail($campaign, $recipient);
 }
 
 dataset('every message', [
@@ -149,6 +177,7 @@ dataset('every message', [
     'reseller-received',
     'reseller-approved',
     'reseller-declined',
+    'campaign',
 ]);
 
 describe('the e-mail palette', function () {

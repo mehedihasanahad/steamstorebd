@@ -1,7 +1,7 @@
 @props(['tone' => 'neutral', 'heading' => null])
 @php
     $c    = \App\Support\EmailTheme::palette();
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+    $font = \App\Support\EmailTheme::FONT;
 @endphp
 <tr>
 <td class="e-pad" style="background-color:{{ $c[$tone . '-bg'] }}; border:1px solid {{ $c[$tone . '-border'] }}; border-radius:10px; padding:22px 24px; text-align:center; font-family:{!! $font !!};">

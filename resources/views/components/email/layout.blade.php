@@ -15,8 +15,8 @@
      */
     $c = \App\Support\EmailTheme::palette();
 
-    $font = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
-    $mono = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, 'Courier New', monospace";
+    $font = \App\Support\EmailTheme::FONT;
+    $mono = \App\Support\EmailTheme::MONO;
 
     // The storefront sets the last word of the name in the accent; a one-word
     // name simply keeps all of it in the high ink.
