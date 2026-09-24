@@ -16,6 +16,7 @@ use App\Models\OrderItem;
 use App\Models\ResellerApplication;
 use App\Models\User;
 use App\Services\CampaignAudience;
+use App\Support\Campaigns\AudienceSchema;
 
 function campaignOrder(string $email, array $overrides = []): Order
 {
@@ -54,6 +55,39 @@ function audienceEmails(EmailCampaign $campaign): array
 {
     return app(CampaignAudience::class)->preview($campaign, 500)
         ->pluck('email')->sort()->values()->all();
+}
+
+/** Splits a SELECT list on the commas that separate expressions, not the ones inside calls. */
+function splitSelectList(string $list): array
+{
+    $expressions = [];
+    $current     = '';
+    $depth       = 0;
+
+    foreach (str_split($list) as $character) {
+        if ($character === '(') {
+            $depth++;
+        } elseif ($character === ')') {
+            $depth--;
+        }
+
+        if ($character === ',' && $depth === 0) {
+            $expressions[] = $current;
+            $current       = '';
+
+            continue;
+        }
+
+        $current .= $character;
+    }
+
+    $expressions[] = $current;
+
+    // Drop the alias; what matters is the expression it is put on.
+    return array_map(
+        fn (string $expression) => trim(preg_replace('/\s+as\s+[`"\[]?\w+[`"\]]?\s*$/i', '', trim($expression))),
+        $expressions,
+    );
 }
 
 describe('the buyer audience', function () {
@@ -306,4 +340,39 @@ describe('counting before sending', function () {
         expect($audience->count($campaign))->toBe(2)
             ->and($walked)->toBe(2);
     });
+});
+
+describe('the SQL the audiences generate', function () {
+    /*
+     | This suite runs on SQLite and the application runs on MySQL, and the two
+     | disagree about exactly one thing that matters here: SQLite lets a grouped
+     | query select a bare column, MySQL refuses it under ONLY_FULL_GROUP_BY.
+     | The reseller audience shipped with `ra.name` selected beside a GROUP BY,
+     | passed every test, and returned a 500 on the first click in the admin.
+     |
+     | So the rule MySQL would enforce is enforced here instead: in a grouped
+     | query every selected expression is either aggregated or is the thing
+     | being grouped by.
+     */
+    it('never selects a bare column beside a GROUP BY', function (string $audience) {
+        $sql = AudienceSchema::for($audience)->baseQuery()->toSql();
+
+        if (! str_contains(strtolower($sql), 'group by')) {
+            expect(true)->toBeTrue();
+
+            return;
+        }
+
+        expect(preg_match('/from \(select (.+?) from [`"\[]/is', $sql, $select))->toBe(1)
+            ->and(preg_match('/group by (.+?)\) as /is', $sql, $group))->toBe(1);
+
+        $grouped = trim($group[1]);
+
+        foreach (splitSelectList($select[1]) as $expression) {
+            $isAggregated = (bool) preg_match('/\b(MAX|MIN|COUNT|SUM|AVG|GROUP_CONCAT)\s*\(/i', $expression);
+
+            expect($isAggregated || $expression === $grouped)
+                ->toBeTrue("[{$expression}] is neither aggregated nor the grouped expression.");
+        }
+    })->with(['buyers', 'resellers']);
 });

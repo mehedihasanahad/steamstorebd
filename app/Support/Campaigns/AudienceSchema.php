@@ -70,6 +70,14 @@ final class AudienceSchema
     {
         $counted = "'" . implode("','", self::COUNTED_STATUSES) . "'";
 
+        /*
+         | One approved application per address, newest wins — settled by
+         | picking the highest id per address rather than by grouping. A
+         | GROUP BY here would have to carry `name` and `selling_platform`
+         | through as bare columns, which MySQL rejects outright under
+         | ONLY_FULL_GROUP_BY and SQLite quietly allows: the shape of bug the
+         | test suite cannot see, because the suite runs on SQLite.
+         */
         $aggregate = DB::table('reseller_applications as ra')
             ->selectRaw('LOWER(TRIM(ra.email)) as email')
             ->selectRaw('ra.name as name')
@@ -79,8 +87,7 @@ final class AudienceSchema
             ->selectRaw("(select COUNT(*) from orders o where LOWER(TRIM(o.customer_email)) = LOWER(TRIM(ra.email)) and o.status in ({$counted})) as order_count")
             ->selectRaw("(select MAX(o.created_at) from orders o where LOWER(TRIM(o.customer_email)) = LOWER(TRIM(ra.email)) and o.status in ({$counted})) as last_order_at")
             ->where('ra.status', 'approved')
-            // One approved application per address, newest wins.
-            ->groupBy(DB::raw('LOWER(TRIM(ra.email))'));
+            ->whereRaw('ra.id = (select MAX(ra2.id) from reseller_applications ra2 where LOWER(TRIM(ra2.email)) = LOWER(TRIM(ra.email)) and ra2.status = ?)', ['approved']);
 
         return DB::query()->fromSub($aggregate, 'c');
     }
