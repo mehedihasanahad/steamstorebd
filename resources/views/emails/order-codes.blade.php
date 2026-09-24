@@ -31,7 +31,19 @@
         @foreach($codeItems as $item)
             <x-email.text size="caption" tone="low" :top="$loop->first ? '0' : '6px'" bottom="8px">{{ $item->giftCard->name }} &times; {{ $item->quantity }}</x-email.text>
             @foreach($item->orderItemCodes as $itemCode)
-                <x-email.code :label="$item->deliveryLabel()">{{ $itemCode->giftCardCode->code }}</x-email.code>
+                @php $parts = $itemCode->giftCardCode->parts(); @endphp
+                @if(count($parts) > 1)
+                    {{-- Stocked as several smaller codes. Saying so matters: a
+                         buyer who redeems the first one and stops is short. --}}
+                    <x-email.text size="caption" tone="low" bottom="6px">
+                        {{ $item->deliveryLabel() }} — redeem all {{ count($parts) }} codes below to get the full value.
+                    </x-email.text>
+                @endif
+                @foreach($parts as $part)
+                    <x-email.code :label="count($parts) > 1
+                        ? $item->deliveryLabel() . ' — code ' . $loop->iteration . ' of ' . count($parts)
+                        : $item->deliveryLabel()">{{ $part }}</x-email.code>
+                @endforeach
             @endforeach
         @endforeach
     </x-email.panel>

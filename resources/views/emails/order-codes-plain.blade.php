@@ -21,7 +21,13 @@ YOUR CODES
 @foreach($codeItems as $item)
 {{ $item->giftCard->name }} (x{{ $item->quantity }}) — {{ $item->deliveryLabel() }}:
 @foreach($item->orderItemCodes as $itemCode)
-  {{ $itemCode->giftCardCode->code }}
+@php $parts = $itemCode->giftCardCode->parts(); @endphp
+@if(count($parts) > 1)
+  (redeem all {{ count($parts) }} codes below to get the full value)
+@endif
+@foreach($parts as $part)
+  {{ $part }}
+@endforeach
 @endforeach
 @endforeach
 

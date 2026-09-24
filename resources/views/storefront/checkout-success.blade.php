@@ -35,15 +35,28 @@
 
                     <ul class="mt-2 space-y-2">
                         @foreach($item->orderItemCodes as $itemCode)
-                            <x-ui.copy-script />
-                            <li x-data="copyable(@js($itemCode->giftCardCode->code))" class="flex items-center gap-2">
-                                <code class="flex-1 truncate rounded-control border border-surface-3 bg-surface-2 px-3 py-3 font-mono text-caption font-bold tracking-wider text-ink-hi">{{ $itemCode->giftCardCode->code }}</code>
-                                <x-ui.button variant="secondary" x-on:click="copy()">
-                                    <span x-show="! copied && ! failed">Copy</span>
-                                    <span x-show="copied" x-cloak>Copied</span>
-                                    <span x-show="failed" x-cloak>Failed</span>
-                                </x-ui.button>
-                            </li>
+                            @php $parts = $itemCode->giftCardCode->parts(); @endphp
+
+                            @if(count($parts) > 1)
+                                {{-- Stocked as several smaller codes. Said out loud,
+                                     because somebody who redeems the first and stops
+                                     is short of what they paid for. --}}
+                                <li class="text-caption text-ink-mid">
+                                    Redeem all {{ count($parts) }} codes below to get the full value.
+                                </li>
+                            @endif
+
+                            @foreach($parts as $part)
+                                <x-ui.copy-script />
+                                <li x-data="copyable(@js($part))" class="flex items-center gap-2">
+                                    <code class="flex-1 truncate rounded-control border border-surface-3 bg-surface-2 px-3 py-3 font-mono text-caption font-bold tracking-wider text-ink-hi">{{ $part }}</code>
+                                    <x-ui.button variant="secondary" x-on:click="copy()">
+                                        <span x-show="! copied && ! failed">Copy</span>
+                                        <span x-show="copied" x-cloak>Copied</span>
+                                        <span x-show="failed" x-cloak>Failed</span>
+                                    </x-ui.button>
+                                </li>
+                            @endforeach
                         @endforeach
                     </ul>
                 </div>

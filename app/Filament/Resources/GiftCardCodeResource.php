@@ -32,6 +32,7 @@ class GiftCardCodeResource extends Resource
                 ->required(),
             Forms\Components\TextInput::make('code')
                 ->label('Code')
+                ->helperText('Two codes that make up one card go on one line, separated by a spaced plus: AAAA-1111 + BBBB-2222. That is still one card in stock and the buyer receives both. A plus with no spaces around it is treated as part of the code.')
                 ->required()
                 ->unique(GiftCardCode::class, 'code', ignoreRecord: true),
             Forms\Components\Select::make('status')
@@ -51,7 +52,14 @@ class GiftCardCodeResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('code')
                     ->label('Code')
-                    ->formatStateUsing(fn ($state) => substr($state, 0, 4) . '-****-****-****')
+                    // Masked per part, so a card stocked as two codes still
+                    // looks like two codes at a glance.
+                    ->formatStateUsing(fn ($state) => collect(GiftCardCode::split($state))
+                        ->map(fn (string $part) => substr($part, 0, 4) . '-****-****-****')
+                        ->implode(GiftCardCode::PART_SEPARATOR))
+                    ->description(fn (GiftCardCode $record) => $record->isSplit()
+                        ? $record->partCount() . ' codes make up this card'
+                        : null)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('giftCard.name')
                     ->label('Gift Card')
@@ -96,34 +104,66 @@ class GiftCardCodeResource extends Resource
                             ->options(GiftCard::where('is_active', true)->pluck('name', 'id'))
                             ->required(),
                         Forms\Components\Textarea::make('codes')
-                            ->label('Codes (one per line)')
+                            ->label('Codes (one card per line)')
+                            ->helperText('Two codes that make up one card go on one line, separated by a spaced plus: AAAA-1111 + BBBB-2222. That is still one card in stock and the buyer receives both. A plus with no spaces around it is treated as part of the code.')
                             ->rows(10)
-                            ->placeholder("STEAM-XXXX-XXXX-XXXX-XXXX\nSTEAM-YYYY-YYYY-YYYY-YYYY")
+                            ->placeholder("STEAM-XXXX-XXXX-XXXX-XXXX\nSTEAM-YYYY-YYYY-YYYY-YYYY + STEAM-ZZZZ-ZZZZ-ZZZZ-ZZZZ")
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $lines   = array_filter(array_map('trim', explode("\n", $data['codes'])));
                         $adminId = Auth::id();
                         $created = 0;
                         $skipped = 0;
+                        $split   = 0;
 
-                        foreach ($lines as $code) {
-                            if (GiftCardCode::where('code', $code)->exists()) {
+                        // Every individual code already stocked against this
+                        // card. A line is refused if any one of its codes is in
+                        // here, because selling the same code twice is the one
+                        // mistake that costs real money, and a bundle hides a
+                        // repeat that an exact match on the whole line misses.
+                        $known = GiftCardCode::where('gift_card_id', $data['gift_card_id'])
+                            ->pluck('code')
+                            ->flatMap(fn (string $code) => GiftCardCode::split($code))
+                            ->flip();
+
+                        $lines = array_filter(array_map('trim', explode("\n", $data['codes'])));
+
+                        foreach ($lines as $line) {
+                            $parts = GiftCardCode::split($line);
+
+                            if ($parts === []) {
+                                continue;
+                            }
+
+                            $alreadyStocked = collect($parts)->contains(fn (string $part) => $known->has($part));
+
+                            if ($alreadyStocked || GiftCardCode::where('code', GiftCardCode::normalise($line))->exists()) {
                                 $skipped++;
                                 continue;
                             }
+
                             GiftCardCode::create([
                                 'gift_card_id'      => $data['gift_card_id'],
-                                'code'              => $code,
+                                'code'              => $line,
                                 'status'            => 'available',
                                 'added_by_admin_id' => $adminId,
                             ]);
+
+                            // Kept in step within the loop, so a later duplicate
+                            // in the same paste is caught too.
+                            foreach ($parts as $part) {
+                                $known[$part] = true;
+                            }
+
                             GiftCard::find($data['gift_card_id'])->increment('stock_count');
                             $created++;
+                            $split += count($parts) > 1 ? 1 : 0;
                         }
 
                         Notification::make()
-                            ->title("Imported {$created} codes" . ($skipped ? ", skipped {$skipped} duplicates" : ''))
+                            ->title("Imported {$created} cards"
+                                . ($split ? " ({$split} made up of more than one code)" : '')
+                                . ($skipped ? ", skipped {$skipped} already stocked" : ''))
                             ->success()
                             ->send();
                     }),
@@ -138,6 +178,7 @@ class GiftCardCodeResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('code')
                             ->label('Full Code')
+                            ->helperText('Two codes that make up one card go on one line, separated by a spaced plus: AAAA-1111 + BBBB-2222. That is still one card in stock and the buyer receives both. A plus with no spaces around it is treated as part of the code.')
                             ->required()
                             ->unique(GiftCardCode::class, 'code', ignoreRecord: true),
                         Forms\Components\Select::make('status')
