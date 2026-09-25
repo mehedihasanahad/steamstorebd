@@ -29,6 +29,7 @@ use App\Models\BkashPayment;
 use App\Models\ContactMessage;
 use App\Models\EmailCampaign;
 use App\Models\EmailCampaignRecipient;
+use App\Models\GiftCard;
 use App\Models\Order;
 use App\Models\ResellerApplication;
 use App\Models\User;
@@ -87,6 +88,56 @@ function mailOrder(): Order
             'price'        => $card->price_bdt,
             'buyer_inputs' => [],
         ]],
+    );
+
+    $order->update([
+        'payment_method'    => 'bkash_send_money',
+        'send_money_trx_id' => 'BKH7X2QK91',
+    ]);
+
+    return $order->fresh(['items.giftCard']);
+}
+
+/**
+ * An order whose lines an admin has to fulfil by hand, optionally mixed with a
+ * code-pool line. `$etas` gives one manual card per entry, so a caller can
+ * build an order where the manual lines disagree about how long they take.
+ *
+ * @param  array<int, string|null>  $etas
+ */
+function mailManualOrder(array $etas = [null], bool $withCodePoolLine = false): Order
+{
+    Queue::fake();
+
+    $suffix  = uniqid();
+    $brand   = seoBrand(['slug' => 'steam-' . $suffix]);
+    $product = seoProduct($brand, ['slug' => 'steam-wallet-' . $suffix]);
+
+    $lines = [];
+
+    if ($withCodePoolLine) {
+        $lines[] = seoCard($product, ['slug' => 'steam-wallet-10-' . $suffix], 2);
+    }
+
+    foreach ($etas as $index => $eta) {
+        $lines[] = seoCard($product, [
+            'name'               => 'Free Fire 100 Diamonds',
+            'slug'               => 'free-fire-' . $index . '-' . $suffix,
+            'fulfilment_type'    => GiftCard::FULFILMENT_MANUAL,
+            'manual_stock'       => 5,
+            'delivery_eta_label' => $eta,
+        ]);
+    }
+
+    $order = app(OrderService::class)->createOrder(
+        ['name' => 'Rahim Uddin', 'email' => 'rahim@example.com', 'phone' => '01700000000'],
+        collect($lines)->map(fn (GiftCard $card) => [
+            'gift_card_id' => $card->id,
+            'gift_card'    => $card,
+            'quantity'     => 1,
+            'price'        => $card->price_bdt,
+            'buyer_inputs' => [],
+        ])->all(),
     );
 
     $order->update([
@@ -324,6 +375,109 @@ describe('a rendered message', function () {
         expect($text)->not->toBeNull()
             ->and(view()->exists($text))->toBeTrue("Missing plain-text view [{$text}].");
     })->with('every message');
+});
+
+describe('the order received message', function () {
+    /** Both halves of the message, so a promise cannot hide in the text part. */
+    function pendingMailParts(Order $order): array
+    {
+        $mail    = new OrderPendingMail($order);
+        $content = $mail->content();
+
+        return [
+            'subject' => $mail->envelope()->subject,
+            'html'    => $mail->render(),
+            'text'    => view($content->text, array_merge($mail->buildViewData(), $content->with))->render(),
+        ];
+    }
+
+    it('falls back to the house promise when a code-pool card names no time', function () {
+        $parts = pendingMailParts(mailOrder());
+
+        expect($parts['html'])->toContain('Your code will be delivered within')
+            ->and($parts['html'])->toContain('2–5 minutes')
+            ->and($parts['text'])->toContain('Your code will be delivered to this email within 2–5 minutes.')
+            ->and($parts['subject'])->toContain('(2–5 minutes)');
+    });
+
+    it("quotes the code-pool card's own delivery time over the house promise", function () {
+        $order = mailOrder();
+        $order->items->first()->giftCard->update(['delivery_eta_label' => 'Instant']);
+
+        $parts = pendingMailParts($order->fresh(['items.giftCard']));
+
+        expect($parts['html'])->toContain('Your code will be delivered within')
+            ->and($parts['html'])->toContain('Instant')
+            ->and($parts['html'])->not->toContain('2–5 minutes')
+            ->and($parts['text'])->toContain('within Instant')
+            ->and($parts['subject'])->toContain('(Instant)');
+    });
+
+    it('promises no code and no 5 minutes when an admin fulfils every line', function () {
+        // The bug this guards: a Free Fire top-up buyer was told a code was
+        // coming in 2–5 minutes, and neither half of that was true.
+        $parts = pendingMailParts(mailManualOrder());
+
+        expect($parts['html'])->not->toContain('Your code will be delivered')
+            ->and($parts['html'])->not->toContain('2–5 minutes')
+            ->and($parts['html'])->not->toContain('is sent to this email')
+            ->and($parts['text'])->not->toContain('Your code will be delivered')
+            ->and($parts['text'])->not->toContain('2–5 minutes')
+            ->and($parts['subject'])->not->toContain('Minutes');
+    });
+
+    it('still says the order is under review when an admin fulfils it', function () {
+        $parts = pendingMailParts(mailManualOrder());
+
+        expect($parts['html'])->toContain('Order received — under review')
+            ->and($parts['html'])->toContain('verifying your payment')
+            ->and($parts['text'])->toContain('under review');
+    });
+
+    it("quotes the manual card's own delivery time when every line shares it", function () {
+        $parts = pendingMailParts(mailManualOrder(['5-30 minutes', '5-30 minutes']));
+
+        expect($parts['html'])->toContain('delivery usually takes')
+            ->and($parts['html'])->toContain('5-30 minutes')
+            ->and($parts['text'])->toContain('delivery usually takes 5-30 minutes.')
+            ->and($parts['subject'])->toContain('(5-30 minutes)');
+    });
+
+    it('lists a delivery time per line when the lines disagree', function () {
+        $parts = pendingMailParts(mailManualOrder(['5-30 minutes', 'Within 1 hour']));
+
+        expect($parts['html'])->toContain('Delivery times')
+            ->and($parts['html'])->toContain('5-30 minutes')
+            ->and($parts['html'])->toContain('Within 1 hour')
+            ->and($parts['text'])->toContain('DELIVERY TIMES')
+            ->and($parts['subject'])->not->toContain('(');
+    });
+
+    it('falls back to a wait with no deadline when a manual card names no time', function () {
+        $parts = pendingMailParts(mailManualOrder([null]));
+
+        expect($parts['html'])->toContain('After payment is verified')
+            ->and($parts['html'])->toContain('We email you as soon as it is delivered')
+            ->and($parts['text'])->toContain('After payment is verified');
+    });
+
+    it('lists both lines when one order mixes a code with a top-up', function () {
+        $parts = pendingMailParts(mailManualOrder(['5-30 minutes'], withCodePoolLine: true));
+
+        expect($parts['html'])->toContain('Delivery times')
+            ->and($parts['html'])->toContain('2–5 minutes')
+            ->and($parts['html'])->toContain('5-30 minutes')
+            ->and($parts['html'])->toContain('The rest of your order is delivered by our team')
+            ->and($parts['text'])->toContain('DELIVERY TIMES');
+    });
+
+    it('states one time for a mixed order whose lines happen to agree', function () {
+        $parts = pendingMailParts(mailManualOrder(['2–5 minutes'], withCodePoolLine: true));
+
+        expect($parts['html'])->toContain('Your order will be delivered within')
+            ->and($parts['html'])->not->toContain('Delivery times')
+            ->and($parts['subject'])->toContain('(2–5 minutes)');
+    });
 });
 
 describe("a message Laravel builds itself", function () {

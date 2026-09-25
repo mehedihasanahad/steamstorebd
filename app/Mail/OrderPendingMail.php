@@ -17,8 +17,14 @@ class OrderPendingMail extends Mailable
 
     public function envelope(): Envelope
     {
+        // The subject quotes the same delivery time the body does — the one
+        // an admin set on the card — and quotes none at all when the lines
+        // disagree or nobody has committed to one.
+        $eta = $this->order->sharedDeliveryEta();
+
         return new Envelope(
-            subject: 'Order #' . $this->order->order_number . ' Received — Under Review (Max 5 Minutes)',
+            subject: 'Order #' . $this->order->order_number . ' Received — Under Review'
+                . ($eta ? ' (' . $eta . ')' : ''),
         );
     }
 

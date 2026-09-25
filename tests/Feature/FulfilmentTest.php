@@ -113,6 +113,53 @@ describe('payment clearing on a manual order', function () {
         expect($order->fresh()->status)->toBe('processing');
     });
 
+    it('sends no delivery e-mail when every line waits on an admin', function () {
+        // There is nothing to deliver yet, so the mail would repeat the
+        // "order received" one. The buyer hears from us when it is fulfilled.
+        Queue::fake();
+
+        $card  = manualCard(seoProduct(seoBrand()), 5);
+        $order = app(OrderService::class)->createOrder(buyer(), [manualLine($card)]);
+        BkashPayment::create(['order_id' => $order->id, 'amount' => $order->total_bdt, 'status' => 'initiated']);
+
+        app(OrderService::class)->completeOrder($order, ['trxID' => 'TRX1']);
+
+        Queue::assertNotPushed(SendOrderCodesEmail::class);
+    });
+
+    it('sends no delivery e-mail when an admin approves a wholly-manual send-money order', function () {
+        Queue::fake();
+
+        $card  = manualCard(seoProduct(seoBrand()), 5);
+        $order = app(OrderService::class)->createSendMoneyOrder(
+            buyer(),
+            [manualLine($card)],
+            'bkash_send_money',
+            'TRX-SM-1',
+        );
+
+        app(OrderService::class)->approveSendMoneyOrder($order);
+
+        expect($order->fresh()->status)->toBe('processing');
+
+        Queue::assertNotPushed(SendOrderCodesEmail::class);
+    });
+
+    it('still e-mails that order once the admin has fulfilled it', function () {
+        Queue::fake();
+
+        $card  = manualCard(seoProduct(seoBrand()), 5);
+        $order = app(OrderService::class)->createOrder(buyer(), [manualLine($card)]);
+        BkashPayment::create(['order_id' => $order->id, 'amount' => $order->total_bdt, 'status' => 'initiated']);
+        app(OrderService::class)->completeOrder($order, ['trxID' => 'TRX1']);
+
+        Queue::assertNotPushed(SendOrderCodesEmail::class);
+
+        app(FulfilmentService::class)->fulfil($order->fresh()->items->first(), 'topped up');
+
+        Queue::assertPushed(SendOrderCodesEmail::class);
+    });
+
     it('delivers the code-pool half of a mixed order immediately', function () {
         Queue::fake();
 

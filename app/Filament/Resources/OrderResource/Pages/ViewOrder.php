@@ -55,19 +55,26 @@ class ViewOrder extends ViewRecord
                 }),
 
             Actions\Action::make('approve_send_money')
-                ->label('Approve & Send Codes')
+                ->label(fn () => $this->record->hasInstantDelivery() ? 'Approve & Send Codes' : 'Approve')
                 ->icon('heroicon-o-check-badge')
                 ->color('success')
                 ->visible(fn() => $this->record->status === 'pending_review')
                 ->requiresConfirmation()
                 ->modalHeading('Approve Send Money Order')
-                ->modalDescription(fn() => 'Confirm you have verified the ' . $this->record->paymentMethodLabel() . ' transaction ID: ' . $this->record->send_money_trx_id . '. This will mark the order as paid and send the gift card codes to the customer.')
-                ->modalSubmitActionLabel('Yes, Approve & Send Codes')
+                ->modalDescription(fn() => 'Confirm you have verified the ' . $this->record->paymentMethodLabel() . ' transaction ID: ' . $this->record->send_money_trx_id . '. This will mark the order as paid'
+                    . ($this->record->hasInstantDelivery()
+                        ? ' and send the gift card codes to the customer.'
+                        : '. Nothing is emailed until you fulfil it by hand.'))
+                ->modalSubmitActionLabel(fn () => $this->record->hasInstantDelivery()
+                    ? 'Yes, Approve & Send Codes'
+                    : 'Yes, Approve')
                 ->action(function (OrderService $orderService) {
                     try {
                         $orderService->approveSendMoneyOrder($this->record);
                         $this->refreshFormData(['status']);
-                        Notification::make()->title('Order approved! Codes sent to customer.')->success()->send();
+                        Notification::make()->title($this->record->hasInstantDelivery()
+                            ? 'Order approved! Codes sent to customer.'
+                            : 'Order approved. Nothing is emailed until you fulfil it below.')->success()->send();
                     } catch (\Throwable $e) {
                         Notification::make()->title('Error: ' . $e->getMessage())->danger()->send();
                     }

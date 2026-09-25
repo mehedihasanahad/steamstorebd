@@ -63,7 +63,7 @@ class OrderService
             $this->referralService->creditReferrerWallet($order);
             $this->processWalletDebit($order);
 
-            dispatch(new SendOrderCodesEmail($order));
+            $this->sendDeliveryEmail($order);
         });
     }
 
@@ -105,8 +105,25 @@ class OrderService
             // Credit referrer wallet now that the order is confirmed
             $this->referralService->creditReferrerWallet($order);
 
-            dispatch(new SendOrderCodesEmail($order));
+            $this->sendDeliveryEmail($order);
         });
+    }
+
+    /**
+     * Tell the buyer their payment cleared — but only when that mail has
+     * something in it.
+     *
+     * An order an admin has to fulfil by hand holds no codes at approval
+     * time, so this would send a delivery e-mail that delivers nothing.
+     * FulfilmentService sends the real one once the last line is handed over.
+     */
+    private function sendDeliveryEmail(Order $order): void
+    {
+        if (! $order->hasInstantDelivery()) {
+            return;
+        }
+
+        dispatch(new SendOrderCodesEmail($order));
     }
 
     public function failOrder(Order $order): void

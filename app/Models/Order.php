@@ -115,6 +115,34 @@ class Order extends Model
         return $this->items->contains(fn (OrderItem $item) => $item->needsFulfilment());
     }
 
+    /**
+     * The one delivery time that covers every line on this order, or null
+     * when the lines disagree — or when one of them has no time at all —
+     * and each has to be quoted on its own instead.
+     */
+    public function sharedDeliveryEta(): ?string
+    {
+        $etas = $this->items->map(fn (OrderItem $item) => $item->deliveryEta());
+
+        return $etas->contains(null) || $etas->unique()->count() !== 1
+            ? null
+            : $etas->first();
+    }
+
+    /**
+     * Does anything on this order reach the buyer the moment the payment
+     * clears?
+     *
+     * An order of nothing but top-ups and credentials does not. It has no
+     * codes to hand over, so a delivery e-mail sent on approval would carry
+     * nothing the "order received" one did not already say. Those buyers
+     * hear from us again once an admin has actually fulfilled the order.
+     */
+    public function hasInstantDelivery(): bool
+    {
+        return $this->items->contains(fn (OrderItem $item) => ! $item->isManual());
+    }
+
     public function isPendingReview(): bool
     {
         return $this->status === 'pending_review';

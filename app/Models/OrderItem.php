@@ -15,6 +15,9 @@ class OrderItem extends Model
     /** An admin has delivered it. */
     public const FULFILMENT_FULFILLED = 'fulfilled';
 
+    /** What a code-pool line promises when its card names no delivery time. */
+    public const DEFAULT_CODE_POOL_ETA = '2–5 minutes';
+
     protected $fillable = [
         'order_id',
         'gift_card_id',
@@ -95,6 +98,27 @@ class OrderItem extends Model
         return $this->giftCard?->category?->name
             ?? $this->giftCard?->name
             ?? 'Digital item';
+    }
+
+    /**
+     * How long this line takes to arrive, in the words an admin typed into
+     * "Delivery time shown to buyers" on the card.
+     *
+     * Blank on a code-pool card means the house default, which is what the
+     * storefront has always promised. Blank on a line an admin fulfils by
+     * hand means nobody has committed to a time, so this returns null rather
+     * than inventing one.
+     */
+    public function deliveryEta(): ?string
+    {
+        return $this->giftCard?->delivery_eta_label
+            ?: ($this->isManual() ? null : self::DEFAULT_CODE_POOL_ETA);
+    }
+
+    /** The same thing, worded for a column that has to say something. */
+    public function deliveryEtaLabel(): string
+    {
+        return $this->deliveryEta() ?? 'After payment is verified';
     }
 
     /** Lines still waiting on an admin, oldest order first. */

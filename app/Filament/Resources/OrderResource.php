@@ -221,18 +221,25 @@ class OrderResource extends Resource
                     ->url(fn (Order $record) => static::getUrl('edit-items', ['record' => $record])),
 
                 Tables\Actions\Action::make('approve_send_money')
-                    ->label('Approve & Send Codes')
+                    ->label(fn (Order $record) => $record->hasInstantDelivery() ? 'Approve & Send Codes' : 'Approve')
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->visible(fn(Order $record) => $record->status === 'pending_review')
                     ->requiresConfirmation()
                     ->modalHeading('Approve Send Money Order')
-                    ->modalDescription(fn(Order $record) => 'Confirm you have verified the ' . $record->paymentMethodLabel() . ' transaction ID: ' . $record->send_money_trx_id . '. This will mark the order as paid and send the gift card codes to the customer.')
-                    ->modalSubmitActionLabel('Yes, Approve & Send Codes')
+                    ->modalDescription(fn(Order $record) => 'Confirm you have verified the ' . $record->paymentMethodLabel() . ' transaction ID: ' . $record->send_money_trx_id . '. This will mark the order as paid'
+                        . ($record->hasInstantDelivery()
+                            ? ' and send the gift card codes to the customer.'
+                            : '. Nothing is emailed until you fulfil it by hand.'))
+                    ->modalSubmitActionLabel(fn (Order $record) => $record->hasInstantDelivery()
+                        ? 'Yes, Approve & Send Codes'
+                        : 'Yes, Approve')
                     ->action(function (Order $record, OrderService $orderService) {
                         try {
                             $orderService->approveSendMoneyOrder($record);
-                            Notification::make()->title('Order approved! Codes sent to customer.')->success()->send();
+                            Notification::make()->title($record->hasInstantDelivery()
+                                ? 'Order approved! Codes sent to customer.'
+                                : 'Order approved. Nothing is emailed until you fulfil it below.')->success()->send();
                         } catch (\Throwable $e) {
                             Notification::make()->title('Error: ' . $e->getMessage())->danger()->send();
                         }
