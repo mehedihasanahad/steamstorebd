@@ -4,6 +4,7 @@ use App\Http\Controllers\BkashController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\EmailUnsubscribeController;
 use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ReviewController;
@@ -48,6 +49,9 @@ Route::get('/category/{sectionSlug}', [CatalogController::class, 'section'])->na
 Route::get('/brand/{mainCategorySlug}', [CatalogController::class, 'brand'])->name('brand');
 Route::get('/product/{categorySlug}', [CatalogController::class, 'product'])->name('product');
 Route::get('/cards/{slug}', [CatalogController::class, 'cardDetail'])->name('card.detail');
+
+// Exclusive offers (404s while the section is switched off in Site Settings)
+Route::get('/offers', [OfferController::class, 'index'])->name('offers');
 
 // Search
 Route::get('/search', [SearchController::class, 'index'])->name('search');

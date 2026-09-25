@@ -53,11 +53,18 @@ $_schema = [
         </section>
     @endif
 
-    {{-- ══ 2 · Best deals ══ --}}
-    @if($deals->isNotEmpty())
-        <x-catalog.section-rail title="Special deals" class="mt-section md:mt-section-lg">
-            @foreach($deals as $deal)
-                <x-catalog.deal-card :card="$deal" />
+    {{-- ══ 2 · Exclusive offers ══ --}}
+    {{-- Switched on, named and subtitled in Site Settings; ordered by how deep
+         the discount is, so the best saving leads. View all opens /offers,
+         which carries the rest of them. --}}
+    @if($offers->enabled() && $offerCards->isNotEmpty())
+        <x-catalog.section-rail :title="$offers->title()"
+                                :subtitle="$offers->subtitle() ?: null"
+                                :view-all="route('offers')"
+                                id="section-exclusive-offers"
+                                class="mt-section md:mt-section-lg">
+            @foreach($offerCards as $card)
+                <x-catalog.deal-card :card="$card" />
             @endforeach
         </x-catalog.section-rail>
     @endif

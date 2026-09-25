@@ -321,6 +321,9 @@
                     <li><a href="{{ route('how-to-redeem') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">How to Redeem</a></li>
                     <li><a href="{{ route('orders.lookup') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Track Your Order</a></li>
                     <li><a href="{{ route('contact') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Contact Us</a></li>
+                    @if(site_setting('exclusive_offers_enabled', true))
+                        <li><a href="{{ route('offers') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Today's Offers</a></li>
+                    @endif
                     @if(site_setting('reseller_program_enabled', false))
                         <li><a href="{{ route('reseller') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Become a Reseller</a></li>
                     @endif

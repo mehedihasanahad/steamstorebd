@@ -8,6 +8,7 @@
 @php
     $product = $card->category;
     $saved   = $card->discountAmount();
+    $percent = $card->discountPercent();
 @endphp
 
 <a href="{{ route('product', $product->slug) }}"
@@ -21,7 +22,15 @@
              recognised by its brand, and the value is already in the price. --}}
         <x-catalog.artwork :image="$product->image ?: $product->mainCategory?->image ?: $card->image"
                            :name="$card->name" ratio="aspect-[4/3]" :width="240" :height="180" />
-        @if($saved)
+        {{-- The badge leads with the percentage because that is what both the
+             rail and the offers page are ordered by: taka saved would have the
+             cards reading out of sequence. A saving too small to round to a
+             whole percent falls back to it rather than reading "0% off". --}}
+        @if($percent >= 1)
+            <span class="absolute top-2 left-2 rounded-chip bg-success px-2 py-0.5 text-meta font-bold leading-none text-surface-0">
+                {{ $percent }}% off
+            </span>
+        @elseif($saved)
             <span class="absolute top-2 left-2 rounded-chip bg-success px-2 py-0.5 text-meta font-bold leading-none text-surface-0">
                 {{ number_format($saved, 0) }}tk off
             </span>

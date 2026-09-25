@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\SiteSetting;
 use App\Services\ChatLinkBuilder;
+use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -31,6 +32,7 @@ class SiteSettings extends Page implements HasForms
             'site_name', 'contact_email', 'contact_whatsapp',
             'hero_title', 'hero_subtitle',
             'announcement_bar_text', 'announcement_bar_active',
+            'exclusive_offers_enabled', 'exclusive_offers_title', 'exclusive_offers_subtitle',
             'payment_bkash_online_enabled',
             'payment_bkash_send_money_enabled',
             'payment_nagad_send_money_enabled',
@@ -57,6 +59,9 @@ class SiteSettings extends Page implements HasForms
         ];
 
         $defaults = [
+            // On by default: this section replaced the homepage deals rail,
+            // which every shop already had switched on.
+            'exclusive_offers_enabled'            => true,
             'payment_bkash_online_enabled'        => true,
             'payment_bkash_send_money_enabled'    => false,
             'payment_nagad_send_money_enabled'    => false,
@@ -121,6 +126,24 @@ class SiteSettings extends Page implements HasForms
                                     Forms\Components\Textarea::make('announcement_bar_text')->label('Announcement Text')->rows(2),
                                     Forms\Components\Toggle::make('announcement_bar_active')->label('Active'),
                                 ]),
+
+                                Forms\Components\Section::make('Exclusive Offers')
+                                    ->description('The discounted-card slider directly under the homepage slider, and the /offers page its View all button opens. Which cards appear is not set here — any active card with a compare-at price above its selling price is an offer, deepest discount first.')
+                                    ->schema([
+                                        Forms\Components\Toggle::make('exclusive_offers_enabled')
+                                            ->label('Show Exclusive Offers')
+                                            ->helperText('Off = the homepage slider is hidden and the /offers page returns 404. The section also hides itself while nothing is discounted.'),
+                                        Forms\Components\TextInput::make('exclusive_offers_title')
+                                            ->label('Section Heading')
+                                            ->placeholder(ExclusiveOffers::DEFAULT_TITLE)
+                                            ->helperText('Leave empty to use "' . ExclusiveOffers::DEFAULT_TITLE . '".')
+                                            ->maxLength(60),
+                                        Forms\Components\TextInput::make('exclusive_offers_subtitle')
+                                            ->label('Section Subheading')
+                                            ->placeholder('Limited-time prices on the cards our customers buy most.')
+                                            ->helperText('Optional. Shown under the heading on the homepage and on the offers page.')
+                                            ->maxLength(160),
+                                    ]),
                             ]),
 
                         Forms\Components\Tabs\Tab::make('Floating Chat')
@@ -337,6 +360,9 @@ class SiteSettings extends Page implements HasForms
             'hero_subtitle'                    => 'hero',
             'announcement_bar_text'            => 'announcement',
             'announcement_bar_active'          => 'announcement',
+            'exclusive_offers_enabled'         => 'exclusive_offers',
+            'exclusive_offers_title'           => 'exclusive_offers',
+            'exclusive_offers_subtitle'        => 'exclusive_offers',
             'payment_bkash_online_enabled'     => 'payment',
             'payment_bkash_send_money_enabled' => 'payment',
             'payment_nagad_send_money_enabled'   => 'payment',

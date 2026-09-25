@@ -56,7 +56,7 @@ test.describe('autoplay', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
 
         expect(await scrollLeft(rail)).toBe(0);
 
@@ -78,7 +78,7 @@ test.describe('autoplay', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
 
         await rail.hover();
 
@@ -98,7 +98,7 @@ test.describe('autoplay and reduced motion', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
 
         await page.waitForTimeout(8_000);
 
@@ -163,7 +163,7 @@ test.describe('dragging', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
 
         expect(await scrollLeft(rail)).toBe(0);
 
@@ -237,7 +237,7 @@ test.describe('dragging', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
 
         await drag(page, rail, 250);
 
@@ -250,7 +250,7 @@ test.describe('dragging', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const rail = railUnder(page, 'Special deals');
+        const rail = railUnder(page, 'Exclusive Offers');
         const card = rail.locator('a').first();
 
         await drag(page, card, 300);
@@ -262,7 +262,7 @@ test.describe('dragging', () => {
         await gotoStable(page, '/');
         await waitForAlpine(page);
 
-        const card = railUnder(page, 'Special deals').locator('a').first();
+        const card = railUnder(page, 'Exclusive Offers').locator('a').first();
         const href = await card.getAttribute('href');
 
         await card.click();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CatalogSection;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
+use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
 use App\Services\StorefrontCatalog;
 use Carbon\CarbonInterface;
@@ -57,6 +58,12 @@ class SitemapController extends Controller
 
         if (ResellerProgram::fromSettings()->enabled()) {
             $pages[] = ['loc' => route('reseller'), 'lastmod' => null];
+        }
+
+        // Only while the programme is on: the page 404s otherwise, and there
+        // is no point pointing a crawler at a page that is not there.
+        if (ExclusiveOffers::fromSettings()->enabled()) {
+            $pages[] = ['loc' => route('offers'), 'lastmod' => null];
         }
 
         $urls = collect($pages)->concat($sectionUrls)->concat($brandUrls)->concat($productUrls);

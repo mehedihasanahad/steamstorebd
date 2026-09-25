@@ -1,7 +1,7 @@
 <?php
 
 /**
- * The homepage, in the order the redesign spec fixes: hero slider, best deals,
+ * The homepage, in the order the redesign spec fixes: hero slider, exclusive offers,
  * featured items, one rail per catalog section, reviews, then the two
  * programme blocks.
  */
@@ -68,7 +68,7 @@ describe('hero slider', function () {
     });
 });
 
-describe('best deals', function () {
+describe('exclusive offers', function () {
     it('shows a discounted card with its saving and struck price', function () {
         $product = sellableProduct();
         seoCard($product, [
@@ -80,8 +80,8 @@ describe('best deals', function () {
 
         $this->get(route('home'))
             ->assertSuccessful()
-            ->assertSee('Special deals')
-            ->assertSee('21tk off')
+            ->assertSee('Exclusive Offers')
+            ->assertSee('3% off')
             ->assertSee('৳ 699', false)
             ->assertSee('৳ 720', false);
     });
@@ -90,7 +90,7 @@ describe('best deals', function () {
         $product = sellableProduct();
         seoCard($product, ['slug' => 'no-deal', 'price_bdt' => 1000, 'compare_at_price_bdt' => 1000], codes: 1);
 
-        $this->get(route('home'))->assertDontSee('Special deals');
+        $this->get(route('home'))->assertDontSee('Exclusive Offers');
     });
 
     it('leaves out a deal on a switched-off product', function () {
@@ -98,7 +98,7 @@ describe('best deals', function () {
         seoCard($product, ['slug' => 'ghost-deal', 'price_bdt' => 100, 'compare_at_price_bdt' => 200]);
         $product->update(['is_active' => false]);
 
-        $this->get(route('home'))->assertDontSee('Special deals');
+        $this->get(route('home'))->assertDontSee('Exclusive Offers');
     });
 });
 
@@ -136,7 +136,7 @@ describe('featured products', function () {
 /**
  * One homepage section's markup, sliced out by its id.
  *
- * The homepage carries other rails — deals, featured, reviews — so asserting
+ * The homepage carries other rails — offers, featured, reviews — so asserting
  * on the whole page could not tell whether the rail it found was the section's
  * own. A section holds no nested <section>, so the first closing tag is its.
  */

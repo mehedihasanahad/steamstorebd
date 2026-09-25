@@ -48,6 +48,7 @@ const PAGES = [
     ['section-gift-cards', '/category/gift-cards'],
     ['section-game-top-up', '/category/game-top-up'],
     ['section-empty', '/category/utility'],
+    ['offers', '/offers'],
     ['brand-steam', '/brand/steam'],
     ['product-steam-hkd', '/product/steam-wallet-hkd'],
     ['product-pubg-uc', '/product/pubg-uc'],

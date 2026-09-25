@@ -6,9 +6,9 @@ use App\Http\Requests\ContactMessageRequest;
 use App\Jobs\SendAdminContactMessageEmail;
 use App\Models\Banner;
 use App\Models\ContactMessage;
-use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
 use App\Models\Review;
+use App\Services\ExclusiveOffers;
 use App\Services\PaymentMethods;
 use App\Services\StorefrontCatalog;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
 
 class StorefrontController extends Controller
 {
-    /** Deals and featured rails are short by design: a rail nobody scrolls sells nothing. */
+    /** The featured rail is short by design: a rail nobody scrolls sells nothing. */
     private const RAIL_LIMIT = 12;
 
     public function home(StorefrontCatalog $catalog)
@@ -39,12 +39,15 @@ class StorefrontController extends Controller
             })
             : collect();
 
+        $offers = ExclusiveOffers::fromSettings();
+
         return view('storefront.home', [
             'mainCategories'       => $mainCategories,
             'fallbackCategories'   => $fallbackCategories,
             'sections'             => $catalog->sectionsWithBrands(),
             'banners'              => Banner::visible()->get(),
-            'deals'                => $this->deals(),
+            'offers'               => $offers,
+            'offerCards'           => $offers->enabled() ? $offers->rail() : collect(),
             'featuredProducts'     => $this->featuredProducts(),
             'reviews'              => $this->reviews(),
             'activePaymentMethods' => PaymentMethods::active(),
@@ -73,26 +76,6 @@ class StorefrontController extends Controller
         dispatch(new SendAdminContactMessageEmail($contactMessage));
 
         return back()->with('success', 'Your message has been sent! We\'ll get back to you soon.');
-    }
-
-    /**
-     * Discounted cards, newest saving first. A deal is derived from the two
-     * prices rather than flagged, so it disappears on its own the moment the
-     * compare-at price stops being higher.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection<int, GiftCard>
-     */
-    private function deals()
-    {
-        return GiftCard::query()
-            ->active()
-            ->deals()
-            ->whereHas('category', fn (Builder $q) => $q->where('is_active', true))
-            ->with('category.mainCategory')
-            ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->limit(self::RAIL_LIMIT)
-            ->get();
     }
 
     /**

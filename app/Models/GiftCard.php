@@ -152,11 +152,45 @@ class GiftCard extends Model
         return max(0, min((int) ($this->max_quantity ?? 10), $this->stock_count));
     }
 
-    /** Cards with a compare-at price above their selling price. */
+    /**
+     * Cards with a compare-at price above their selling price.
+     *
+     * Column names are qualified because this scope is also used inside a
+     * subquery beside three other tables that carry price-like columns of
+     * their own.
+     */
     public function scopeDeals(Builder $query): Builder
     {
-        return $query->whereNotNull('compare_at_price_bdt')
-            ->whereColumn('compare_at_price_bdt', '>', 'price_bdt');
+        return $query->whereNotNull($query->qualifyColumn('compare_at_price_bdt'))
+            ->whereColumn(
+                $query->qualifyColumn('compare_at_price_bdt'),
+                '>',
+                $query->qualifyColumn('price_bdt'),
+            );
+    }
+
+    /**
+     * Deepest discount first — the share taken off, not the taka saved, so a
+     * 50% cut on a small card still leads a 5% cut on an expensive one.
+     *
+     * Only meaningful together with deals(): that scope is what guarantees a
+     * compare-at price above zero for the division below.
+     *
+     * The saving is multiplied by 1.0 before it is divided. Both prices are
+     * whole taka in practice, and SQLite divides two integers into an integer
+     * — every discount came out as zero and the order fell through to the
+     * tie-break.
+     */
+    public function scopeOrderByDiscount(Builder $query): Builder
+    {
+        $was   = $query->qualifyColumn('compare_at_price_bdt');
+        $price = $query->qualifyColumn('price_bdt');
+
+        return $query
+            ->orderByRaw("(({$was} - {$price}) * 1.0 / {$was}) desc")
+            ->orderByRaw("({$was} - {$price}) desc")
+            ->orderBy($query->qualifyColumn('sort_order'))
+            ->orderByDesc($query->qualifyColumn('id'));
     }
 
     public function availableCodesCount(): int
