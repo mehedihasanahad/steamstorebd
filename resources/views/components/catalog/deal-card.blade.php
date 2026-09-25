@@ -1,10 +1,14 @@
 @props([
     'card',
-    'width' => 'w-48 sm:w-60',
+    'width' => 'w-40 sm:w-48',
 ])
 
 {{-- A discounted SKU. The badge is derived from the two prices, never from a
-     flag, so a deal cannot outlive the discount that justified it. --}}
+     flag, so a deal cannot outlive the discount that justified it.
+
+     It is the width of a brand card on purpose: the offers rail sits directly
+     above the section rails, and a wider card there reads as a different kind
+     of thing rather than as the same shop, merchandised. --}}
 @php
     $product = $card->category;
     $saved   = $card->discountAmount();
@@ -21,7 +25,7 @@
         {{-- The product's own cover, not the denomination icon: a deal is
              recognised by its brand, and the value is already in the price. --}}
         <x-catalog.artwork :image="$product->image ?: $product->mainCategory?->image ?: $card->image"
-                           :name="$card->name" ratio="aspect-[4/3]" :width="240" :height="180" />
+                           :name="$card->name" ratio="aspect-[4/3]" :width="176" :height="132" />
         {{-- The badge leads with the percentage because that is what both the
              rail and the offers page are ordered by: taka saved would have the
              cards reading out of sequence. A saving too small to round to a

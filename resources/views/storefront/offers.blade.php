@@ -98,7 +98,7 @@
                 </div>
             </div>
         @else
-            <ul class="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4" aria-label="{{ $_scoped }}">
+            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6" aria-label="{{ $_scoped }}">
                 @foreach($cards as $card)
                     <li><x-catalog.deal-card :card="$card" width="w-full" class="h-full" /></li>
                 @endforeach
