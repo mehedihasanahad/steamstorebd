@@ -111,7 +111,12 @@ describe('a campaign message', function () {
             ->and($html)->toContain('signature=');
     });
 
-    it('announces the unsubscribe in a header the inbox can use', function () {
+    it('announces the unsubscribe in a header the inbox can use, once asked to', function () {
+        // Opt-in: the header also declares the message bulk, which is only
+        // worth doing once the domain authenticates for the relay it sends
+        // through. The in-body link above is what works either way.
+        config(['mail.campaign.list_unsubscribe' => true]);
+
         [$campaign, $recipient] = campaignWithRecipient();
 
         $mail = new CampaignMail($campaign, $recipient);

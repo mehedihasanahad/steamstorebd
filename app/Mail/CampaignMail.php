@@ -30,9 +30,19 @@ class CampaignMail extends Mailable
     }
 
     /**
-     * List-Unsubscribe is what puts the unsubscribe control in Gmail's own
-     * header rather than leaving people to hunt for the link — and what keeps
-     * a bulk send out of the spam folder on reputation grounds.
+     * List-Unsubscribe puts the unsubscribe control in Gmail's own header
+     * rather than leaving people to hunt for the link. It is also a
+     * declaration that the message is bulk, and that is not free: a provider
+     * told a message is bulk stops extending it the leniency it gives order
+     * mail and starts requiring SPF, DKIM and DMARC that line up with the
+     * relay the message actually came from. Fail those as bulk and the
+     * message is dropped; fail them as transactional and it usually still
+     * arrives. That asymmetry is why order mail from this application lands
+     * while campaigns from the same host and the same address do not.
+     *
+     * So it is opt-in, and off until the sending domain authenticates for its
+     * relay. The unsubscribe link in the body is unaffected either way, which
+     * is what recipients actually use and what keeps the send honest.
      *
      * Without List-Unsubscribe-Post, deliberately: one-click unsubscribe is a
      * bare POST from the mail provider, and this application's unsubscribe
@@ -40,6 +50,10 @@ class CampaignMail extends Mailable
      */
     public function headers(): Headers
     {
+        if (! config('mail.campaign.list_unsubscribe')) {
+            return new Headers;
+        }
+
         // Omitted rather than sent broken: a provider that checks this header
         // and cannot resolve it treats the message as malformed bulk mail and
         // discards it after accepting, which is worse than not declaring it.
