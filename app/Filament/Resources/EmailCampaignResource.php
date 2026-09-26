@@ -69,6 +69,13 @@ class EmailCampaignResource extends Resource
                         ])
                         ->columnSpanFull(),
 
+                    Forms\Components\Textarea::make('html_source')
+                        ->label('Or paste finished HTML')
+                        ->helperText('For markup written somewhere else. Pasting it into the editor above stores the tags as text and recipients read them; paste it here instead and it becomes the body when you save.')
+                        ->rows(6)
+                        ->autosize(false)
+                        ->columnSpanFull(),
+
                     Forms\Components\TextInput::make('cta_label')
                         ->label('Button label')
                         ->placeholder('Shop the sale')

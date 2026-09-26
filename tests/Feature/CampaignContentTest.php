@@ -10,6 +10,7 @@
  * when the theme changes.
  */
 
+use App\Support\Campaigns\BodyInput;
 use App\Support\Campaigns\MergeTags;
 use App\Support\EmailRichText;
 use App\Support\EmailTheme;
@@ -89,5 +90,57 @@ describe('placeholders', function () {
 
         expect($body)->not->toContain('<script>')
             ->and($body)->toContain('&lt;script&gt;');
+    });
+});
+
+describe('getting finished HTML into the body', function () {
+    it('takes the source field as the body, exactly as pasted', function () {
+        $html = '<p>Hi {{ first_name }},</p><h3>What is discounted</h3><ul><li><strong>Steam</strong> — 10% off</li></ul>';
+
+        $data = BodyInput::apply(['body' => '<p>whatever was in the editor</p>', 'html_source' => $html]);
+
+        expect($data['body'])->toBe($html)
+            ->and($data)->not->toHaveKey('html_source');
+    });
+
+    it('leaves the editor alone when the source field is empty', function () {
+        $data = BodyInput::apply(['body' => '<p>Typed with the toolbar</p>', 'html_source' => '   ']);
+
+        expect($data['body'])->toBe('<p>Typed with the toolbar</p>')
+            ->and($data)->not->toHaveKey('html_source');
+    });
+
+    it('puts back markup that the editor stored as text', function () {
+        // What a WYSIWYG actually saves when HTML source is pasted into it.
+        $pasted = '<p>&nbsp;</p><p>&lt;p&gt;Hi Rahim,&lt;/p&gt;<br><br>'
+            . '&lt;h3&gt;What is discounted&lt;/h3&gt;</p>';
+
+        $body = BodyInput::repair($pasted);
+
+        expect($body)->toContain('<p>Hi Rahim,</p>')
+            ->and($body)->toContain('<h3>What is discounted</h3>')
+            ->and($body)->not->toContain('&lt;');
+    });
+
+    it('renders as prose once repaired, not as tags', function () {
+        $pasted = '<p>&lt;p&gt;Hi Rahim,&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Steam&lt;/li&gt;&lt;/ul&gt;</p>';
+
+        expect(EmailRichText::toText(BodyInput::repair($pasted)))
+            ->toBe("Hi Rahim,\n\n- Steam");
+    });
+
+    it('never touches a body somebody actually formatted', function () {
+        // Real headings and lists mean the editor was used properly. An
+        // escaped fragment here is content, and rewriting it would be worse
+        // than leaving it.
+        $formatted = '<h3>Heading</h3><ul><li>Use &lt;p&gt; to open a paragraph</li></ul>';
+
+        expect(BodyInput::repair($formatted))->toBe($formatted);
+    });
+
+    it('leaves plain prose exactly where it is', function () {
+        $prose = '<p>Nothing here was pasted from anywhere.</p>';
+
+        expect(BodyInput::repair($prose))->toBe($prose);
     });
 });

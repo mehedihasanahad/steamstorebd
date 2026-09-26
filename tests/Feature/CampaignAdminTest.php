@@ -73,6 +73,27 @@ describe('writing a campaign', function () {
             ->and($campaign->created_by_admin_id)->toBe($this->admin->id);
     });
 
+    it('takes finished HTML from the source field rather than the editor', function () {
+        // The path that exists because pasting markup into a WYSIWYG stores
+        // the tags as text, and the recipient then reads them.
+        $html = '<p>Hi {{ first_name }},</p><h3>What is discounted</h3>'
+            . '<ul><li><strong>Steam Gift Cards</strong> — 10% off</li></ul>';
+
+        Livewire::test(CreateEmailCampaign::class)
+            ->fillForm([
+                'name'              => 'Pasted campaign',
+                'subject'           => 'Discounts inside',
+                'body'              => '<p>placeholder</p>',
+                'html_source'       => $html,
+                'audience'          => EmailCampaign::AUDIENCE_MANUAL,
+                'manual_recipients' => 'rahim@example.com',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        expect(EmailCampaign::firstWhere('name', 'Pasted campaign')->body)->toBe($html);
+    });
+
     it('keeps the filter tree in the shape the compiler reads', function () {
         Livewire::test(CreateEmailCampaign::class)
             ->fillForm([
