@@ -79,16 +79,26 @@ describe('judging whether our links can be reached', function () {
 });
 
 describe('the List-Unsubscribe header', function () {
-    it('is sent when recipients could actually follow it', function () {
-        config(['app.url' => 'https://steamstorebd.com']);
+    it('is sent when it is asked for and recipients could actually follow it', function () {
+        config(['app.url' => 'https://steamstorebd.com', 'mail.campaign.list_unsubscribe' => true]);
 
         expect(reachabilityMail()->headers()->text)->toHaveKey('List-Unsubscribe');
+    });
+
+    it('is off unless asked for, so the message is judged like the order mail that arrives', function () {
+        // Declaring a message bulk invites SPF, DKIM and DMARC checks that
+        // transactional mail from the same host is not held to. Until the
+        // domain passes them for its relay, the declaration costs the inbox.
+        config(['app.url' => 'https://steamstorebd.com']);
+
+        expect(config('mail.campaign.list_unsubscribe'))->toBeFalse()
+            ->and(reachabilityMail()->headers()->text)->not->toHaveKey('List-Unsubscribe');
     });
 
     it('is left off entirely rather than pointing at localhost', function () {
         // A provider that checks this header and cannot resolve it treats the
         // message as broken bulk mail. Absent is better than wrong.
-        config(['app.url' => 'http://localhost:8000']);
+        config(['app.url' => 'http://localhost:8000', 'mail.campaign.list_unsubscribe' => true]);
 
         expect(reachabilityMail()->headers()->text)->not->toHaveKey('List-Unsubscribe');
     });

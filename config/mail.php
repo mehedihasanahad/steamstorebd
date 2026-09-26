@@ -131,8 +131,20 @@ return [
     */
 
     'campaign' => [
-        'queue'           => env('MAIL_CAMPAIGN_QUEUE', 'campaigns'),
-        'rate_per_minute' => (int) env('MAIL_CAMPAIGN_RATE_PER_MINUTE', 60),
+        'queue'            => env('MAIL_CAMPAIGN_QUEUE', 'campaigns'),
+        'rate_per_minute'  => (int) env('MAIL_CAMPAIGN_RATE_PER_MINUTE', 60),
+
+        /*
+         | Whether campaign mail announces itself as bulk. Off by default: the
+         | header is a declaration, and a provider that is told a message is
+         | bulk stops judging it the way it judges order mail and starts
+         | demanding SPF, DKIM and DMARC that line up with the relay actually
+         | sending it. Until the domain authenticates for that relay, saying
+         | nothing is what gets a campaign the same treatment as the order
+         | mail that already arrives. Turn it on once the DNS is right — it is
+         | the better setting, and providers reward it.
+         */
+        'list_unsubscribe' => filter_var(env('MAIL_CAMPAIGN_LIST_UNSUBSCRIBE', false), FILTER_VALIDATE_BOOLEAN),
     ],
 
     /*
