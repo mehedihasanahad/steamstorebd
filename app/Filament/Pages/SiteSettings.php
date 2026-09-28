@@ -6,6 +6,7 @@ use App\Models\SiteSetting;
 use App\Services\ChatLinkBuilder;
 use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
+use App\Services\SocialProfiles;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -30,6 +31,7 @@ class SiteSettings extends Page implements HasForms
     {
         $keys = [
             'site_name', 'contact_email', 'contact_whatsapp',
+            ...array_keys(SocialProfiles::PROFILES),
             'hero_title', 'hero_subtitle',
             'announcement_bar_text', 'announcement_bar_active',
             'exclusive_offers_enabled', 'exclusive_offers_title', 'exclusive_offers_subtitle',
@@ -92,6 +94,13 @@ class SiteSettings extends Page implements HasForms
                     return [$key => ResellerProgram::fromSettings()->benefits()];
                 }
 
+                // Profile URLs are strings all the way down. The coercion below
+                // reads an empty setting as `false`, and the url rule then
+                // rejects a field the admin simply never filled in.
+                if (array_key_exists($key, SocialProfiles::PROFILES)) {
+                    return [$key => (string) SiteSetting::get($key, '')];
+                }
+
                 $raw = SiteSetting::get($key, $defaults[$key] ?? '');
                 return [$key => is_string($raw) && in_array($raw, ['1', '0', '']) ? (bool) $raw : $raw];
             })->toArray()
@@ -113,6 +122,48 @@ class SiteSettings extends Page implements HasForms
                                 Forms\Components\TextInput::make('contact_email')->label('Contact Email')->email(),
                                 Forms\Components\TextInput::make('contact_whatsapp')->label('WhatsApp Number'),
                             ])->columns(2),
+
+                        Forms\Components\Tabs\Tab::make('Social Profiles')
+                            ->icon('heroicon-o-link')
+                            ->schema([
+                                Forms\Components\Section::make('Public Profiles')
+                                    ->description('Profiles this business owns elsewhere. They are published in the site\'s schema.org markup as sameAs, which is how a search engine works out that this shop and the ratings on those profiles are one business. Our own testimonials cannot do that job — we wrote them. Leave a field empty if there is no profile yet.')
+                                    ->schema([
+                                        Forms\Components\TextInput::make('social_google_business_url')
+                                            ->label('Google Business Profile')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://g.page/r/...')
+                                            ->helperText('The share link from your Google Business Profile. This is the single most valuable one: it is where a public review count for a Bangladeshi shop usually comes from.'),
+                                        Forms\Components\TextInput::make('social_facebook_url')
+                                            ->label('Facebook Page')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://www.facebook.com/YourPage')
+                                            ->helperText('Leave empty to fall back to the Messenger page username set on the Floating Chat tab. Turn on page Recommendations so reviews there are public.'),
+                                        Forms\Components\TextInput::make('social_trustpilot_url')
+                                            ->label('Trustpilot')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://www.trustpilot.com/review/yourdomain.com'),
+                                        Forms\Components\TextInput::make('social_youtube_url')
+                                            ->label('YouTube')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://www.youtube.com/@yourchannel'),
+                                        Forms\Components\TextInput::make('social_instagram_url')
+                                            ->label('Instagram')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://www.instagram.com/yourhandle'),
+                                        Forms\Components\TextInput::make('social_linkedin_url')
+                                            ->label('LinkedIn')
+                                            ->url()
+                                            ->maxLength(255)
+                                            ->placeholder('https://www.linkedin.com/company/yourcompany'),
+                                    ])
+                                    ->columns(2),
+                            ]),
 
                         Forms\Components\Tabs\Tab::make('Homepage')
                             ->icon('heroicon-o-home')
@@ -356,6 +407,7 @@ class SiteSettings extends Page implements HasForms
             'site_name'                        => 'general',
             'contact_email'                    => 'general',
             'contact_whatsapp'                 => 'general',
+            ...array_fill_keys(array_keys(SocialProfiles::PROFILES), 'social'),
             'hero_title'                       => 'hero',
             'hero_subtitle'                    => 'hero',
             'announcement_bar_text'            => 'announcement',

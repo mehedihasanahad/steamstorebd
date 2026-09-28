@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\CatalogSection;
 use App\Models\GiftCardCategory;
 use App\Models\MainCategory;
+use App\Models\Review;
 use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
 use App\Services\StorefrontCatalog;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Carbon;
 
 class SitemapController extends Controller
 {
@@ -55,6 +57,13 @@ class SitemapController extends Controller
             ['loc' => route('privacy-policy'), 'lastmod' => null],
             ['loc' => route('terms'), 'lastmod' => null],
         ];
+
+        // Same rule as a section page: advertise the review wall only once it
+        // has something on it. An empty page is a wasted crawl and a worse
+        // first impression than no page at all.
+        if ($latestReview = Review::approved()->max('created_at')) {
+            $pages[] = ['loc' => route('reviews'), 'lastmod' => Carbon::parse($latestReview)];
+        }
 
         if (ResellerProgram::fromSettings()->enabled()) {
             $pages[] = ['loc' => route('reseller'), 'lastmod' => null];

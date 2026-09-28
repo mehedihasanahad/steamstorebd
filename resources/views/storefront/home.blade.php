@@ -146,7 +146,7 @@ $_schema = [
 
     {{-- ══ 5 · Customer reviews ══ --}}
     @if($reviews->isNotEmpty())
-        <x-catalog.section-rail title="What buyers say" class="mt-section md:mt-section-lg">
+        <x-catalog.section-rail title="What buyers say" :view-all="route('reviews')" class="mt-section md:mt-section-lg">
             @foreach($reviews as $review)
                 <article class="w-72 rounded-card border border-surface-3 bg-surface-1 p-4">
                     <div class="flex items-center justify-between gap-2">

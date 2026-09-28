@@ -4,10 +4,61 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Review;
+use App\Services\SocialProfiles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class ReviewController extends Controller
 {
+    /** Long enough that most visitors never paginate, short enough to stay fast. */
+    private const PER_PAGE = 24;
+
+    /**
+     * The public wall of approved reviews.
+     *
+     * The homepage rail shows twelve and links here; this is the only page on
+     * the site where every review has a URL of its own, which is what makes
+     * them quotable somewhere other than our own marketing.
+     */
+    public function index()
+    {
+        $breakdown = $this->ratingBreakdown();
+        $total     = (int) $breakdown->sum();
+
+        return view('storefront.reviews', [
+            'reviews'        => Review::approved()
+                ->with('giftCardCategory:id,name,slug')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->paginate(self::PER_PAGE),
+            'breakdown'      => $breakdown,
+            'reviewCount'    => $total,
+            'averageRating'  => $total === 0
+                ? null
+                : round($breakdown->keys()->sum(fn (int $rating) => $rating * $breakdown[$rating]) / $total, 1),
+            'socialProfiles' => SocialProfiles::fromSettings(),
+        ]);
+    }
+
+    /**
+     * How many approved reviews sit at each star, 5 down to 1.
+     *
+     * One grouped query rather than five counts, and every star is present
+     * even at zero so the breakdown does not change shape as reviews arrive.
+     *
+     * @return Collection<int, int>
+     */
+    private function ratingBreakdown(): Collection
+    {
+        $counts = Review::approved()
+            ->selectRaw('rating, count(*) as total')
+            ->groupBy('rating')
+            ->pluck('total', 'rating');
+
+        return collect([5, 4, 3, 2, 1])
+            ->mapWithKeys(fn (int $rating) => [$rating => (int) ($counts[$rating] ?? 0)]);
+    }
+
     public function store(Request $request, string $orderNumber)
     {
         $order = auth()->user()->orders()

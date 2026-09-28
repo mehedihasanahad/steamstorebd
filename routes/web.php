@@ -60,6 +60,10 @@ Route::get('/search/suggest', [SearchController::class, 'suggest'])
     ->name('search.suggest');
 Route::get('/faq', [StorefrontController::class, 'faq'])->name('faq');
 Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name('how-to-redeem');
+
+// The public review wall. Every approved review has an anchor of its own here,
+// which is the only place on the site they can be linked to individually.
+Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
 Route::post('/contact', [StorefrontController::class, 'contactSubmit'])
     ->middleware('throttle:5,1')

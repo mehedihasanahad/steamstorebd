@@ -49,6 +49,24 @@ describe('sitemap', function () {
             ->assertSuccessful()
             ->assertSee(route('product', 'google-play'), false);
     });
+
+    it('lists the review wall only once a review has been approved', function () {
+        seoCard(seoProduct(seoBrand()));
+
+        $this->get('/sitemap.xml')
+            ->assertSuccessful()
+            ->assertDontSee(route('reviews'), false);
+
+        \App\Models\Review::create([
+            'rating'  => 5,
+            'comment' => 'Instant delivery, paid with bKash.',
+            'status'  => 'approved',
+        ]);
+
+        $this->get('/sitemap.xml')
+            ->assertSuccessful()
+            ->assertSee(route('reviews'), false);
+    });
 });
 
 describe('redirects', function () {
@@ -223,6 +241,42 @@ describe('structured data', function () {
             ->assertSee('"email":"support@example.com"', false)
             ->assertSee('MerchantReturnNotPermitted', false);
     });
+
+    it('lists every configured profile in sameAs, google first', function () {
+        \App\Models\SiteSetting::set('social_google_business_url', 'https://g.page/r/steamstorebd', 'social');
+        \App\Models\SiteSetting::set('social_facebook_url', 'https://www.facebook.com/SteamStoreBD', 'social');
+        \App\Models\SiteSetting::set('social_trustpilot_url', 'https://www.trustpilot.com/review/steamstorebd.com', 'social');
+
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertSee('"sameAs":["https://g.page/r/steamstorebd","https://www.facebook.com/SteamStoreBD","https://www.trustpilot.com/review/steamstorebd.com"]', false);
+    });
+
+    it('drops a profile field that is not a url', function () {
+        \App\Models\SiteSetting::set('social_google_business_url', 'g.page/r/steamstorebd', 'social');
+        \App\Models\SiteSetting::set('social_facebook_url', 'https://www.facebook.com/SteamStoreBD', 'social');
+
+        // A half-typed URL claims an identity that does not resolve, which is
+        // worse for the site than claiming nothing.
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertSee('"sameAs":["https://www.facebook.com/SteamStoreBD"]', false);
+    });
+
+    it('prefers the configured facebook url over the messenger username', function () {
+        \App\Models\SiteSetting::set('messenger_page_username', 'SteamStoreBD', 'chat');
+        \App\Models\SiteSetting::set('social_facebook_url', 'https://www.facebook.com/SteamStoreBDOfficial', 'social');
+
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertSee('"sameAs":["https://www.facebook.com/SteamStoreBDOfficial"]', false);
+    });
+
+    it('omits sameAs entirely when no profile is configured', function () {
+        $this->get('/')
+            ->assertSuccessful()
+            ->assertDontSee('sameAs', false);
+    });
 });
 
 describe('site pages', function () {
@@ -245,6 +299,18 @@ describe('site pages', function () {
             ->assertSee(route('brand', 'steam'), false)
             ->assertSee(route('how-to-redeem'), false)
             ->assertSee(route('refund-policy'), false);
+    });
+
+    it('links the review wall from every page footer', function () {
+        seoCard(seoProduct(seoBrand()));
+
+        // Unconditional on purpose: gating it on "are there reviews yet" would
+        // cost a query on every page of the site, and the page carries its own
+        // empty state. The sitemap is where the emptiness check belongs.
+        $this->get('/faq')
+            ->assertSuccessful()
+            ->assertSee('Customer Reviews')
+            ->assertSee(route('reviews'), false);
     });
 
     it('renders a branded 404 page that is not indexed', function () {

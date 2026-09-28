@@ -38,7 +38,7 @@
 
     {{-- JSON-LD: Organization + WebSite --}}
     @php
-    $_facebookPage = site_setting('messenger_page_username') ?: site_setting('product_chat_messenger_username');
+    $_socialProfiles = \App\Services\SocialProfiles::fromSettings();
     $_organization = [
         '@type'           => 'Organization',
         '@id'             => url('/') . '/#organization',
@@ -62,8 +62,10 @@
             'merchantReturnLink'   => route('refund-policy'),
         ],
     ];
-    if ($_facebookPage) {
-        $_organization['sameAs'] = ['https://www.facebook.com/' . $_facebookPage];
+    // Every profile the shop can be proved to own. This is the only line on
+    // the page that points a crawler at reviews we did not write.
+    if ($_sameAs = $_socialProfiles->sameAs()) {
+        $_organization['sameAs'] = $_sameAs;
     }
     $_globalSchema = [
         '@context' => 'https://schema.org',
@@ -319,6 +321,7 @@
                 <ul class="space-y-2">
                     <li><a href="{{ route('faq') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">FAQ</a></li>
                     <li><a href="{{ route('how-to-redeem') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">How to Redeem</a></li>
+                    <li><a href="{{ route('reviews') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Customer Reviews</a></li>
                     <li><a href="{{ route('orders.lookup') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Track Your Order</a></li>
                     <li><a href="{{ route('contact') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Contact Us</a></li>
                     @if(site_setting('exclusive_offers_enabled', true))
