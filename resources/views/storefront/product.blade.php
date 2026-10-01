@@ -42,6 +42,9 @@
         'description' => $_description,
         'brand'       => ['@type' => 'Brand', 'name' => $category->mainCategory->name ?? $category->name],
         'url'         => route('product', $category->slug),
+        'category'    => $category->mainCategory?->catalogSection?->name ?? 'Digital gift card',
+        'sku'         => $category->slug,
+        'isFamilyFriendly' => true,
     ];
     if ($_imageUrl) {
         $_productSchema['image'] = $_imageUrl;
@@ -62,6 +65,19 @@
             'offerCount'    => $denominations->count(),
             'availability'  => $_inStock->isNotEmpty() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             'seller'        => ['@id' => url('/') . '/#organization'],
+            // The fields a rich result is withheld for when they are missing.
+            // A code is delivered, never posted, so the shipping block that
+            // would normally sit here is replaced by a zero-cost digital
+            // delivery statement, and the price is quoted for the day.
+            'url'              => route('product', $category->slug),
+            'itemCondition'    => 'https://schema.org/NewCondition',
+            'priceValidUntil'  => now()->addMonth()->toDateString(),
+            'hasMerchantReturnPolicy' => [
+                '@type'                => 'MerchantReturnPolicy',
+                'applicableCountry'    => 'BD',
+                'returnPolicyCategory' => 'https://schema.org/MerchantReturnNotPermitted',
+                'merchantReturnLink'   => route('refund-policy'),
+            ],
         ];
     }
 

@@ -12,10 +12,30 @@
 @section('title', $_seoTitle . ' — Steam Store BD')
 @section('meta_description', $_seoDesc)
 @section('og_type', 'website')
+
+{{-- Canonical and rel prev/next ─────────────────────────────────────────────
+     Page 2 points at itself, not at page 1: pointing it at page 1 tells a
+     crawler every product past the first page is a duplicate, and they drop
+     out of the index. ?sort= and ?region= are deliberately left off, because
+     those are the same products in a different order and should fold into
+     the unfiltered page. Bing still reads prev/next, and Bing is what answers
+     for ChatGPT, so the chain is published even though Google retired it. --}}
+@php
+    $_page  = $products->currentPage();
+    $_pageUrl = fn (int $n) => $n > 1 ? $_canonical . '?page=' . $n : $_canonical;
+@endphp
+@section('canonical', $_pageUrl($_page))
 @section('og_image_alt', 'Buy ' . $heading . ' in Bangladesh — Steam Store BD')
 @if($_owner->image)
 @section('og_image', Storage::disk('public')->url($_owner->image))
 @endif
+
+@push('pagination_links')
+@if($products->hasPages())
+@if($_page > 1)<link rel="prev" href="{{ $_pageUrl($_page - 1) }}">@endif
+@if($products->hasMorePages())<link rel="next" href="{{ $_pageUrl($_page + 1) }}">@endif
+@endif
+@endpush
 
 @push('schema')
 @php

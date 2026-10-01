@@ -16,14 +16,18 @@
     <title>@yield('title', 'Steam Store BD — Buy Gift Cards in Bangladesh | bKash Nagad')</title>
     <meta name="description" content="@yield('meta_description', 'Steam Store BD — Bangladesh\'s trusted gift card store. Buy Steam, Google Play, App Store & more with bKash or Nagad. Instant digital delivery to email. 100% genuine codes at best BDT price.')">
     <meta name="robots" content="@yield('robots', 'index, follow')">
-    <link rel="canonical" href="{{ url()->current() }}">
+    {{-- Canonical. Pages that paginate or filter override this so page 2 of a
+         listing points at itself rather than at page 1, which would otherwise
+         drop every product past the first page out of the index. --}}
+    <link rel="canonical" href="@yield('canonical', url()->current())">
+    @stack('pagination_links')
     <meta name="theme-color" content="{{ config('storefront.theme_color') }}">
 
     {{-- Open Graph --}}
     <meta property="og:site_name" content="Steam Store BD">
     <meta property="og:title" content="@yield('title', 'Steam Store BD — Buy Gift Cards in Bangladesh')">
     <meta property="og:description" content="@yield('meta_description', 'Buy digital gift cards in Bangladesh with bKash or Nagad. Instant delivery. 100% genuine codes at best BDT price.')">
-    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:url" content="@yield('canonical', url()->current())">
     <meta property="og:type" content="@yield('og_type', 'website')">
     <meta property="og:image" content="@yield('og_image', asset('images/hero-image-banner.png'))">
     <meta property="og:image:alt" content="@yield('og_image_alt', 'Steam Store BD — Buy Gift Cards in Bangladesh with bKash')">
@@ -40,7 +44,7 @@
     @php
     $_socialProfiles = \App\Services\SocialProfiles::fromSettings();
     $_organization = [
-        '@type'           => 'Organization',
+        '@type'           => ['Organization', 'OnlineStore'],
         '@id'             => url('/') . '/#organization',
         'name'            => 'Steam Store BD',
         'alternateName'   => ['Gift Card BD', 'Steam Gift Card BD'],
@@ -48,6 +52,12 @@
         'logo'            => ['@type' => 'ImageObject', 'url' => asset('images/icons/icon-512.png'), 'width' => 512, 'height' => 512],
         'description'     => "Bangladesh's trusted digital goods store: gift cards, game top-ups, game keys and subscriptions, paid for with local mobile wallets. Instant delivery, 100% genuine.",
         'areaServed'      => ['@type' => 'Country', 'name' => 'Bangladesh'],
+        // Which wallets the shop takes is the single most asked question about
+        // it, so it is stated as data and not only as a logo strip at checkout.
+        'currenciesAccepted' => 'BDT',
+        'paymentAccepted'    => \Illuminate\Support\Arr::join(
+            \App\Services\PaymentMethods::walletNames() ?: ['bKash', 'Nagad', 'Rocket'], ', '
+        ),
         'contactPoint'    => array_filter([
             '@type'             => 'ContactPoint',
             'contactType'       => 'customer support',

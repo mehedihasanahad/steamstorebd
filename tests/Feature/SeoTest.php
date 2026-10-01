@@ -6,6 +6,7 @@ use App\Models\GiftCardCode;
 use App\Models\MainCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 describe('sitemap', function () {
     it('lists visible brands, products and policy pages but never card redirect urls', function () {
@@ -351,5 +352,89 @@ describe('canonical redirect', function () {
         $this->post('http://www.steamstorebd.com/contact', [])
             ->assertStatus(302)
             ->assertSessionHasErrors(['name', 'email', 'message']);
+    });
+});
+
+describe('robots.txt', function () {
+    it('repeats the disallow list for every named assistant crawler', function () {
+        $body = $this->get('/robots.txt')->assertSuccessful()->getContent();
+
+        // A named group replaces the wildcard rather than adding to it, so an
+        // agent listed here must carry the disallows itself or it is being
+        // handed the admin and the checkout.
+        foreach (['GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot'] as $agent) {
+            $group = Str::of($body)->after('User-agent: '.$agent."\n")->before('User-agent: ')->value();
+
+            expect($group)->toContain('Disallow: /admin')
+                ->and($group)->toContain('Disallow: /checkout')
+                ->and($group)->toContain('Disallow: /cart');
+        }
+    });
+
+    it('advertises the xml sitemap as a directive and llms.txt as a comment', function () {
+        $this->get('/robots.txt')
+            ->assertSuccessful()
+            ->assertSee('Sitemap: '.url('/sitemap.xml'), false)
+            ->assertSee('# llms.txt: '.url('/llms.txt'), false)
+            ->assertDontSee('Sitemap: '.url('/llms.txt'), false);
+    });
+});
+
+describe('llms.txt', function () {
+    it('lists what is on sale, with a price floor and a link', function () {
+        $brand = seoBrand();
+        seoCard(seoProduct($brand), [], 3);
+
+        $this->get('/llms.txt')
+            ->assertSuccessful()
+            ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+            ->assertSee('# Steam Store BD', false)
+            ->assertSee('Steam Wallet', false)
+            ->assertSee(route('product', 'steam-wallet'), false)
+            ->assertSee('from ৳1,250', false)
+            ->assertSee(route('faq'), false);
+    });
+
+    it('marks a product with no stock rather than hiding it', function () {
+        $brand = seoBrand();
+        seoCard(seoProduct($brand), [], 0);
+
+        $this->get('/llms.txt')
+            ->assertSuccessful()
+            ->assertSee('(out of stock)', false);
+    });
+});
+
+describe('canonical on a paginated listing', function () {
+    it('points page two at itself, not at page one', function () {
+        $brand = seoBrand();
+        foreach (range(1, \App\Services\CatalogBrowser::PER_PAGE + 2) as $i) {
+            seoCard(
+                seoProduct($brand, ['name' => "Card {$i}", 'slug' => "card-{$i}"]),
+                ['slug' => "card-{$i}-10"],
+                1
+            );
+        }
+
+        $base = route('brand', 'steam');
+
+        $this->get($base.'?page=2')
+            ->assertSuccessful()
+            ->assertSee('<link rel="canonical" href="'.$base.'?page=2">', false)
+            ->assertSee('<link rel="prev" href="'.$base.'">', false);
+
+        $this->get($base)
+            ->assertSuccessful()
+            ->assertSee('<link rel="canonical" href="'.$base.'">', false)
+            ->assertSee('<link rel="next" href="'.$base.'?page=2">', false);
+    });
+
+    it('folds a sorted view back onto the unfiltered page', function () {
+        $brand = seoBrand();
+        seoCard(seoProduct($brand), [], 1);
+
+        $this->get(route('brand', 'steam').'?sort=price_asc')
+            ->assertSuccessful()
+            ->assertSee('<link rel="canonical" href="'.route('brand', 'steam').'">', false);
     });
 });

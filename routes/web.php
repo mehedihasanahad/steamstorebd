@@ -19,22 +19,47 @@ use Illuminate\Support\Facades\Route;
 
 // SEO
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
+// The catalogue in plain markdown, for assistants that read a site rather
+// than crawl it. Generated from the same catalog the storefront renders, so
+// it cannot drift from what is actually on sale.
+Route::get('/llms.txt', [SitemapController::class, 'llms'])->name('llms');
+
 Route::get('/robots.txt', function () {
-    $lines = [
-        'User-agent: *',
-        'Disallow: /admin',
-        'Disallow: /admin/',
-        'Disallow: /dashboard',
-        'Disallow: /profile',
-        'Disallow: /checkout',
-        'Disallow: /cart',
-        'Disallow: /auth/',
-        'Disallow: /favourites',
-        'Disallow: /search',
-        'Disallow: /bkash/',
-        '',
-        'Sitemap: ' . url('/sitemap.xml'),
+    // Everything a crawler has no business in: the admin, the buyer's own
+    // pages, and the funnel between the cart and the payment gateway.
+    $disallow = [
+        '/admin', '/admin/', '/dashboard', '/profile', '/checkout',
+        '/cart', '/auth/', '/favourites', '/search', '/bkash/',
     ];
+
+    // A crawler that matches a named group obeys that group ONLY — the
+    // wildcard stops applying to it entirely. So every named agent repeats the
+    // same disallow list; naming one and giving it a bare `Allow: /` would
+    // hand it the admin and the checkout.
+    //
+    // The assistant crawlers are named rather than left to the wildcard so a
+    // later tightening of `*` cannot quietly cut off the traffic that arrives
+    // from an answer instead of a results page. OAI-SearchBot and
+    // PerplexityBot build the index an answer cites; ChatGPT-User and
+    // Perplexity-User fetch a page because somebody just asked about it.
+    $agents = ['*', 'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'PerplexityBot', 'Perplexity-User', 'ClaudeBot', 'Google-Extended'];
+
+    $lines = [];
+    foreach ($agents as $agent) {
+        $lines[] = 'User-agent: ' . $agent;
+        $lines[] = 'Allow: /';
+        foreach ($disallow as $path) {
+            $lines[] = 'Disallow: ' . $path;
+        }
+        $lines[] = '';
+    }
+
+    // Sitemap: is for XML only. llms.txt is advertised as a comment, which is
+    // how it is discovered — there is no directive for it.
+    $lines[] = '# llms.txt: ' . url('/llms.txt');
+    $lines[] = 'Sitemap: ' . url('/sitemap.xml');
+
     return response(implode("\n", $lines), 200)
         ->header('Content-Type', 'text/plain');
 });
