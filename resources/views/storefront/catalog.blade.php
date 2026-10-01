@@ -21,17 +21,23 @@
      the unfiltered page. Bing still reads prev/next, and Bing is what answers
      for ChatGPT, so the chain is published even though Google retired it. --}}
 @php
-    $_page  = $products->currentPage();
-    $_pageUrl = fn (int $n) => $n > 1 ? $_canonical . '?page=' . $n : $_canonical;
+    $_page     = $products->currentPage();
+    $_pageUrl  = fn (int $n) => $n > 1 ? $_canonical . '?page=' . $n : $_canonical;
+
+    // ?page= past the end still answers 200 with an empty grid, and the number
+    // is unbounded. Letting those self-canonicalise would mint an endless set
+    // of soft-404s, each claiming to be the canonical copy of itself, so
+    // anything out of range folds back onto the first page and chains nothing.
+    $_inRange  = $_page <= $products->lastPage();
 @endphp
-@section('canonical', $_pageUrl($_page))
+@section('canonical', $_inRange ? $_pageUrl($_page) : $_canonical)
 @section('og_image_alt', 'Buy ' . $heading . ' in Bangladesh — Steam Store BD')
 @if($_owner->image)
 @section('og_image', Storage::disk('public')->url($_owner->image))
 @endif
 
 @push('pagination_links')
-@if($products->hasPages())
+@if($_inRange && $products->hasPages())
 @if($_page > 1)<link rel="prev" href="{{ $_pageUrl($_page - 1) }}">@endif
 @if($products->hasMorePages())<link rel="next" href="{{ $_pageUrl($_page + 1) }}">@endif
 @endif

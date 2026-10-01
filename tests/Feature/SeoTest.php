@@ -438,3 +438,22 @@ describe('canonical on a paginated listing', function () {
             ->assertSee('<link rel="canonical" href="'.route('brand', 'steam').'">', false);
     });
 });
+
+describe('a listing page past the end', function () {
+    it('folds back onto the first page and chains nothing', function () {
+        $brand = seoBrand();
+        seoCard(seoProduct($brand), [], 1);
+
+        $base = route('brand', 'steam');
+
+        // One product, so page 2 and beyond are empty 200s. Each must point at
+        // the real page rather than claim to be canonical itself.
+        foreach (['?page=2', '?page=99'] as $query) {
+            $this->get($base.$query)
+                ->assertSuccessful()
+                ->assertSee('<link rel="canonical" href="'.$base.'">', false)
+                ->assertDontSee('rel="prev"', false)
+                ->assertDontSee('rel="next"', false);
+        }
+    });
+});
