@@ -52,7 +52,12 @@ class BrowserPageFetcher implements PageFetcher
         $config = config('competitor.browser');
 
         $command = [
-            $config['node'],
+            // Split on whitespace so the node setting can carry a wrapper as
+            // well as the binary. A headless Linux server has no display for
+            // a headed Chromium, so it runs behind a virtual one and this is
+            // set to "xvfb-run -a node" -- which has to reach proc_open as
+            // three arguments, not one impossible filename.
+            ...preg_split('/\s+/', trim((string) $config['node'])),
             base_path($config['script']),
             // No user agent is passed on purpose. Chromium sends one that
             // matches its own TLS handshake and client hints; overriding it
