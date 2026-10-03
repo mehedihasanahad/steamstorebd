@@ -74,12 +74,17 @@ return [
     |--------------------------------------------------------------------------
     |
     | Here you may specify the default timezone for your application, which
-    | will be used by the PHP date and date-time functions. The timezone
-    | is set to "UTC" by default as it is suitable for most use cases.
+    | will be used by the PHP date and date-time functions.
+    |
+    | This shop sells in Bangladesh, to Bangladeshi buyers, and is run from
+    | Dhaka -- so the time it stores is the time everyone involved means. The
+    | alternative, UTC in the database and a conversion at every read, buys
+    | portability this application has no use for and costs a translation on
+    | every order time, every report boundary and every scheduled job.
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Dhaka',
 
     /*
     |--------------------------------------------------------------------------

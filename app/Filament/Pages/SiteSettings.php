@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\SiteSetting;
 use App\Services\ChatLinkBuilder;
+use App\Services\Competitor\ExchangeRates;
 use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
 use App\Services\SocialProfiles;
@@ -58,6 +59,14 @@ class SiteSettings extends Page implements HasForms
             'reseller_hero_subtitle',
             'reseller_response_time',
             'reseller_benefits',
+            ...array_map(
+                fn (string $currency) => ExchangeRates::settingKey($currency),
+                ExchangeRates::CURRENCIES,
+            ),
+            ...array_map(
+                fn (string $currency) => ExchangeRates::feeSettingKey($currency),
+                ExchangeRates::CURRENCIES,
+            ),
         ];
 
         $defaults = [
@@ -83,6 +92,11 @@ class SiteSettings extends Page implements HasForms
             'product_chat_messenger_enabled'      => false,
             'reseller_program_enabled'            => false,
             'reseller_response_time'              => 'within 24 hours',
+            ...collect(ExchangeRates::DEFAULT_FEE)
+                ->mapWithKeys(fn (string $fee, string $currency) => [
+                    ExchangeRates::feeSettingKey($currency) => $fee,
+                ])
+                ->all(),
         ];
 
         $this->form->fill(
@@ -99,6 +113,14 @@ class SiteSettings extends Page implements HasForms
                 // rejects a field the admin simply never filled in.
                 if (array_key_exists($key, SocialProfiles::PROFILES)) {
                     return [$key => (string) SiteSetting::get($key, '')];
+                }
+
+                // Same reason, for the competitor rates and fees: an unset
+                // one is an empty box, not a false. The default is read here
+                // too, so the payment fee arrives already filled in.
+                if (str_starts_with($key, ExchangeRates::SETTING_PREFIX)
+                    || str_starts_with($key, ExchangeRates::FEE_PREFIX)) {
+                    return [$key => (string) SiteSetting::get($key, $defaults[$key] ?? '')];
                 }
 
                 $raw = SiteSetting::get($key, $defaults[$key] ?? '');
@@ -381,6 +403,41 @@ class SiteSettings extends Page implements HasForms
                                             ->defaultItems(0),
                                     ]),
                             ]),
+                        Forms\Components\Tabs\Tab::make('Competitor Pricing')
+                            ->icon('heroicon-o-scale')
+                            ->schema([
+                                Forms\Components\Section::make('Taka per unit of foreign currency')
+                                    ->description('What the nightly price check multiplies a competitor price by before comparing it against our buy price. This is the rate you actually buy at -- spread and fees already in it -- not a market rate. A currency left empty is not guessed at: a card quoted in it is recorded with the price the page showed and flagged as uncomparable, rather than converted at another currency rate and quietly wrong by a tenth. Changing a rate here does not rewrite readings already taken; each one keeps the rate it was measured with.')
+                                    ->schema(
+                                        array_map(
+                                            fn (string $currency) => Forms\Components\TextInput::make(ExchangeRates::settingKey($currency))
+                                                ->label("1 {$currency} =")
+                                                ->numeric()
+                                                ->minValue(0)
+                                                ->step('0.0001')
+                                                ->prefix('৳')
+                                                ->placeholder('0.0000'),
+                                            ExchangeRates::CURRENCIES,
+                                        ),
+                                    )
+                                    ->columns(3),
+
+                                Forms\Components\Section::make('Payment fee per order')
+                                    ->description('Added to the competitor price before it is converted, in the currency their page quotes. A listed price is not what leaving the shop costs -- G2A charges a payment fee on top of it -- so comparing against the shelf price flatters them by that much on every single card. Leave a currency at zero to take its listed price at face value.')
+                                    ->schema(
+                                        array_map(
+                                            fn (string $currency) => Forms\Components\TextInput::make(ExchangeRates::feeSettingKey($currency))
+                                                ->label("{$currency} fee")
+                                                ->numeric()
+                                                ->minValue(0)
+                                                ->step('0.01')
+                                                ->prefix($currency)
+                                                ->placeholder('0.00'),
+                                            ExchangeRates::CURRENCIES,
+                                        ),
+                                    )
+                                    ->columns(3),
+                            ]),
                     ]),
             ])
             ->statePath('data');
@@ -443,6 +500,13 @@ class SiteSettings extends Page implements HasForms
             'reseller_hero_subtitle'           => 'reseller',
             'reseller_response_time'           => 'reseller',
             'reseller_benefits'                => 'reseller',
+            ...array_fill_keys(
+                array_merge(
+                    array_map(fn (string $c) => ExchangeRates::settingKey($c), ExchangeRates::CURRENCIES),
+                    array_map(fn (string $c) => ExchangeRates::feeSettingKey($c), ExchangeRates::CURRENCIES),
+                ),
+                'competitor',
+            ),
         ];
 
         foreach ($data as $key => $value) {

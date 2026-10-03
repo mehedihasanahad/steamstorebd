@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Competitor\PageFetcher;
 use App\Services\StorefrontCatalog;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Mail;
@@ -12,10 +13,27 @@ use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use InvalidArgumentException;
 
 class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void {}
+    public function register(): void
+    {
+        // One fetcher for the whole run: the browser implementation holds a
+        // Chromium open, and launching it costs about as much as loading a
+        // page, so a sweep that resolved a fresh one per card would spend
+        // most of its time starting browsers.
+        $this->app->singleton(PageFetcher::class, function ($app) {
+            $key   = (string) config('competitor.fetcher');
+            $class = config("competitor.fetchers.{$key}");
+
+            if (! $class) {
+                throw new InvalidArgumentException("Unknown competitor fetcher [{$key}].");
+            }
+
+            return $app->make($class);
+        });
+    }
 
     public function boot(): void
     {

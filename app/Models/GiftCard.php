@@ -34,10 +34,11 @@ class GiftCard extends Model
      * @var array<string, mixed>
      */
     protected $attributes = [
-        'fulfilment_type' => self::FULFILMENT_CODE_POOL,
-        'manual_stock'    => 0,
-        'min_quantity'    => 1,
-        'max_quantity'    => 10,
+        'fulfilment_type'     => self::FULFILMENT_CODE_POOL,
+        'manual_stock'        => 0,
+        'min_quantity'        => 1,
+        'max_quantity'        => 10,
+        'price_watch_enabled' => true,
     ];
 
     protected $fillable = [
@@ -48,6 +49,7 @@ class GiftCard extends Model
         'denomination_currency',
         'denomination_bdt',
         'buy_price_bdt',
+        'price_watch_enabled',
         'price_bdt',
         'compare_at_price_bdt',
         'min_quantity',
@@ -69,6 +71,7 @@ class GiftCard extends Model
             'denomination' => 'decimal:2',
             'denomination_bdt' => 'decimal:2',
             'buy_price_bdt' => 'decimal:2',
+            'price_watch_enabled' => 'boolean',
             'price_bdt' => 'decimal:2',
             'compare_at_price_bdt' => 'decimal:2',
             'min_quantity' => 'integer',
@@ -93,6 +96,17 @@ class GiftCard extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /** Competitor pages this card is priced against, one per provider. */
+    public function competitorListings(): HasMany
+    {
+        return $this->hasMany(CompetitorListing::class);
+    }
+
+    public function priceChecks(): HasMany
+    {
+        return $this->hasMany(CompetitorPriceCheck::class);
     }
 
     /**

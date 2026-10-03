@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GiftCardResource\Pages;
+use App\Models\CompetitorListing;
 use App\Models\GiftCard;
 use App\Models\GiftCardCategory;
 use App\Rules\ImageAspectRatio;
@@ -11,6 +12,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class GiftCardResource extends Resource
@@ -89,6 +91,42 @@ class GiftCardResource extends Resource
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             ])->columns(2),
 
+            Forms\Components\Section::make('Price Watch')
+                ->description('Read what a competitor charges for this card every night at 10 PM, so the morning starts with a list of cards worth repricing. Nothing here changes a price by itself.')
+                ->schema([
+                    Forms\Components\Toggle::make('price_watch_enabled')
+                        ->label('Watch competitor prices')
+                        ->default(true)
+                        ->helperText('Off = this card is left out of the nightly check. Use it for cards bought on a fixed contract, bundles, and anything deliberately not priced against the market. The URL below is kept either way.'),
+
+                    Forms\Components\Repeater::make('competitorListings')
+                        ->relationship()
+                        ->label('Competitor pages')
+                        ->schema([
+                            Forms\Components\Select::make('provider')
+                                ->label('Source')
+                                ->options(CompetitorListing::providerOptions())
+                                ->default(CompetitorListing::PROVIDER_G2A)
+                                ->required()
+                                // One page per source: two rows for the same
+                                // shop would be two answers to one question.
+                                ->distinct()
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                            Forms\Components\TextInput::make('url')
+                                ->label('Product page URL')
+                                ->url()
+                                ->required()
+                                ->maxLength(2048)
+                                ->placeholder('https://www.g2a.com/...')
+                                ->helperText('Paste the exact product page, matching this denomination and region. A link to a search or a category page cannot be read.'),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(0)
+                        ->maxItems(max(1, count(CompetitorListing::providerOptions())))
+                        ->addActionLabel('Add a competitor page')
+                        ->columnSpanFull(),
+                ]),
+
             Forms\Components\Section::make('Fulfilment')
                 ->description('How this card reaches the buyer after payment.')
                 ->schema([
@@ -159,6 +197,13 @@ class GiftCardResource extends Resource
                     ->label('Stock')
                     ->color(fn($state) => $state > 5 ? 'success' : ($state > 0 ? 'warning' : 'danger')),
                 Tables\Columns\ToggleColumn::make('is_active'),
+                Tables\Columns\ToggleColumn::make('price_watch_enabled')
+                    ->label('Watch')
+                    // Toggleable from the list because deciding which cards to
+                    // watch is a pass over the whole catalogue, not a visit to
+                    // one card at a time.
+                    ->tooltip('Include this card in the nightly competitor price check')
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('sort_order')->sortable(),
             ])
             ->defaultSort('sort_order')
@@ -166,6 +211,17 @@ class GiftCardResource extends Resource
                 Tables\Filters\SelectFilter::make('category_id')
                     ->options(GiftCardCategory::pluck('name', 'id'))
                     ->label('Category'),
+
+                Tables\Filters\TernaryFilter::make('price_watch_enabled')
+                    ->label('Price watch')
+                    ->placeholder('Any')
+                    ->trueLabel('Watched')
+                    ->falseLabel('Not watched'),
+
+                Tables\Filters\Filter::make('has_competitor_url')
+                    ->label('Has a competitor URL')
+                    ->toggle()
+                    ->query(fn (Builder $query) => $query->whereHas('competitorListings')),
             ])
             ->actions([Tables\Actions\EditAction::make()])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);

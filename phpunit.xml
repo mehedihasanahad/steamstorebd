@@ -27,6 +27,9 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
+        <!-- Never drive a real browser from the suite: the HTTP fetcher is
+             the one Http::fake() can stand in front of. -->
+        <env name="COMPETITOR_FETCHER" value="http"/>
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="DB_URL" value=""/>

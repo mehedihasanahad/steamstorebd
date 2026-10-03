@@ -10,3 +10,14 @@ Artisan::command('inspire', function () {
 
 // A scheduled campaign is only an intention until this runs.
 Schedule::command('campaigns:send-due')->everyMinute()->withoutOverlapping();
+
+// The nightly competitor price sweep. It runs in the background because a
+// full catalogue takes minutes to walk and campaigns:send-due is waiting
+// behind it on the same tick.
+if (config('competitor.schedule.enabled')) {
+    Schedule::command('competitor:check-prices')
+        ->dailyAt((string) config('competitor.schedule.time'))
+        ->withoutOverlapping()
+        ->onOneServer()
+        ->runInBackground();
+}
