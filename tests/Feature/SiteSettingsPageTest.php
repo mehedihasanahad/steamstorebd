@@ -139,3 +139,50 @@ it('refuses a benefit with no title', function () {
         ->call('save')
         ->assertHasFormErrors();
 });
+
+describe('text settings that look like booleans', function () {
+    it('leaves an empty heading empty instead of storing a zero', function () {
+        // The storefront renders this heading directly. Stored as "0" it put
+        // a literal 0 on the homepage above the offers rail.
+        Livewire::test(SiteSettings::class)
+            ->fillForm(['exclusive_offers_title' => ''])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect(SiteSetting::where('key', 'exclusive_offers_title')->value('value'))->toBe('');
+    });
+
+    it('survives a save it was not part of', function () {
+        SiteSetting::set('exclusive_offers_subtitle', '', 'exclusive_offers');
+
+        // Saving any tab writes every key, which is how one empty field used
+        // to be turned into a zero by a visit to an unrelated screen.
+        Livewire::test(SiteSettings::class)
+            ->fillForm(['site_name' => 'Steam Store BD'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect(SiteSetting::where('key', 'exclusive_offers_subtitle')->value('value'))->toBe('');
+    });
+
+    it('still stores a switched-off toggle as off', function () {
+        Livewire::test(SiteSettings::class)
+            ->fillForm(['exclusive_offers_enabled' => false])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect(SiteSetting::where('key', 'exclusive_offers_enabled')->value('value'))->toBe('0');
+    });
+
+    it('reads a stored zero back as off for a toggle, and as text for a heading', function () {
+        SiteSetting::set('announcement_bar_active', '0', 'announcement');
+        SiteSetting::set('hero_title', '0', 'hero');
+
+        // A heading someone genuinely typed "0" into is still a heading.
+        Livewire::test(SiteSettings::class)
+            ->assertFormSet([
+                'announcement_bar_active' => false,
+                'hero_title'              => '0',
+            ]);
+    });
+});

@@ -108,23 +108,14 @@ class SiteSettings extends Page implements HasForms
                     return [$key => ResellerProgram::fromSettings()->benefits()];
                 }
 
-                // Profile URLs are strings all the way down. The coercion below
-                // reads an empty setting as `false`, and the url rule then
-                // rejects a field the admin simply never filled in.
-                if (array_key_exists($key, SocialProfiles::PROFILES)) {
-                    return [$key => (string) SiteSetting::get($key, '')];
-                }
-
-                // Same reason, for the competitor rates and fees: an unset
-                // one is an empty box, not a false. The default is read here
-                // too, so the payment fee arrives already filled in.
-                if (str_starts_with($key, ExchangeRates::SETTING_PREFIX)
-                    || str_starts_with($key, ExchangeRates::FEE_PREFIX)) {
-                    return [$key => (string) SiteSetting::get($key, $defaults[$key] ?? '')];
-                }
-
                 $raw = SiteSetting::get($key, $defaults[$key] ?? '');
-                return [$key => is_string($raw) && in_array($raw, ['1', '0', '']) ? (bool) $raw : $raw];
+
+                // Only the named toggles are booleans. This used to be decided
+                // by looking at the value -- anything reading '', '0' or '1'
+                // became a bool -- which quietly turned every empty text field
+                // into false, and false into a stored "0" the next time
+                // anybody pressed Save.
+                return [$key => SiteSetting::isBoolean($key) ? (bool) $raw : (string) $raw];
             })->toArray()
         );
     }
@@ -514,6 +505,13 @@ class SiteSettings extends Page implements HasForms
             // the only array on this page — is encoded before it is stored.
             if (is_array($value)) {
                 $value = json_encode(array_values($value));
+            } elseif (SiteSetting::isBoolean($key)) {
+                // Written as '1'/'0' rather than letting a PHP false reach a
+                // text column, where it lands as "0" and is indistinguishable
+                // from somebody typing a zero.
+                $value = $value ? '1' : '0';
+            } else {
+                $value = $value === null ? '' : (string) $value;
             }
 
             SiteSetting::set($key, $value, $groups[$key] ?? 'general');
