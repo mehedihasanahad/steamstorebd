@@ -80,10 +80,21 @@ class BrowserPageFetcher implements PageFetcher
             2 => ['pipe', 'w'],
         ];
 
-        $process = proc_open($command, $descriptors, $pipes, base_path(), $this->environment($config));
+        $script = base_path($config['script']);
+
+        if (! is_file($script)) {
+            throw CompetitorFetchException::transport("Browser script is missing at {$script}");
+        }
+
+        // Suppressed so a failure to launch arrives as this exception, naming
+        // the command, rather than as a PHP warning turned into a stack trace
+        // several layers up that says nothing about what was run.
+        $process = @proc_open($command, $descriptors, $pipes, base_path(), $this->environment($config));
 
         if (! is_resource($process)) {
-            throw CompetitorFetchException::transport('Could not start the browser process');
+            $attempted = implode(' ', array_slice($command, 0, count($command) - 1));
+
+            throw CompetitorFetchException::transport("Could not run [{$attempted}]");
         }
 
         $this->process = $process;

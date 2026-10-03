@@ -206,6 +206,11 @@ class PriceCheckRunner
 
             return ['failure_reason' => $e->reason];
         } catch (Throwable $e) {
+            // Reaches the console as well as the log. Leaving this one out was
+            // how a browser that never started showed up as a bare "could not
+            // load the page" with nothing underneath it to act on.
+            $this->detail = $e->getMessage();
+
             // An unexpected shape of failure still has to leave a row, but it
             // is a bug rather than a stale URL, so it goes to the log too.
             Log::error('Competitor price check failed unexpectedly', [

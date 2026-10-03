@@ -25,18 +25,12 @@ const {
   headless = false,
   timeout = 45000,
   locale = 'en-US',
-  userAgent = null,
   proxy = null,
   // Chromium negotiates HTTP/2 with Cloudflare and has the connection reset
   // mid-handshake. Forcing 1.1 is what makes the page load at all.
   args = ['--disable-http2'],
   retryDelay = 3000,
 } = config;
-
-// domcontentloaded, not networkidle: the structured data is server rendered
-// and present the moment the document is, while these pages keep chattering
-// to analytics long after they are useful.
-const load = (url) => page.goto(url, { waitUntil: 'domcontentloaded', timeout });
 
 /** Everything that is not the document itself: never read, so never fetched. */
 const SKIP_RESOURCES = new Set(['image', 'media', 'font', 'stylesheet']);
@@ -49,7 +43,7 @@ function send(payload) {
 }
 
 let browser;
-let page;
+let context;
 
 try {
   browser = await chromium.launch({
@@ -58,19 +52,27 @@ try {
     ...(proxy ? { proxy: { server: proxy } } : {}),
   });
 
-  const context = await browser.newContext({
+  // No user agent is set. Chromium sends one that matches its own TLS
+  // handshake and client hints; overriding it makes the two disagree, and a
+  // browser claiming to be a different browser is what the check looks for.
+  context = await browser.newContext({
     locale,
     viewport: { width: 1366, height: 768 },
-    ...(userAgent ? { userAgent } : {}),
   });
 
   // Roughly halves the time a page takes and most of the bytes. The price
   // lives in a script tag in the document.
-  await context.route('**/*', (route) =>
-    SKIP_RESOURCES.has(route.request().resourceType()) ? route.abort() : route.continue(),
-  );
-
-  page = await context.newPage();
+  await context.route('**/*', async (route) => {
+    try {
+      await (SKIP_RESOURCES.has(route.request().resourceType())
+        ? route.abort()
+        : route.continue());
+    } catch {
+      // The page this request belonged to has already closed. Answering a
+      // request on a dead page throws, and an unhandled rejection in here
+      // stalls whatever navigation is running now.
+    }
+  });
 
   send({ ready: true });
 } catch (error) {
@@ -79,6 +81,44 @@ try {
   const [reason] = error.message.split('\n');
   send({ ready: false, error: `Could not start a browser: ${reason}` });
   process.exit(1);
+}
+
+/**
+ * Loads one URL on a page of its own.
+ *
+ * A page per URL, rather than one page reused for the whole sweep. Reuse
+ * works exactly once: these pages keep background requests in flight long
+ * after they have loaded, and navigating away leaves those still being
+ * answered by the route handler above while the next navigation queues
+ * behind them. It presents as every page after the first timing out, however
+ * generous the timeout -- which reads like a slow network or a blocked
+ * address, and is neither.
+ *
+ * Cookies belong to the context, not the page, so a clearance won past the
+ * bot check is still carried from one URL to the next.
+ */
+async function fetchPage(url) {
+  const page = await context.newPage();
+
+  try {
+    // domcontentloaded, not networkidle: the structured data is server
+    // rendered and present the moment the document is, while this page keeps
+    // chattering to analytics long after it is useful.
+    let response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+
+    // A shop that challenges the first navigation of a session answers it
+    // with a 403 and sets a clearance cookie while doing so, which means the
+    // very next request through the same context is let through. Retrying
+    // once costs a couple of seconds and saves the first card of every sweep.
+    if (CHALLENGE_STATUSES.has(response?.status())) {
+      await page.waitForTimeout(retryDelay);
+      response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+    }
+
+    return { status: response?.status() ?? 0, html: await page.content() };
+  } finally {
+    await page.close();
+  }
 }
 
 const input = createInterface({ input: process.stdin, crlfDelay: Infinity });
@@ -100,18 +140,9 @@ for await (const line of input) {
   }
 
   try {
-    let response = await load(url);
+    const { status, html } = await fetchPage(url);
 
-    // A shop that challenges the first navigation of a session answers it
-    // with a 403 and sets a clearance cookie while doing so, which means the
-    // very next request through the same context is let through. Retrying
-    // once costs a couple of seconds and saves the first card of every sweep.
-    if (CHALLENGE_STATUSES.has(response?.status())) {
-      await page.waitForTimeout(retryDelay);
-      response = await load(url);
-    }
-
-    send({ ok: true, status: response?.status() ?? 0, html: await page.content() });
+    send({ ok: true, status, html });
   } catch (error) {
     send({ ok: false, error: error.message.split('\n')[0] });
   }
