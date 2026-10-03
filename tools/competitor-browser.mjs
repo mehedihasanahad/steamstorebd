@@ -30,10 +30,19 @@ const {
   // Chromium negotiates HTTP/2 with Cloudflare and has the connection reset
   // mid-handshake. Forcing 1.1 is what makes the page load at all.
   args = ['--disable-http2'],
+  retryDelay = 3000,
 } = config;
+
+// domcontentloaded, not networkidle: the structured data is server rendered
+// and present the moment the document is, while these pages keep chattering
+// to analytics long after they are useful.
+const load = (url) => page.goto(url, { waitUntil: 'domcontentloaded', timeout });
 
 /** Everything that is not the document itself: never read, so never fetched. */
 const SKIP_RESOURCES = new Set(['image', 'media', 'font', 'stylesheet']);
+
+/** Answers that mean "prove you are a browser", not "this page is gone". */
+const CHALLENGE_STATUSES = new Set([403, 429, 503]);
 
 function send(payload) {
   process.stdout.write(JSON.stringify(payload) + '\n');
@@ -91,10 +100,16 @@ for await (const line of input) {
   }
 
   try {
-    // domcontentloaded, not networkidle: the structured data is server
-    // rendered and present the moment the document is, while this page keeps
-    // chattering to analytics long after it is useful.
-    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout });
+    let response = await load(url);
+
+    // A shop that challenges the first navigation of a session answers it
+    // with a 403 and sets a clearance cookie while doing so, which means the
+    // very next request through the same context is let through. Retrying
+    // once costs a couple of seconds and saves the first card of every sweep.
+    if (CHALLENGE_STATUSES.has(response?.status())) {
+      await page.waitForTimeout(retryDelay);
+      response = await load(url);
+    }
 
     send({ ok: true, status: response?.status() ?? 0, html: await page.content() });
   } catch (error) {
