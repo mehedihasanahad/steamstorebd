@@ -18,6 +18,9 @@ use App\Exceptions\CompetitorFetchException;
  */
 class BrowserPageFetcher implements PageFetcher
 {
+    /** The line of a crash that names the fault, rather than locating it. */
+    private const MESSAGE_LINE = '/^[A-Za-z]*Error[: ]/m';
+
     /** @var resource|null */
     private $process = null;
 
@@ -86,6 +89,9 @@ class BrowserPageFetcher implements PageFetcher
         $this->process = $process;
         $this->pipes   = $pipes;
 
+        // Non-blocking, so draining it for a crash message can never hang.
+        stream_set_blocking($this->pipes[2], false);
+
         // Launching Chromium is the slow part, so the handshake waits longer
         // than a page load does.
         stream_set_timeout($this->pipes[1], (int) $config['timeout'] + 30);
@@ -93,9 +99,11 @@ class BrowserPageFetcher implements PageFetcher
         $ready = $this->read();
 
         if (! ($ready['ready'] ?? false)) {
+            $detail = (string) ($ready['error'] ?? '') ?: $this->drainErrors();
+
             $this->close();
 
-            throw CompetitorFetchException::transport((string) ($ready['error'] ?? 'Browser did not start'));
+            throw CompetitorFetchException::transport($detail ?: 'Browser did not start');
         }
     }
 
@@ -123,9 +131,17 @@ class BrowserPageFetcher implements PageFetcher
             $chunk = fgets($this->pipes[1]);
 
             if ($chunk === false) {
+                // Node writes its crashes to stderr, not stdout -- a missing
+                // playwright install, a browser that will not start, a bad
+                // display. Without this they all arrive as the same useless
+                // "stopped responding" and the real cause is thrown away.
+                $detail = $this->drainErrors();
+
                 $this->close();
 
-                throw CompetitorFetchException::transport('Browser stopped responding');
+                throw CompetitorFetchException::transport(
+                    $detail === '' ? 'Browser stopped responding' : $detail,
+                );
             }
 
             $line .= $chunk;
@@ -144,6 +160,58 @@ class BrowserPageFetcher implements PageFetcher
         $decoded = json_decode(trim($line), true);
 
         return is_array($decoded) ? $decoded : ['ok' => false, 'error' => 'Unreadable answer from the browser'];
+    }
+
+    /** Whatever the process complained about, trimmed to one useful line. */
+    private function drainErrors(): string
+    {
+        if (! isset($this->pipes[2]) || ! is_resource($this->pipes[2])) {
+            return '';
+        }
+
+        // A dying process writes its source header first and the line that
+        // actually names the fault a moment later, so one read reliably
+        // returns the useless half. Switching the pipe to blocking and
+        // reading to EOF would be tidier, but Windows ignores that on a
+        // proc_open pipe -- so this accumulates until the message it wants
+        // has arrived, with a short budget to bound a silent process.
+        $errors   = '';
+        $deadline = microtime(true) + 1.5;
+
+        do {
+            $errors .= (string) stream_get_contents($this->pipes[2]);
+
+            if (preg_match(self::MESSAGE_LINE, $errors)) {
+                break;
+            }
+
+            usleep(100_000);
+        } while (microtime(true) < $deadline);
+
+        $errors = trim($errors);
+
+        if ($errors === '') {
+            return '';
+        }
+
+        $lines = array_values(array_filter(
+            array_map('trim', preg_split('/\R/', $errors)),
+            // A node crash leads with a "node:internal/..." source header and
+            // trails into stack frames. Neither names the problem.
+            fn (string $line) => $line !== ''
+                && ! str_starts_with($line, 'at ')
+                && ! str_starts_with($line, 'node:internal'),
+        ));
+
+        // The line that actually says what went wrong, where there is one:
+        // "Error: Cannot find module", "ReferenceError: ...", and so on.
+        foreach ($lines as $line) {
+            if (preg_match(self::MESSAGE_LINE, $line)) {
+                return mb_substr($line, 0, 300);
+            }
+        }
+
+        return mb_substr($lines[0] ?? $errors, 0, 300);
     }
 
     /** Shuts the browser down. Closing stdin is what tells it to stop. */

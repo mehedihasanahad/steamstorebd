@@ -179,6 +179,16 @@ class PriceCheckRunner
             $this->pause();
             $price = $provider->fetch($listing->url);
         } catch (CompetitorFetchException $e) {
+            // The stored reason is deliberately short and user-facing, which
+            // leaves nowhere for "Cannot find package 'playwright'" to go.
+            // It goes here, so a failing sweep can actually be diagnosed.
+            if ($e->getMessage() !== $e->reason) {
+                Log::warning('Competitor fetch failed: ' . $e->getMessage(), [
+                    'listing_id' => $listing->id,
+                    'url'        => $listing->url,
+                ]);
+            }
+
             return ['failure_reason' => $e->reason];
         } catch (Throwable $e) {
             // An unexpected shape of failure still has to leave a row, but it
