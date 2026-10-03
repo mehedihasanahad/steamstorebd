@@ -31,6 +31,17 @@ class PriceCheckRunner
 
     private bool $hasFetched = false;
 
+    /**
+     * The underlying message behind the current reading's failure, if any.
+     *
+     * The reason stored on a reading is short and written for the admin
+     * screen, so there is nowhere in it for "Cannot find package playwright"
+     * to go -- and that is exactly the sentence somebody running this from a
+     * console needs. It is held here for the length of one listing so the
+     * caller can print it beside the reason.
+     */
+    private ?string $detail = null;
+
     public function __construct(
         private readonly ExchangeRates $rates,
         private readonly Container $container,
@@ -39,7 +50,7 @@ class PriceCheckRunner
 
     /**
      * @param  array{gift_card_id?: int|null, provider?: string|null, force?: bool}  $options
-     * @param  callable(CompetitorPriceCheck): void|null  $onEach  Progress reporting.
+     * @param  callable(CompetitorPriceCheck, string|null): void|null  $onEach  Progress reporting.
      */
     public function run(array $options = [], ?callable $onEach = null): PriceCheckSummary
     {
@@ -57,7 +68,7 @@ class PriceCheckRunner
                 }
 
                 if ($onEach) {
-                    $onEach($check);
+                    $onEach($check, $this->detail);
                 }
             }
         });
@@ -129,6 +140,8 @@ class PriceCheckRunner
             'is_opportunity'        => false,
         ];
 
+        $this->detail = null;
+
         $row = array_merge($row, $this->readAndCompare($listing, $card->buy_price_bdt));
 
         // Matched with whereDate rather than updateOrCreate on the raw value.
@@ -183,6 +196,8 @@ class PriceCheckRunner
             // leaves nowhere for "Cannot find package 'playwright'" to go.
             // It goes here, so a failing sweep can actually be diagnosed.
             if ($e->getMessage() !== $e->reason) {
+                $this->detail = $e->getMessage();
+
                 Log::warning('Competitor fetch failed: ' . $e->getMessage(), [
                     'listing_id' => $listing->id,
                     'url'        => $listing->url,

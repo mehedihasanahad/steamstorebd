@@ -44,9 +44,19 @@ class CheckCompetitorPrices extends Command
             // Only failures are narrated. A run over a full catalogue is long
             // and the successes are all in the table afterwards; what someone
             // watching the console needs to see is the URL that broke.
-            function (CompetitorPriceCheck $check) {
-                if (! $check->succeeded()) {
-                    $this->warn("  [{$check->giftCard?->name}] {$check->failure_reason}");
+            function (CompetitorPriceCheck $check, ?string $detail) {
+                if ($check->succeeded()) {
+                    return;
+                }
+
+                $this->warn("  [{$check->giftCard?->name}] {$check->failure_reason}");
+
+                // The reason alone is the same sentence for a blocked
+                // request, a missing browser and a bad display. Whatever the
+                // fetcher was actually told goes underneath it, because the
+                // person reading this is the person who has to fix it.
+                if ($detail !== null) {
+                    $this->line("      <fg=gray>{$detail}</>");
                 }
             },
         );
