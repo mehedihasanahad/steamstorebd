@@ -75,6 +75,25 @@ return [
         'script'   => 'tools/competitor-browser.mjs',
         'headless' => (bool) env('COMPETITOR_BROWSER_HEADLESS', false),
         'timeout'  => (int) env('COMPETITOR_BROWSER_TIMEOUT', 45),
+
+        /*
+         | Where Playwright keeps its browsers. It defaults to the home
+         | directory of whoever is running, which on a server is the web user
+         | and not the person who ran the install -- so the browser is
+         | downloaded to one place and looked for in another. Point both at a
+         | shared directory and that stops being a question.
+         |
+         | Passed explicitly to the browser process rather than left to be
+         | inherited: a value in .env is loaded into PHP, which is not the
+         | same as being in the environment a child process is handed.
+         */
+        'browsers_path' => env('PLAYWRIGHT_BROWSERS_PATH'),
+
+        /*
+         | A home directory the web user can write to. xvfb-run needs one for
+         | its X authority file, and fails confusingly without it.
+         */
+        'home' => env('COMPETITOR_BROWSER_HOME'),
     ],
 
     /*

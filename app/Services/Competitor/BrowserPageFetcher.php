@@ -80,7 +80,7 @@ class BrowserPageFetcher implements PageFetcher
             2 => ['pipe', 'w'],
         ];
 
-        $process = proc_open($command, $descriptors, $pipes, base_path());
+        $process = proc_open($command, $descriptors, $pipes, base_path(), $this->environment($config));
 
         if (! is_resource($process)) {
             throw CompetitorFetchException::transport('Could not start the browser process');
@@ -105,6 +105,26 @@ class BrowserPageFetcher implements PageFetcher
 
             throw CompetitorFetchException::transport($detail ?: 'Browser did not start');
         }
+    }
+
+    /**
+     * The environment the browser process runs in.
+     *
+     * Merged onto the current one rather than replacing it, because handing
+     * proc_open an array replaces the lot -- and a browser launched without
+     * PATH finds neither node nor itself.
+     *
+     * @param  array<string, mixed>  $config
+     * @return array<string, string>
+     */
+    private function environment(array $config): array
+    {
+        $overrides = array_filter([
+            'PLAYWRIGHT_BROWSERS_PATH' => $config['browsers_path'] ?? null,
+            'HOME'                     => $config['home'] ?? null,
+        ], fn ($value) => filled($value));
+
+        return array_merge(getenv(), $overrides);
     }
 
     /** @param array<string, mixed> $payload */

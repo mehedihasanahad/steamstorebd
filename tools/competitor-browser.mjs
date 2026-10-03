@@ -65,7 +65,10 @@ try {
 
   send({ ready: true });
 } catch (error) {
-  send({ ready: false, error: `Could not start a browser: ${error.message}` });
+  // First line only: Playwright follows its message with a boxed install
+  // hint that turns one console line into eight.
+  const [reason] = error.message.split('\n');
+  send({ ready: false, error: `Could not start a browser: ${reason}` });
   process.exit(1);
 }
 
