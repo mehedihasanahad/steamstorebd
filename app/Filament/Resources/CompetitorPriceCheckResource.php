@@ -6,6 +6,7 @@ use App\Filament\Resources\CompetitorPriceCheckResource\Pages;
 use App\Models\CompetitorListing;
 use App\Models\CompetitorPriceCheck;
 use App\Models\GiftCardCategory;
+use App\Services\Competitor\PriceWatchRun;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -66,6 +67,10 @@ class CompetitorPriceCheckResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            // Only while a sweep is out. A price watch is read once a day, so
+            // polling a table nobody is waiting on would be a request every
+            // ten seconds for the whole time an admin leaves the tab open.
+            ->poll(fn () => PriceWatchRun::inFlight() ? '10s' : null)
             ->defaultSort('margin_bdt', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('giftCard.name')
@@ -176,7 +181,7 @@ class CompetitorPriceCheckResource extends Resource
                     ->visible(fn (CompetitorPriceCheck $record) => $record->gift_card_id !== null),
             ])
             ->emptyStateHeading('No readings yet')
-            ->emptyStateDescription('Add a competitor URL to a gift card and leave price watching on. The sweep runs nightly, or run competitor:check-prices to fill this now.');
+            ->emptyStateDescription('Add a competitor URL to a gift card and leave price watching on. The sweep runs nightly, or press Run now to fill this straight away.');
     }
 
     public static function getPages(): array

@@ -15,11 +15,31 @@ return [
     | config/app.php. "10 PM" therefore means 10 PM in Dhaka with nothing
     | here to say so.
     |
+    | These two are only the fallback. Both are set on the Site Settings
+    | screen, under Competitor Pricing, and what is saved there wins -- see
+    | PriceWatchSchedule. The hour a sweep runs at is a decision the shop
+    | owner makes and changes, which should not need a deploy; what is left
+    | below is machine configuration, which should not be on a web form.
+    |
     */
     'schedule' => [
         'enabled' => (bool) env('COMPETITOR_CHECK_ENABLED', true),
         'time'    => env('COMPETITOR_CHECK_TIME', '22:00'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | The on-demand sweep
+    |--------------------------------------------------------------------------
+    |
+    | The Run now button puts the sweep on this queue, which is deliberately
+    | not `default`. A sweep occupies a worker for minutes, and `default`
+    | carries the e-mail that delivers the codes somebody has just paid for --
+    | on a single worker that is a customer waiting on a price check. It
+    | needs a worker of its own; see supervisor.conf.
+    |
+    */
+    'queue' => env('COMPETITOR_QUEUE', 'price-watch'),
 
     /*
     |--------------------------------------------------------------------------

@@ -5,7 +5,9 @@
  * each of them, and what it does when a page will not cooperate.
  */
 
+use App\Filament\Pages\SiteSettings;
 use App\Filament\Resources\CompetitorPriceCheckResource;
+use App\Jobs\RunCompetitorPriceWatch;
 use App\Models\CompetitorListing;
 use App\Models\CompetitorPriceCheck;
 use App\Models\GiftCard;
@@ -16,9 +18,15 @@ use App\Services\Competitor\BrowserPageFetcher;
 use App\Services\Competitor\ExchangeRates;
 use App\Services\Competitor\HttpPageFetcher;
 use App\Services\Competitor\PageFetcher;
+use App\Services\Competitor\PriceCheckRunner;
+use App\Services\Competitor\PriceWatchRun;
+use App\Services\Competitor\PriceWatchSchedule;
 use App\Filament\Resources\CompetitorPriceCheckResource\Pages\ListCompetitorPriceChecks;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Schedule as FacadesSchedule;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -511,5 +519,239 @@ describe('how pages are fetched', function () {
         // the browser fetcher, while a missing price means the URL is stale.
         expect(CompetitorPriceCheck::sole()->failure_reason)
             ->toBe(CompetitorPriceCheck::REASON_FETCH_FAILED);
+    });
+});
+
+describe('reading the prices on demand', function () {
+    it('queues a sweep when the button is pressed', function () {
+        Queue::fake();
+
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(ListCompetitorPriceChecks::class)
+            ->callAction('runNow')
+            ->assertHasNoActionErrors();
+
+        // Forced, because the button means "what are they charging now". A
+        // press on a day the nightly run already covered would otherwise find
+        // every card read and do nothing, which looks like a broken button.
+        Queue::assertPushed(
+            RunCompetitorPriceWatch::class,
+            fn (RunCompetitorPriceWatch $job) => $job->force === true,
+        );
+    });
+
+    it('does not stack a second sweep behind one already running', function () {
+        Queue::fake();
+
+        PriceWatchRun::started();
+
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(ListCompetitorPriceChecks::class)->callAction('runNow');
+
+        // Two browsers reading one shop from one address is the thing most
+        // likely to get the address refused, so the second press is dropped.
+        Queue::assertNothingPushed();
+    });
+
+    it('reads the cards when the queued sweep runs', function () {
+        Http::fake(['www.g2a.com/*' => Http::response(g2aPage('12.00'))]);
+
+        watchedCard();
+
+        (new RunCompetitorPriceWatch())->handle(app(PriceCheckRunner::class));
+
+        expect(CompetitorPriceCheck::sole()->status)->toBe(CompetitorPriceCheck::STATUS_OK);
+    });
+
+    it('re-reads a card already read today when forced', function () {
+        Http::fake(['www.g2a.com/*' => Http::response(g2aPage('12.00'))]);
+
+        watchedCard();
+        $this->artisan('competitor:check-prices')->assertSuccessful();
+
+        (new RunCompetitorPriceWatch(force: true))->handle(app(PriceCheckRunner::class));
+
+        // Fetched a second time rather than skipped as already-read, and
+        // overwritten rather than stacked: one row per card per day is what
+        // the whole screen is built on.
+        Http::assertSentCount(2);
+
+        expect(CompetitorPriceCheck::count())->toBe(1);
+    });
+
+    it('refuses to let two sweeps overlap', function () {
+        $middleware = (new RunCompetitorPriceWatch())->middleware();
+
+        expect($middleware)->toHaveCount(1)
+            ->and($middleware[0])->toBeInstanceOf(WithoutOverlapping::class);
+    });
+
+    it('keeps off the queue that carries a customer their codes', function () {
+        // A sweep holds a worker for minutes. The default queue carries
+        // SendOrderCodesEmail, and there is one worker on it -- so a sweep
+        // sharing that queue is a paying customer waiting on a price check.
+        expect((new RunCompetitorPriceWatch())->queue)
+            ->toBe('price-watch')
+            ->not->toBe('default');
+    });
+
+    it('is drained by a worker that supervisor actually starts', function () {
+        // A queue nothing is listening to is a button that does nothing, and
+        // the only symptom is a sweep that stays queued for ever.
+        $supervisor = file_get_contents(base_path('supervisor.conf'));
+
+        expect($supervisor)->toContain('--queue=' . config('competitor.queue'));
+    });
+
+    it('does not retry a sweep that died partway', function () {
+        // A half-finished sweep is resumed by starting another, which skips
+        // what was already read. An automatic retry would instead point a
+        // second browser at a shop that may have stopped answering the first.
+        expect((new RunCompetitorPriceWatch())->tries)->toBe(1);
+    });
+
+    it('says so on the screen when a sweep is out', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        PriceWatchRun::started();
+
+        expect(Livewire::test(ListCompetitorPriceChecks::class)->instance()->getSubheading())
+            ->toContain('Reading competitor prices now');
+    });
+
+    it('tells a queue nobody is working apart from a sweep in progress', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        PriceWatchRun::queued();
+
+        // A sweep that stays queued is a worker that is not running, which is
+        // a different thing to go and fix from a slow shop.
+        expect(Livewire::test(ListCompetitorPriceChecks::class)->instance()->getSubheading())
+            ->toContain('waiting for a worker');
+    });
+
+    it('reports a sweep that stopped early', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        (new RunCompetitorPriceWatch())->failed(new RuntimeException('Chromium would not start'));
+
+        expect(Livewire::test(ListCompetitorPriceChecks::class)->instance()->getSubheading())
+            ->toContain('Chromium would not start');
+    });
+
+    it('polls the table only while a sweep is out', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        expect(Livewire::test(ListCompetitorPriceChecks::class)->instance()->getTable()->getPollingInterval())
+            ->toBeNull();
+
+        PriceWatchRun::started();
+
+        // A price watch is read once a day; polling a table nobody is waiting
+        // on would be a request every ten seconds for as long as the tab is open.
+        expect(Livewire::test(ListCompetitorPriceChecks::class)->instance()->getTable()->getPollingInterval())
+            ->toBe('10s');
+    });
+});
+
+describe('when the sweep is scheduled', function () {
+    /** Re-reads routes/console.php, which is where the schedule is built. */
+    function scheduledSweep(): ?object
+    {
+        app()->forgetInstance(Schedule::class);
+        FacadesSchedule::clearResolvedInstances();
+
+        require base_path('routes/console.php');
+
+        return collect(app(Schedule::class)->events())
+            ->first(fn ($event) => str_contains((string) $event->command, 'competitor:check-prices'));
+    }
+
+    it('falls back to the env hour until somebody chooses one', function () {
+        config(['competitor.schedule.time' => '22:00']);
+
+        expect(PriceWatchSchedule::time())->toBe('22:00')
+            ->and(scheduledSweep()?->expression)->toBe('0 22 * * *');
+    });
+
+    it('runs at the hour set on the admin screen instead', function () {
+        SiteSetting::set(PriceWatchSchedule::TIME_KEY, '06:00');
+
+        expect(scheduledSweep()?->expression)->toBe('0 6 * * *');
+    });
+
+    it('is not scheduled at all when the admin switches it off', function () {
+        SiteSetting::set(PriceWatchSchedule::ENABLED_KEY, '0');
+
+        // Stored as '0' rather than '', which is the distinction that decides
+        // whether this is an answer or an unanswered question -- an empty
+        // value falls back to .env, and switching it off would do nothing.
+        expect(PriceWatchSchedule::enabled())->toBeFalse()
+            ->and(scheduledSweep())->toBeNull();
+    });
+
+    it('keeps running on the env setting when nobody has saved the screen', function () {
+        config(['competitor.schedule.enabled' => true]);
+
+        expect(PriceWatchSchedule::enabled())->toBeTrue()
+            ->and(scheduledSweep())->not->toBeNull();
+    });
+
+    it('ignores a stored time that is not a time', function () {
+        // This value reaches Schedule::dailyAt() in routes/console.php, so a
+        // bad one would not break the sweep -- it would break every artisan
+        // command on the box, including the one needed to put it right.
+        SiteSetting::set(PriceWatchSchedule::TIME_KEY, 'half past nine');
+
+        expect(PriceWatchSchedule::time())->toBe('22:00')
+            ->and(scheduledSweep()?->expression)->toBe('0 22 * * *');
+    });
+
+    it('offers whole hours, named the way a clock is read', function () {
+        expect(PriceWatchSchedule::timeOptions())
+            ->toHaveKey('22:00', '10:00 PM')
+            ->and(PriceWatchSchedule::timeOptions())->toHaveCount(24);
+    });
+});
+
+describe('the schedule settings screen', function () {
+    it('saves the hour an admin picks', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(SiteSettings::class)
+            ->fillForm([
+                PriceWatchSchedule::ENABLED_KEY => true,
+                PriceWatchSchedule::TIME_KEY    => '06:00',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        expect(PriceWatchSchedule::time())->toBe('06:00')
+            ->and(PriceWatchSchedule::enabled())->toBeTrue();
+    });
+
+    it('stores a switched-off sweep as a real no', function () {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(SiteSettings::class)
+            ->fillForm([PriceWatchSchedule::ENABLED_KEY => false])
+            ->call('save');
+
+        // The hazard this guards: a false reaching a text column lands as ""
+        // and reads back as "nobody has chosen", so the sweep an admin just
+        // switched off would quietly go on running on the env default.
+        expect(SiteSetting::get(PriceWatchSchedule::ENABLED_KEY))->toBe('0')
+            ->and(PriceWatchSchedule::enabled())->toBeFalse();
+    });
+
+    it('opens showing what the sweep is actually doing today', function () {
+        config(['competitor.schedule.time' => '21:00']);
+
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+
+        Livewire::test(SiteSettings::class)
+            ->assertFormSet([PriceWatchSchedule::TIME_KEY => '21:00']);
     });
 });

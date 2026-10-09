@@ -30,6 +30,7 @@ class SiteSetting extends Model
         'product_chat_whatsapp_enabled',
         'product_chat_messenger_enabled',
         'reseller_program_enabled',
+        'competitor_schedule_enabled',
     ];
 
     public static function isBoolean(string $key): bool

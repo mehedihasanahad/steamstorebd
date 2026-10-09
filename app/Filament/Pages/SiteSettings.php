@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\SiteSetting;
 use App\Services\ChatLinkBuilder;
 use App\Services\Competitor\ExchangeRates;
+use App\Services\Competitor\PriceWatchSchedule;
 use App\Services\ExclusiveOffers;
 use App\Services\ResellerProgram;
 use App\Services\SocialProfiles;
@@ -67,6 +68,8 @@ class SiteSettings extends Page implements HasForms
                 fn (string $currency) => ExchangeRates::feeSettingKey($currency),
                 ExchangeRates::CURRENCIES,
             ),
+            PriceWatchSchedule::ENABLED_KEY,
+            PriceWatchSchedule::TIME_KEY,
         ];
 
         $defaults = [
@@ -97,6 +100,11 @@ class SiteSettings extends Page implements HasForms
                     ExchangeRates::feeSettingKey($currency) => $fee,
                 ])
                 ->all(),
+            // Not hard-coded: until somebody saves this screen the sweep is
+            // still running on what .env says, and the form has to open
+            // showing that rather than a guess at it.
+            PriceWatchSchedule::ENABLED_KEY => PriceWatchSchedule::enabled(),
+            PriceWatchSchedule::TIME_KEY    => PriceWatchSchedule::time(),
         ];
 
         $this->form->fill(
@@ -397,6 +405,25 @@ class SiteSettings extends Page implements HasForms
                         Forms\Components\Tabs\Tab::make('Competitor Pricing')
                             ->icon('heroicon-o-scale')
                             ->schema([
+                                Forms\Components\Section::make('The nightly sweep')
+                                    ->description('When the price watch reads competitor pages by itself. Times are shop time, the same clock as the rest of the admin. An evening hour is the usual choice: the numbers are read the next morning and acted on during the day, and a shop is quieter to read at night. Switching this off leaves the Run now button on the Price Watch screen working, so the sweep can still be taken by hand.')
+                                    ->schema([
+                                        Forms\Components\Toggle::make(PriceWatchSchedule::ENABLED_KEY)
+                                            ->label('Run the sweep automatically')
+                                            ->helperText('Off means prices are only read when somebody presses Run now.')
+                                            ->live(),
+
+                                        Forms\Components\Select::make(PriceWatchSchedule::TIME_KEY)
+                                            ->label('Run it at')
+                                            ->options(PriceWatchSchedule::timeOptions())
+                                            ->selectablePlaceholder(false)
+                                            ->native(false)
+                                            // A time is only a question while
+                                            // there is something to schedule.
+                                            ->visible(fn (Get $get) => (bool) $get(PriceWatchSchedule::ENABLED_KEY)),
+                                    ])
+                                    ->columns(2),
+
                                 Forms\Components\Section::make('Taka per unit of foreign currency')
                                     ->description('What the nightly price check multiplies a competitor price by before comparing it against our buy price. This is the rate you actually buy at -- spread and fees already in it -- not a market rate. A currency left empty is not guessed at: a card quoted in it is recorded with the price the page showed and flagged as uncomparable, rather than converted at another currency rate and quietly wrong by a tenth. Changing a rate here does not rewrite readings already taken; each one keeps the rate it was measured with.')
                                     ->schema(
@@ -498,6 +525,8 @@ class SiteSettings extends Page implements HasForms
                 ),
                 'competitor',
             ),
+            PriceWatchSchedule::ENABLED_KEY => PriceWatchSchedule::GROUP,
+            PriceWatchSchedule::TIME_KEY    => PriceWatchSchedule::GROUP,
         ];
 
         foreach ($data as $key => $value) {
