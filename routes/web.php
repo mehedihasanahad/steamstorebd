@@ -90,9 +90,15 @@ Route::get('/how-to-redeem', [StorefrontController::class, 'howToRedeem'])->name
 // which is the only place on the site they can be linked to individually.
 Route::get('/reviews', [ReviewController::class, 'index'])->name('reviews');
 Route::get('/contact', [StorefrontController::class, 'contact'])->name('contact');
-Route::post('/contact', [StorefrontController::class, 'contactSubmit'])
-    ->middleware('throttle:5,1')
-    ->name('contact.submit');
+
+// The contact form is switched off. An unauthenticated POST that writes a row
+// and queues an e-mail is the cheapest thing on the site to flood, so the
+// endpoint is gone rather than throttled -- support runs through the e-mail
+// address and WhatsApp number on the contact page instead. Re-enabling means
+// restoring this route and the form in resources/views/storefront/contact.blade.php.
+// Route::post('/contact', [StorefrontController::class, 'contactSubmit'])
+//     ->middleware('throttle:5,1')
+//     ->name('contact.submit');
 
 // Company & policy pages
 Route::view('/about', 'storefront.pages.about')->name('about');

@@ -69,6 +69,10 @@ class StorefrontController extends Controller
         return view('storefront.contact');
     }
 
+    /**
+     * Unreachable while the contact form is off -- the route in web.php is
+     * commented out. Kept so re-enabling the form is a one-line change.
+     */
     public function contactSubmit(ContactMessageRequest $request)
     {
         $contactMessage = ContactMessage::create($request->messageAttributes());

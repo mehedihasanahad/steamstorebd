@@ -349,9 +349,9 @@ describe('canonical redirect', function () {
     it('never redirects form submissions', function () {
         config(['app.canonical_redirect' => true, 'app.url' => 'https://steamstorebd.com']);
 
-        $this->post('http://www.steamstorebd.com/contact', [])
+        $this->post('http://www.steamstorebd.com/orders', [])
             ->assertStatus(302)
-            ->assertSessionHasErrors(['name', 'email', 'message']);
+            ->assertSessionHasErrors(['email', 'order_number']);
     });
 });
 

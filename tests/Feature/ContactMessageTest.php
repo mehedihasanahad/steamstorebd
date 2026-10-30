@@ -1,43 +1,26 @@
 <?php
 
-use App\Jobs\SendAdminContactMessageEmail;
 use App\Mail\AdminContactMessageMail;
 use App\Models\ContactMessage;
-use Illuminate\Support\Facades\Queue;
 
-it('stores the message and notifies the admin', function () {
-    Queue::fake();
-
-    $this->from(route('contact'))
-        ->post(route('contact.submit'), [
-            'name'    => '  Rahim Uddin ',
-            'email'   => 'Rahim@Example.com',
-            'message' => 'My code shows as already redeemed.',
-        ])
-        ->assertRedirect(route('contact'))
-        ->assertSessionHas('success');
-
-    $contactMessage = ContactMessage::sole();
-
-    expect($contactMessage)
-        ->name->toBe('Rahim Uddin')
-        ->email->toBe('rahim@example.com')
-        ->message->toBe('My code shows as already redeemed.')
-        ->read_at->toBeNull();
-
-    Queue::assertPushed(SendAdminContactMessageEmail::class, fn ($job) => $job->contactMessage->is($contactMessage));
+it('offers support channels instead of a form', function () {
+    $this->get(route('contact'))
+        ->assertSuccessful()
+        ->assertSee('Message our support team')
+        ->assertDontSee('name="message"', false);
 });
 
-it('rejects an incomplete message without storing it', function () {
-    Queue::fake();
-
-    $this->from(route('contact'))
-        ->post(route('contact.submit'), ['name' => 'Rahim', 'email' => 'not-an-email'])
-        ->assertRedirect(route('contact'))
-        ->assertSessionHasErrors(['email', 'message']);
+it('no longer accepts a posted message', function () {
+    // The form was retired rather than throttled: an unauthenticated POST that
+    // writes a row and queues an e-mail is the cheapest thing on the site to
+    // flood, and support already runs through WhatsApp and e-mail.
+    $this->post('/contact', [
+        'name'    => 'Rahim Uddin',
+        'email'   => 'rahim@example.com',
+        'message' => 'My code shows as already redeemed.',
+    ])->assertStatus(405);
 
     expect(ContactMessage::count())->toBe(0);
-    Queue::assertNothingPushed();
 });
 
 it('builds an admin email the team can reply to', function () {
