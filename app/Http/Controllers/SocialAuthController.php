@@ -53,6 +53,13 @@ class SocialAuthController extends Controller
                     'referral_code' => app(ReferralService::class)->generateUniqueCode(),
                 ]);
             }
+
+            // Google has already proven the address belongs to whoever is
+            // signing in, so making them confirm it again would be a
+            // verification e-mail sent for nothing.
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
+            }
         } catch (\Exception $e) {
             Log::error('Google OAuth user creation failed', [
                 'email' => $googleUser->getEmail(),

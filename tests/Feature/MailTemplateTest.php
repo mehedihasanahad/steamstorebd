@@ -25,6 +25,7 @@ use App\Mail\OrderPendingMail;
 use App\Mail\ResellerApplicationApprovedMail;
 use App\Mail\ResellerApplicationDeclinedMail;
 use App\Mail\ResellerApplicationReceivedMail;
+use App\Mail\VerifyEmailMail;
 use App\Models\BkashPayment;
 use App\Models\ContactMessage;
 use App\Models\EmailCampaign;
@@ -192,6 +193,11 @@ function mailFor(string $key): Illuminate\Mail\Mailable
         'reseller-approved'          => new ResellerApplicationApprovedMail(mailApplication(['status' => 'approved'])),
         'reseller-declined'          => new ResellerApplicationDeclinedMail(mailApplication(['status' => 'declined'])),
         'campaign'                   => mailCampaign(),
+        'verify-email'               => new VerifyEmailMail(
+            User::factory()->unverified()->create(['name' => 'Rahim Uddin']),
+            'https://steamstorebd.test/verify-email/1/abc?expires=1&signature=2',
+            60,
+        ),
     };
 }
 
@@ -229,6 +235,7 @@ dataset('every message', [
     'reseller-approved',
     'reseller-declined',
     'campaign',
+    'verify-email',
 ]);
 
 describe('the e-mail palette', function () {
@@ -506,6 +513,23 @@ describe("a message Laravel builds itself", function () {
     it('paints its canvas with a bgcolor attribute too', function () {
         expect((string) (new ResetPassword('reset-token'))->toMail(User::factory()->create())->render())
             ->toContain('bgcolor="' . EmailTheme::hex('surface-0') . '"');
+    });
+
+    it('writes a button label the eye can actually find', function () {
+        // `a { color: accent-hover }` sits near the top of the theme, and the
+        // CSS inliner landed it on the button anchor after the .button block
+        // -- so the label was painted accent-hover on an accent fill, blue on
+        // blue, legible only as a smudge. A selector naming the element as
+        // well as the class settles it.
+        $html = (string) (new ResetPassword('reset-token'))->toMail(User::factory()->create())->render();
+
+        preg_match('/<a[^>]*class="[^"]*button[^"]*"[^>]*>/i', $html, $anchor);
+        preg_match('/(?<![a-z-])color:\s*(#[0-9A-Fa-f]{6})/', $anchor[0] ?? '', $label);
+        preg_match('/background-color:\s*(#[0-9A-Fa-f]{6})/', $anchor[0] ?? '', $fill);
+
+        expect($label[1] ?? null)->toBe(EmailTheme::palette()['ink'])
+            ->and($fill[1] ?? null)->toBe(EmailTheme::palette()['accent'])
+            ->and($label[1] ?? null)->not->toBe($fill[1] ?? null);
     });
 
     it('does not tell the client the design is light', function () {

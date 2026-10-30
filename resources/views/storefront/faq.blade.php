@@ -4,13 +4,21 @@
 @section('meta_description', 'Answers about buying gift cards, game top-ups, keys and subscriptions in Bangladesh: paying with bKash or Nagad, delivery time, genuine codes, refunds and redeeming.')
 
 @php
+    // Which wallets we take is read from Site Settings rather than written
+    // in: these answers went on naming Rocket and tokenized checkout long
+    // after both were switched off, and Google was reading them too.
+    $wallets = \App\Services\PaymentMethods::walletNames();
+    $payWith = $wallets
+        ? \Illuminate\Support\Arr::join($wallets, ', ', ' and ')
+        : 'the local mobile wallets';
+
     // One array drives both the visible accordion and the FAQPage schema.
     // Two copies of this list would drift, and the version Google reads would
     // be the one nobody proof-reads.
     $faqs = [
         [
             'q' => 'What is Steam Store BD?',
-            'a' => 'Steam Store BD is a Bangladeshi digital goods store. We sell gift cards, game top-ups, game keys and subscriptions, delivered to your e-mail and your account. Payment is through bKash, Nagad and Rocket.',
+            'a' => 'Steam Store BD is a Bangladeshi digital goods store. We sell gift cards, game top-ups, game keys and subscriptions, delivered to your e-mail and your account. Payment is through ' . $payWith . '.',
         ],
         [
             'q' => 'What do you sell?',
@@ -22,7 +30,7 @@
         ],
         [
             'q' => 'Which payment methods do you accept?',
-            'a' => 'bKash (tokenized checkout and send money), Nagad (send money) and Rocket (send money). All transactions are secure and encrypted.',
+            'a' => \App\Services\PaymentMethods::enabledNames() . '. Every payment is confirmed against the wallet before your order is released.',
         ],
         [
             'q' => 'How quickly will I receive my order?',

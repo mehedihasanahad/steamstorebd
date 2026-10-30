@@ -81,7 +81,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "karim007/laravel-bkash-tokenize"
+            ]
         }
     },
     "config": {

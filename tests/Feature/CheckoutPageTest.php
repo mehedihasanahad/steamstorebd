@@ -42,6 +42,26 @@ describe('access', function () {
             ->assertRedirect(route('cart'));
     });
 
+    it('turns away an address that has never been confirmed', function () {
+        // The gate on bot-placed orders: signing up is open to anyone, but a
+        // send-money order reserves real stock the moment it is placed.
+        checkoutWithCard();
+
+        $this->actingAs(User::factory()->unverified()->create())
+            ->get(route('checkout'))
+            ->assertRedirect(route('verification.notice'));
+    });
+
+    it('lets a confirmed address straight through', function () {
+        // Every account that existed before the gate shipped was back-filled
+        // by 2026_10_30_141151, so this is what a current customer sees.
+        checkoutWithCard();
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('checkout'))
+            ->assertSuccessful();
+    });
+
     it('is not indexed', function () {
         checkoutWithCard();
 
@@ -100,6 +120,68 @@ describe('payment methods', function () {
                 'send_money_trx_id' => 'TRX1',
             ])
             ->assertSessionHasErrors('payment_method');
+    });
+
+    it('closes the bKash online route while that method is switched off', function () {
+        // The method is picked in the browser, so hiding the button is not
+        // enough: a direct POST used to open a payment session, reserve codes
+        // and leave the order stranded in `payment_initiated` for good.
+        SiteSetting::set('payment_bkash_online_enabled', '0', 'payment');
+        SiteSetting::set('payment_nagad_send_money_enabled', '1', 'payment');
+        checkoutWithCard();
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('checkout.initiate'), [
+                'name'  => 'Buyer',
+                'email' => 'buyer@example.com',
+            ])
+            ->assertNotFound();
+
+        expect(\App\Models\Order::count())->toBe(0);
+    });
+
+    it('keeps the bKash online route open when nothing else is enabled', function () {
+        // enabledPaymentMethods() falls back to bkash_online so a store with
+        // every switch off can still take money. The guard must respect that.
+        SiteSetting::set('payment_bkash_online_enabled', '0', 'payment');
+        checkoutWithCard();
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('checkout.initiate'), ['name' => 'Buyer', 'email' => 'buyer@example.com'])
+            ->assertStatus(302);
+    });
+});
+
+describe('what the rest of the site promises', function () {
+    // The sign-in panel promised "Secured by bKash Tokenized Checkout" and the
+    // FAQ listed tokenized checkout and Rocket, all written in by hand -- so
+    // they went on saying it after those methods were switched off. Both are
+    // built from PaymentMethods::enabled() now.
+    it('names only the methods that are switched on', function () {
+        SiteSetting::set('payment_bkash_online_enabled', '0', 'payment');
+        SiteSetting::set('payment_bkash_send_money_enabled', '1', 'payment');
+        SiteSetting::set('payment_nagad_send_money_enabled', '1', 'payment');
+        SiteSetting::set('payment_rocket_send_money_enabled', '0', 'payment');
+
+        $this->get(route('faq'))
+            ->assertSuccessful()
+            ->assertSee('bKash Send Money')
+            ->assertSee('Nagad Send Money')
+            ->assertDontSee('Rocket')
+            ->assertDontSee('Tokenized');
+
+        $this->get(route('login'))
+            ->assertSuccessful()
+            ->assertSee('Pay with bKash or Nagad')
+            ->assertDontSee('Tokenized');
+    });
+
+    it('names tokenized checkout again once it is switched back on', function () {
+        SiteSetting::set('payment_bkash_online_enabled', '1', 'payment');
+
+        $this->get(route('faq'))
+            ->assertSuccessful()
+            ->assertSee('bKash Online');
     });
 });
 

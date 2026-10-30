@@ -8,6 +8,16 @@
     collapses away on a phone, and the form on the right. Four pages used to
     carry their own copy of this; now they carry only their form.
 --}}
+@php
+    // Named from the switches in Site Settings rather than written in: the
+    // panel used to promise bKash Tokenized Checkout, which stayed on the
+    // page after that method was switched off.
+    $wallets = \App\Services\PaymentMethods::walletNames();
+    $payWith = $wallets
+        ? \Illuminate\Support\Arr::join($wallets, ', ', ' or ')
+        : 'the local mobile wallets';
+@endphp
+
 <div class="flex min-h-[calc(100vh-44px)] items-stretch">
 
     <aside class="hidden w-1/2 flex-col justify-center gap-8 border-r border-surface-3 bg-surface-1 p-12 lg:flex" aria-label="About Steam Store BD">
@@ -31,7 +41,7 @@
         <ul class="flex max-w-md flex-col gap-3">
             @foreach([
                 'Instant code delivery to your inbox',
-                'Secured by bKash Tokenized Checkout',
+                'Pay with ' . $payWith,
                 'Support that answers, every day',
             ] as $point)
                 <li class="flex items-center gap-3 text-caption text-ink-mid">
@@ -57,8 +67,21 @@
                 <p class="mt-1 text-caption text-ink-low">{{ $subheading }}</p>
             @endif
 
-            @if(session('status'))
-                <p class="mt-5 rounded-control border border-success/30 bg-success/10 px-4 py-3 text-caption text-success" role="status">{{ session('status') }}</p>
+            @php
+                /*
+                 | Most controllers flash a sentence here, but Breeze's
+                 | verification resend flashes a key instead, which a bare
+                 | echo printed to the shopper as `verification-link-sent`.
+                 | Keys are resolved to their sentence rather than shown.
+                 */
+                $status = match (session('status')) {
+                    'verification-link-sent' => 'Sent. A fresh link is on its way to your inbox.',
+                    default                  => session('status'),
+                };
+            @endphp
+
+            @if($status)
+                <p class="mt-5 rounded-control border border-success/30 bg-success/10 px-4 py-3 text-caption text-success" role="status">{{ $status }}</p>
             @endif
 
             @if(session('error'))

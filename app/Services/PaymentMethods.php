@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SiteSetting;
+use Illuminate\Support\Arr;
 
 class PaymentMethods
 {
@@ -81,6 +82,54 @@ class PaymentMethods
     public static function isSendMoney(string $method): bool
     {
         return $method !== 'bkash_online';
+    }
+
+    /**
+     * The method keys switched on in Site Settings, in checkout order.
+     *
+     * The one source of truth for *whether* a method is on. Checkout
+     * validates against it, the route guard on bKash online reads it, and
+     * the copy that names our payment methods is built from it -- so a
+     * switch thrown in the admin cannot leave a page claiming something the
+     * shop no longer does.
+     *
+     * Falls back to bKash online when every switch is off, so a
+     * misconfigured shop can still take money rather than silently refusing
+     * every order.
+     *
+     * @return array<int, string>
+     */
+    public static function enabled(): array
+    {
+        $methods = [];
+
+        if (SiteSetting::get('payment_bkash_online_enabled', true)) {
+            $methods[] = 'bkash_online';
+        }
+        if (SiteSetting::get('payment_bkash_send_money_enabled', false)) {
+            $methods[] = 'bkash_send_money';
+        }
+        if (SiteSetting::get('payment_nagad_send_money_enabled', false)) {
+            $methods[] = 'nagad_send_money';
+        }
+        if (SiteSetting::get('payment_rocket_send_money_enabled', false)) {
+            $methods[] = 'rocket_send_money';
+        }
+
+        return $methods ?: ['bkash_online'];
+    }
+
+    /**
+     * How the enabled methods read in a sentence, e.g.
+     * "bKash Send Money, Nagad Send Money or Rocket Send Money".
+     */
+    public static function enabledNames(string $last = ' and '): string
+    {
+        return Arr::join(
+            array_map(fn (string $method) => self::describe($method)['name'], self::enabled()),
+            ', ',
+            $last,
+        );
     }
 
     /**

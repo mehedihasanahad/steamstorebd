@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AddToCartRequest;
 use App\Models\GiftCard;
 use App\Models\Order;
-use App\Models\SiteSetting;
 use App\Services\BkashService;
 use App\Services\Cart;
 use App\Services\OrderService;
+use App\Services\PaymentMethods;
 use App\Services\ReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -128,6 +128,13 @@ class CheckoutController extends Controller
 
     public function initiate(Request $request)
     {
+        // Switching bKash online off in Site Settings has to close this route,
+        // not just hide the button: the method is chosen in the browser, so
+        // without this a direct POST still opened a payment session, reserved
+        // codes and left the order sitting in `payment_initiated`.
+        // placeManualOrder() has validated against the same list all along.
+        abort_unless(in_array('bkash_online', $this->enabledPaymentMethods(), true), 404);
+
         $request->validate([
             'name'  => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:100'],
@@ -303,24 +310,10 @@ class CheckoutController extends Controller
         ];
     }
 
+    /** @return array<int, string> */
     private function enabledPaymentMethods(): array
     {
-        $methods = [];
-
-        if (SiteSetting::get('payment_bkash_online_enabled', true)) {
-            $methods[] = 'bkash_online';
-        }
-        if (SiteSetting::get('payment_bkash_send_money_enabled', false)) {
-            $methods[] = 'bkash_send_money';
-        }
-        if (SiteSetting::get('payment_nagad_send_money_enabled', false)) {
-            $methods[] = 'nagad_send_money';
-        }
-        if (SiteSetting::get('payment_rocket_send_money_enabled', false)) {
-            $methods[] = 'rocket_send_money';
-        }
-
-        return $methods ?: ['bkash_online'];
+        return PaymentMethods::enabled();
     }
 
     /**

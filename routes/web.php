@@ -130,8 +130,15 @@ Route::middleware(['throttle:60,1'])->group(function () {
     Route::get('/checkout/failed', [CheckoutController::class, 'failed'])->name('checkout.failed');
 });
 
-// Checkout (login required)
-Route::middleware(['auth', 'throttle:60,1'])->group(function () {
+// Checkout (login required, and the address has to be a real one).
+//
+// `verified` is the gate on bot-placed orders: registration is open to
+// anyone, and a send-money order reserves real stock the moment it is placed.
+// Browsing and the cart stay open to everyone -- only paying is gated.
+// Google sign-ins arrive already verified, and every account that existed
+// before this shipped was back-filled by the migration beside it, so no
+// current customer is asked to confirm anything they did not have to before.
+Route::middleware(['auth', 'verified', 'throttle:60,1'])->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
         ->middleware('throttle:30,1')

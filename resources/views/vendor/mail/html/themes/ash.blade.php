@@ -287,6 +287,21 @@ img {
     border-top: 8px solid {{ $c['danger-border'] }};
 }
 
+/* The `a` rule near the top of this file sets the link colour, and the CSS
+   inliner lands it on the button anchor after the .button block -- which
+   painted the label accent-hover on an accent fill, blue on blue, legible
+   only as a smudge. A selector that names the element as well as the class
+   outranks a bare `a` and settles it. */
+a.button,
+a.button-blue,
+a.button-primary,
+a.button-green,
+a.button-success,
+a.button-red,
+a.button-error {
+    color: {{ $c['ink'] }};
+}
+
 /* Panels */
 
 .panel {

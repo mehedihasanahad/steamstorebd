@@ -2,15 +2,17 @@
 
 namespace App\Models;
 
+use App\Jobs\SendEmailVerification;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -31,6 +33,20 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'remember_token',
     ];
+
+    /**
+     * Send the confirm-your-address message through the store's own template.
+     *
+     * Laravel's default builds a MailMessage from its markdown components and
+     * sends it inline. This one is a queued job on the house template, so the
+     * shopper is not left waiting on an SMTP handshake at the one moment they
+     * are deciding whether this shop works. SendEmailVerification builds the
+     * signed link, so `verification.verify` is unchanged.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        SendEmailVerification::dispatch($this);
+    }
 
     protected function casts(): array
     {
