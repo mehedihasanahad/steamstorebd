@@ -58,6 +58,8 @@
             <x-auth-password name="password_confirmation" label="Confirm password"
                              autocomplete="new-password" placeholder="Re-enter your password" />
 
+            <x-turnstile action="register" />
+
             <x-ui.button type="submit" size="lg" class="w-full">Create account</x-ui.button>
         </form>
 

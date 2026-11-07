@@ -297,6 +297,8 @@
                         @error('gift_card_types.*')<p class="mt-1.5 text-meta text-danger">{{ $message }}</p>@enderror
                     </div>
 
+                    <x-turnstile action="reseller_application" />
+
                     <x-ui.button type="submit" size="lg" class="w-full" x-bind:disabled="loading">
                         <span x-show="!loading">Submit Application</span>
                         <span x-show="loading" x-cloak class="flex items-center gap-2">

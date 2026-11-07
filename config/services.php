@@ -47,4 +47,20 @@ return [
         'rocket_send_money_number' => env('ROCKET_SEND_MONEY_NUMBER', ''),
     ],
 
+    /*
+    | Cloudflare Turnstile. Switched off wherever both keys are absent, which
+    | is what keeps local work and the test suite off Cloudflare's network.
+    |
+    | fail_open: when Cloudflare itself cannot be reached we let the request
+    | through rather than closing registration during someone else's outage.
+    | Set it false only if you would rather turn customers away than risk a
+    | bot getting past during an outage.
+    */
+    'turnstile' => [
+        'site_key'   => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+        'timeout'    => env('TURNSTILE_TIMEOUT', 5),
+        'fail_open'  => env('TURNSTILE_FAIL_OPEN', true),
+    ],
+
 ];

@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\Turnstile as TurnstileRule;
 use App\Services\ReferralService;
+use App\Services\Turnstile;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,11 +33,19 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'name'     => ['required', 'string', 'max:100'],
             'email'    => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        ];
+
+        // Added only when keys are configured: an environment without them
+        // must not reject every sign-up over a field its form never rendered.
+        if (Turnstile::enabled()) {
+            $rules[Turnstile::FIELD] = ['required', 'string', new TurnstileRule('register')];
+        }
+
+        $request->validate($rules);
 
         $user = User::create([
             'name'          => $request->name,

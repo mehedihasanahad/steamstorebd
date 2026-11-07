@@ -39,5 +39,11 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Turnstile is off for the suite whatever the developer's .env says,
+             so a machine with real keys configured does not fail every test
+             that posts to a guarded form. TurnstileTest switches it on itself
+             with config(), which is the only place it should be on. -->
+        <env name="TURNSTILE_SITE_KEY" value=""/>
+        <env name="TURNSTILE_SECRET_KEY" value=""/>
     </php>
 </phpunit>

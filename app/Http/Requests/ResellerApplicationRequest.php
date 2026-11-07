@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use App\Models\ResellerApplication;
 use App\Rules\BangladeshiPhone;
+use App\Rules\Turnstile as TurnstileRule;
 use App\Services\ResellerProgram;
+use App\Services\Turnstile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,6 +22,11 @@ class ResellerApplicationRequest extends FormRequest
         $program = ResellerProgram::fromSettings();
 
         return [
+            // Added only when keys are configured, so an environment without
+            // them does not reject every application over an absent field.
+            ...(Turnstile::enabled()
+                ? [Turnstile::FIELD => ['required', 'string', new TurnstileRule('reseller_application')]]
+                : []),
             'name' => ['required', 'string', 'max:100'],
             'email' => [
                 'required',
