@@ -194,7 +194,7 @@
                 ['You earn ' . format_bdt($rewardAmt), 'Once their order is confirmed and delivered, the credit lands in your wallet.'],
             ] as $index => [$title, $desc])
                 <li class="rounded-card border border-surface-3 bg-surface-2 p-4">
-                    <span class="text-meta font-bold text-accent-hover">Step {{ $index + 1 }}</span>
+                    <span class="text-meta font-bold text-accent-ink">Step {{ $index + 1 }}</span>
                     <p class="mt-1.5 text-caption font-semibold text-ink-hi">{{ $title }}</p>
                     <p class="mt-1 text-meta leading-relaxed text-ink-low">{{ $desc }}</p>
                 </li>

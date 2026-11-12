@@ -66,7 +66,7 @@
     </div>
 
     <p class="mt-5 text-center text-meta text-ink-low">
-        Need help? <a href="{{ route('contact') }}" class="text-accent-hover hover:underline">Contact support</a>
+        Need help? <a href="{{ route('contact') }}" class="text-accent-ink hover:underline">Contact support</a>
     </p>
 </div>
 

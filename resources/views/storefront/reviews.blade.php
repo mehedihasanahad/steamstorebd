@@ -127,7 +127,7 @@
             <div class="mt-3 flex flex-wrap gap-2">
                 @foreach($socialProfiles->links() as $profile)
                     <a href="{{ $profile['url'] }}" target="_blank" rel="noopener nofollow"
-                       class="inline-flex items-center gap-1.5 rounded-chip border border-surface-3 bg-surface-2 px-3 py-1.5 text-meta font-semibold text-ink-mid transition-colors hover:border-accent/45 hover:text-accent-hover">
+                       class="inline-flex items-center gap-1.5 rounded-chip border border-surface-3 bg-surface-2 px-3 py-1.5 text-meta font-semibold text-ink-mid transition-colors hover:border-accent/45 hover:text-accent-ink">
                         {{ $profile['label'] }}
                         <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H18v4.5M17.5 6.5L10 14M16 13v5a1 1 0 01-1 1H6a1 1 0 01-1-1V9a1 1 0 011-1h5"/></svg>
                     </a>
@@ -154,7 +154,7 @@
                         @endif
                         @if($review->giftCardCategory)
                             <a href="{{ route('product', $review->giftCardCategory->slug) }}"
-                               class="text-meta font-semibold text-accent transition-colors hover:text-accent-hover">
+                               class="text-meta font-semibold text-accent transition-colors hover:text-accent-ink">
                                 {{ $review->giftCardCategory->name }}
                             </a>
                         @endif
@@ -170,7 +170,7 @@
                             <time datetime="{{ $review->created_at->toDateString() }}">{{ $review->created_at->format('j M Y') }}</time>
                         @endif
                         ·
-                        <a href="{{ route('reviews') }}#review-{{ $review->id }}" class="transition-colors hover:text-accent-hover">Link</a>
+                        <a href="{{ route('reviews') }}#review-{{ $review->id }}" class="transition-colors hover:text-accent-ink">Link</a>
                     </p>
                 </article>
             @endforeach

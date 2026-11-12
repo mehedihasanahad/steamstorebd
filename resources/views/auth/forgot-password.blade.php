@@ -14,7 +14,7 @@
 
         <p class="mt-6 text-center text-caption text-ink-low">
             Remembered it?
-            <a href="{{ route('login') }}" class="font-semibold text-accent-hover hover:underline">Sign in</a>
+            <a href="{{ route('login') }}" class="font-semibold text-accent-ink hover:underline">Sign in</a>
         </p>
     </x-auth-shell>
 </x-guest-layout>

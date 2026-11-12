@@ -191,7 +191,7 @@ $_schema = [
                     ['3', 'You earn ' . format_bdt($refRewardAmt), 'Credited to your wallet as soon as their order is confirmed.'],
                 ] as [$step, $title, $desc])
                     <li class="rounded-card border border-surface-3 bg-surface-2 p-4">
-                        <span class="text-meta font-bold text-accent-hover">Step {{ $step }}</span>
+                        <span class="text-meta font-bold text-accent-ink">Step {{ $step }}</span>
                         <p class="mt-1.5 text-caption font-semibold text-ink-hi">{{ $title }}</p>
                         <p class="mt-1 text-meta leading-relaxed text-ink-low">{{ $desc }}</p>
                     </li>

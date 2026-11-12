@@ -33,6 +33,13 @@
                value="{{ request('q') }}"
                placeholder="Search games, gift cards, software…"
                aria-label="Search the catalog"
+               {{-- aria-expanded is only meaningful on something that owns a
+                    popup. On a bare searchbox it is an attribute the role does
+                    not allow, so the role that justifies it is stated here and
+                    pointed at the listbox below, which stays in the DOM. --}}
+               role="combobox"
+               aria-autocomplete="list"
+               aria-controls="{{ $id }}-listbox"
                :aria-expanded="results ? 'true' : 'false'"
                class="w-full rounded-control border border-surface-3 bg-surface-2 pl-9 pr-3 min-h-[40px] text-body text-ink-hi
                       placeholder:text-ink-low transition-colors
@@ -45,6 +52,7 @@
     </form>
 
     <div x-show="results" x-cloak
+         id="{{ $id }}-listbox"
          class="absolute inset-x-0 top-full z-50 mt-2 max-h-[70vh] overflow-y-auto rounded-card border border-surface-3 bg-surface-1 shadow-hover"
          role="listbox" aria-label="Search suggestions">
 
@@ -76,7 +84,7 @@
         <template x-if="results && !results.products.length && !results.brands.length">
             <p class="p-4 text-caption text-ink-low">
                 Nothing matched “<span class="text-ink-mid" x-text="term"></span>”. Try a brand name, or
-                <a href="{{ route('contact') }}" class="text-accent-hover underline">ask us to stock it</a>.
+                <a href="{{ route('contact') }}" class="text-accent-ink underline">ask us to stock it</a>.
             </p>
         </template>
     </div>

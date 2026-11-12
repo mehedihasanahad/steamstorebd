@@ -52,7 +52,7 @@
                     @if($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                         <p class="mt-2 flex flex-wrap items-center gap-2 text-meta">
                             <span class="text-warning">E-mail not verified.</span>
-                            <button form="send-verification" class="text-accent-hover underline underline-offset-2">Resend verification</button>
+                            <button form="send-verification" class="text-accent-ink underline underline-offset-2">Resend verification</button>
                             @if(session('status') === 'verification-link-sent')
                                 <span class="text-success">Sent.</span>
                             @endif

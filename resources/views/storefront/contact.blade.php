@@ -53,7 +53,7 @@
                 <div class="rounded-card border border-surface-3 bg-surface-1 p-4">
                     <p class="text-body font-semibold text-ink-hi">{{ $title }}</p>
                     <p class="mt-1 text-caption leading-relaxed text-ink-mid">{{ $body }}</p>
-                    <a href="{{ $url }}" class="mt-2 inline-flex items-center gap-1 text-caption font-semibold text-accent-hover hover:underline">
+                    <a href="{{ $url }}" class="mt-2 inline-flex items-center gap-1 text-caption font-semibold text-accent-ink hover:underline">
                         {{ $cta }}
                         <svg class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </a>
@@ -110,7 +110,7 @@
                     @if(! $whatsappUrl && ! $messengerUrl && ! $email)
                         <p class="text-caption text-ink-mid">
                             Our support channels are being updated. In the meantime the
-                            <a href="{{ route('faq') }}" class="text-accent-hover hover:underline">FAQ</a>
+                            <a href="{{ route('faq') }}" class="text-accent-ink hover:underline">FAQ</a>
                             covers the questions we are asked most.
                         </p>
                     @endif

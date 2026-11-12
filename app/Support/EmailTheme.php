@@ -37,9 +37,10 @@ final class EmailTheme
         'surface-3'    => [42, 42, 48],
         'text-hi'      => [244, 244, 245],
         'text-mid'     => [161, 161, 170],
-        'text-low'     => [113, 113, 122],
+        'text-low'     => [139, 139, 148],
         'accent'       => [37, 99, 235],
         'accent-hover' => [59, 130, 246],
+        'accent-ink'   => [96, 165, 250],
         'success'      => [34, 197, 94],
         'warning'      => [245, 158, 11],
         'danger'       => [239, 68, 68],
@@ -103,6 +104,10 @@ final class EmailTheme
             'ink-low'      => self::hex('text-low'),
             'accent'       => self::hex('accent'),
             'accent-hover' => self::hex('accent-hover'),
+            // Accent as text. The storefront uses it wherever accent has to be
+            // read rather than pressed; kept reachable here so a message that
+            // needs the same blue does not invent its own.
+            'accent-ink'   => self::hex('accent-ink'),
 
             ...self::tone('success', 'success'),
             ...self::tone('warning', 'warning'),

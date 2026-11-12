@@ -20,11 +20,21 @@
     /* Text */
     --text-hi:     244 244 245;
     --text-mid:    161 161 170;
-    --text-low:    113 113 122;
+    /* 139 139 148 is the dimmest this may go: it clears WCAG AA (4.5:1) on
+       --surface-2, the lightest background it is ever set on, at 4.86:1. The
+       previous 113 113 122 measured 3.7:1 and failed on every card. */
+    --text-low:    139 139 148;
 
-    /* Accent — one only */
+    /* Accent — one only.
+
+       --accent-hover doubles as the lit background of a primary button, so it
+       has to stay dark enough for white to sit on it. That floor keeps it just
+       under AA as 11px text (4.46:1 on --surface-2), so text gets its own
+       lighter step: --accent-ink clears AA on every surface (6.2:1 or better)
+       and is never painted as a background. */
     --accent:       37 99 235;
     --accent-hover: 59 130 246;
+    --accent-ink:   96 165 250;
 
     /* Semantic */
     --success:      34 197 94;
@@ -136,7 +146,7 @@ body {
 .rich-content b { font-weight: 600; color: rgb(var(--text-hi)); }
 .rich-content em,
 .rich-content i { font-style: italic; }
-.rich-content a { color: rgb(var(--accent-hover)); text-decoration: underline; }
+.rich-content a { color: rgb(var(--accent-ink)); text-decoration: underline; }
 .rich-content blockquote {
     border-left: 2px solid rgb(var(--accent));
     margin: 1em 0;

@@ -142,7 +142,7 @@
                         </section>
                     @endforeach
 
-                    <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 text-caption font-medium text-accent-hover transition-colors hover:underline">
+                    <a href="{{ route('home') }}" class="inline-flex items-center gap-1.5 text-caption font-medium text-accent-ink transition-colors hover:underline">
                         &larr; Continue shopping
                     </a>
                 </div>

@@ -64,7 +64,7 @@ $_howToSchema = [
     <p class="mt-6 rounded-card border border-surface-3 bg-surface-1 p-4 text-caption leading-relaxed text-ink-mid">
         <strong class="text-ink-hi">Where is my code?</strong>
         It is e-mailed the moment your payment clears, and it stays on your
-        <a href="{{ route('orders.lookup') }}" class="text-accent-hover underline underline-offset-2">order page</a> for as long as you have an account.
+        <a href="{{ route('orders.lookup') }}" class="text-accent-ink underline underline-offset-2">order page</a> for as long as you have an account.
     </p>
 
     {{-- Each vertical redeems somewhere different, so each gets its own answer
@@ -93,7 +93,7 @@ $_howToSchema = [
         <ol class="mt-3 space-y-2">
             @foreach($steps as $index => [$title, $desc, $tip])
                 <li class="flex gap-3 rounded-card border border-surface-3 bg-surface-1 p-4">
-                    <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-caption font-bold text-accent-hover">{{ $index + 1 }}</span>
+                    <span class="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-caption font-bold text-accent-ink">{{ $index + 1 }}</span>
                     <div class="min-w-0">
                         <p class="text-body font-semibold text-ink-hi">{{ $title }}</p>
                         <p class="mt-1 text-caption leading-relaxed text-ink-mid">{{ $desc }}</p>

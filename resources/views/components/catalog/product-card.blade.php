@@ -27,7 +27,7 @@
     </div>
 
     <div class="px-3 py-2.5">
-        <p class="text-caption font-semibold uppercase tracking-wide text-ink-hi line-clamp-2 group-hover:text-accent-hover transition-colors">{{ $product->name }}</p>
+        <p class="text-caption font-semibold uppercase tracking-wide text-ink-hi line-clamp-2 group-hover:text-accent-ink transition-colors">{{ $product->name }}</p>
         @if($showPrice && $from)
             <p class="mt-1 text-meta text-ink-low">From <span class="font-semibold text-success">{{ format_bdt($from) }}</span></p>
         @endif

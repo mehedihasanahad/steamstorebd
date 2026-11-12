@@ -56,13 +56,18 @@
     </div>
 
     @if($banners->count() > 1)
-        <div class="mt-3 flex items-center justify-center gap-2" role="tablist" aria-label="Choose slide">
+        {{-- The dot is the painted span, not the button. The button is a flat
+             24x24 so the tap target clears the 24px floor, while the pill it
+             contains keeps the 6px height the design asks for. --}}
+        <div class="mt-3 flex items-center justify-center" role="tablist" aria-label="Choose slide">
             @foreach($banners as $i => $banner)
                 <button type="button" role="tab" @click="go({{ $i }})"
                         :aria-selected="current === {{ $i }} ? 'true' : 'false'"
                         aria-label="Go to slide {{ $i + 1 }}"
-                        class="h-1.5 rounded-full transition-all duration-200"
-                        :class="current === {{ $i }} ? 'w-6 bg-accent' : 'w-1.5 bg-surface-3 hover:bg-ink-low'"></button>
+                        class="group flex h-6 w-6 items-center justify-center">
+                    <span class="block h-1.5 rounded-full transition-all duration-200"
+                          :class="current === {{ $i }} ? 'w-6 bg-accent' : 'w-1.5 bg-surface-3 group-hover:bg-ink-low'"></span>
+                </button>
             @endforeach
         </div>
     @endif

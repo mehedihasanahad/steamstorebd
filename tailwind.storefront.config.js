@@ -32,6 +32,9 @@ export default {
                 accent: {
                     DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
                     hover:   'rgb(var(--accent-hover) / <alpha-value>)',
+                    /* Accent as text on a dark surface. Background use belongs
+                       to the two above; this one only ever colours ink. */
+                    ink:     'rgb(var(--accent-ink) / <alpha-value>)',
                 },
                 success: 'rgb(var(--success) / <alpha-value>)',
                 warning: 'rgb(var(--warning) / <alpha-value>)',

@@ -171,7 +171,7 @@
 
                                 <div id="region-switcher-menu" x-show="open" x-cloak
                                      class="absolute left-0 z-30 mt-2 w-56 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
-                                    <span class="flex items-center gap-2 rounded-control bg-accent/15 px-3 py-2 text-caption font-semibold text-accent-hover">
+                                    <span class="flex items-center gap-2 rounded-control bg-accent/15 px-3 py-2 text-caption font-semibold text-accent-ink">
                                         <span aria-hidden="true">{{ $category->regionFlag() ?: '🌐' }}</span>
                                         {{ $category->regionName() ?: $category->name }}
                                     </span>
@@ -381,7 +381,7 @@
                             @if($referralCode)
                                 <x-ui.copy-script />
                                 <div x-data="copyable(@js($referralCode))" class="mt-3 flex items-center gap-2">
-                                    <span class="font-mono text-caption font-bold tracking-widest text-accent-hover">{{ $referralCode }}</span>
+                                    <span class="font-mono text-caption font-bold tracking-widest text-accent-ink">{{ $referralCode }}</span>
                                     <x-ui.button variant="secondary" size="sm" x-on:click="copy()">
                                         <span x-show="! copied && ! failed">Copy</span><span x-show="copied" x-cloak>Copied</span><span x-show="failed" x-cloak>Failed</span>
                                     </x-ui.button>

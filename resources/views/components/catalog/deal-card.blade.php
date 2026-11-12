@@ -42,7 +42,7 @@
     </div>
 
     <div class="px-3 py-2.5">
-        <p class="text-caption font-semibold text-ink-hi line-clamp-2 group-hover:text-accent-hover transition-colors">{{ $card->name }}</p>
+        <p class="text-caption font-semibold text-ink-hi line-clamp-2 group-hover:text-accent-ink transition-colors">{{ $card->name }}</p>
         <x-catalog.price class="mt-1" :price="$card->price_bdt" :compare-at="$card->compare_at_price_bdt" size="text-caption" />
     </div>
 </a>

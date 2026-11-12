@@ -60,7 +60,7 @@
                                    @mouseenter="active = @js($section['slug'])"
                                    @focus="active = @js($section['slug'])"
                                    class="flex items-center justify-between gap-2 rounded-control px-3 py-2 text-caption font-medium transition-colors"
-                                   :class="active === @js($section['slug']) ? 'bg-accent/15 text-accent-hover' : 'text-ink-mid hover:bg-surface-2 hover:text-ink-hi'">
+                                   :class="active === @js($section['slug']) ? 'bg-accent/15 text-accent-ink' : 'text-ink-mid hover:bg-surface-2 hover:text-ink-hi'">
                                     <span class="truncate">{{ $section['name'] }}</span>
                                     <svg class="h-3 w-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                                 </a>
@@ -76,7 +76,7 @@
                         <div class="col-span-8">
                             <div class="mb-2 flex items-center justify-between">
                                 <p class="text-meta font-bold uppercase tracking-widest text-ink-low">Brands</p>
-                                <a href="{{ $section['url'] }}" class="text-meta font-semibold text-accent-hover hover:underline">
+                                <a href="{{ $section['url'] }}" class="text-meta font-semibold text-accent-ink hover:underline">
                                     View all {{ count($section['brands']) }} &rarr;
                                 </a>
                             </div>
@@ -116,7 +116,7 @@
                                                 <span class="text-lede leading-none" aria-hidden="true">{{ $region['flag'] }}</span>
                                                 <span class="min-w-0">
                                                     <span class="block truncate text-caption font-medium text-ink-hi">{{ $region['name'] }}</span>
-                                                    <span class="block text-meta text-accent-hover">{{ $region['count'] }} {{ Str::plural('product', $region['count']) }}</span>
+                                                    <span class="block text-meta text-accent-ink">{{ $region['count'] }} {{ Str::plural('product', $region['count']) }}</span>
                                                 </span>
                                             </a>
                                         </li>

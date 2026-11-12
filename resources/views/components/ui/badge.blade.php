@@ -5,7 +5,7 @@
 @php
     $tones = [
         'neutral' => 'bg-surface-2 text-ink-mid border-surface-3',
-        'accent'  => 'bg-accent/15 text-accent-hover border-accent/30',
+        'accent'  => 'bg-accent/15 text-accent-ink border-accent/30',
         'success' => 'bg-success/15 text-success border-success/30',
         'warning' => 'bg-warning/15 text-warning border-warning/30',
         'danger'  => 'bg-danger/15 text-danger border-danger/30',

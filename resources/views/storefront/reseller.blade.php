@@ -182,7 +182,7 @@
                 ['Start selling', 'Once approved you get your reseller price list and can place your first bulk order.'],
             ] as $index => [$title, $desc])
                 <li class="rounded-card border border-surface-3 bg-surface-1 p-5">
-                    <span class="text-meta font-bold text-accent-hover">Step {{ $index + 1 }}</span>
+                    <span class="text-meta font-bold text-accent-ink">Step {{ $index + 1 }}</span>
                     <p class="mt-1.5 text-body font-semibold text-ink-hi">{{ $title }}</p>
                     <p class="mt-1 text-caption leading-relaxed text-ink-mid">{{ $desc }}</p>
                 </li>
@@ -217,7 +217,7 @@
                         'Once approved, you receive your reseller price list by e-mail',
                     ] as $i => $next)
                         <li class="flex items-start gap-3 rounded-control border border-surface-3 bg-surface-2 p-3 text-caption text-ink-mid">
-                            <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-chip bg-accent/15 text-meta font-bold text-accent-hover">{{ $i + 1 }}</span>
+                            <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-chip bg-accent/15 text-meta font-bold text-accent-ink">{{ $i + 1 }}</span>
                             {{ $next }}
                         </li>
                     @endforeach

@@ -153,10 +153,16 @@
         </button>
 
         {{-- Logo --}}
+        {{-- The wordmark is hidden below sm and the mark itself is decorative,
+             so on a phone this link would carry no accessible name at all. An
+             aria-label would cure that but then outrank the visible wordmark on
+             wider screens, which is the Label in Name failure; an sr-only twin
+             that retires at sm leaves exactly one name at every width. --}}
         <a href="{{ route('home') }}" class="flex flex-shrink-0 items-center gap-2">
             <img src="{{ asset('images/logo.svg') }}" alt="" width="32" height="32" class="h-8 w-8 rounded-control" aria-hidden="true">
+            <span class="sr-only sm:hidden">Steam Store BD</span>
             <span class="hidden leading-tight sm:block">
-                <span class="block text-body font-extrabold tracking-tight text-ink-hi">Steam Store <span class="text-accent-hover">BD</span></span>
+                <span class="block text-body font-extrabold tracking-tight text-ink-hi">Steam Store <span class="text-accent-ink">BD</span></span>
                 <span class="block text-meta font-medium text-ink-low">Digital goods</span>
             </span>
         </a>
@@ -306,7 +312,7 @@
             <div class="col-span-2 lg:col-span-1">
                 <a href="{{ route('home') }}" class="mb-3 flex items-center gap-2">
                     <img src="{{ asset('images/logo.svg') }}" alt="" width="32" height="32" class="h-8 w-8 rounded-control" aria-hidden="true">
-                    <span class="text-body font-extrabold text-ink-hi">Steam Store <span class="text-accent-hover">BD</span></span>
+                    <span class="text-body font-extrabold text-ink-hi">Steam Store <span class="text-accent-ink">BD</span></span>
                 </a>
                 <p class="text-caption leading-relaxed text-ink-low">Digital gift cards, game top-ups, keys and subscriptions in Bangladesh. Paid with bKash and Nagad, delivered to your inbox.</p>
                 <div class="mt-4 flex flex-wrap gap-2">
@@ -320,7 +326,7 @@
                 <h2 class="mb-3 text-meta font-bold uppercase tracking-widest text-ink-hi">Brands</h2>
                 <ul class="space-y-2">
                     @foreach($footerBrands->take(8) as $footerBrand)
-                        <li><a href="{{ route('brand', $footerBrand->slug) }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">{{ $footerBrand->name }}</a></li>
+                        <li><a href="{{ route('brand', $footerBrand->slug) }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">{{ $footerBrand->name }}</a></li>
                     @endforeach
                 </ul>
             </div>
@@ -329,16 +335,16 @@
             <div>
                 <h2 class="mb-3 text-meta font-bold uppercase tracking-widest text-ink-hi">Help</h2>
                 <ul class="space-y-2">
-                    <li><a href="{{ route('faq') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">FAQ</a></li>
-                    <li><a href="{{ route('how-to-redeem') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">How to Redeem</a></li>
-                    <li><a href="{{ route('reviews') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Customer Reviews</a></li>
-                    <li><a href="{{ route('orders.lookup') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Track Your Order</a></li>
-                    <li><a href="{{ route('contact') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Contact Us</a></li>
+                    <li><a href="{{ route('faq') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">FAQ</a></li>
+                    <li><a href="{{ route('how-to-redeem') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">How to Redeem</a></li>
+                    <li><a href="{{ route('reviews') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Customer Reviews</a></li>
+                    <li><a href="{{ route('orders.lookup') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Track Your Order</a></li>
+                    <li><a href="{{ route('contact') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Contact Us</a></li>
                     @if(site_setting('exclusive_offers_enabled', true))
-                        <li><a href="{{ route('offers') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Today's Offers</a></li>
+                        <li><a href="{{ route('offers') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Today's Offers</a></li>
                     @endif
                     @if(site_setting('reseller_program_enabled', false))
-                        <li><a href="{{ route('reseller') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Become a Reseller</a></li>
+                        <li><a href="{{ route('reseller') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Become a Reseller</a></li>
                     @endif
                 </ul>
             </div>
@@ -346,10 +352,10 @@
             <div>
                 <h2 class="mb-3 text-meta font-bold uppercase tracking-widest text-ink-hi">Company</h2>
                 <ul class="space-y-2">
-                    <li><a href="{{ route('about') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">About Us</a></li>
-                    <li><a href="{{ route('refund-policy') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Refund Policy</a></li>
-                    <li><a href="{{ route('privacy-policy') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Privacy Policy</a></li>
-                    <li><a href="{{ route('terms') }}" class="text-caption text-ink-low transition-colors hover:text-accent-hover">Terms of Service</a></li>
+                    <li><a href="{{ route('about') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">About Us</a></li>
+                    <li><a href="{{ route('refund-policy') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Refund Policy</a></li>
+                    <li><a href="{{ route('privacy-policy') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Privacy Policy</a></li>
+                    <li><a href="{{ route('terms') }}" class="text-caption text-ink-low transition-colors hover:text-accent-ink">Terms of Service</a></li>
                 </ul>
             </div>
 
@@ -357,7 +363,7 @@
                 <h2 class="mb-3 text-meta font-bold uppercase tracking-widest text-ink-hi">Get in touch</h2>
                 <ul class="space-y-2 text-caption text-ink-low">
                     @if(site_setting('contact_email'))
-                        <li><a href="mailto:{{ site_setting('contact_email') }}" class="transition-colors hover:text-accent-hover">{{ site_setting('contact_email') }}</a></li>
+                        <li><a href="mailto:{{ site_setting('contact_email') }}" class="transition-colors hover:text-accent-ink">{{ site_setting('contact_email') }}</a></li>
                     @endif
                     @if(site_setting('contact_whatsapp'))
                         <li>{{ site_setting('contact_whatsapp') }}</li>

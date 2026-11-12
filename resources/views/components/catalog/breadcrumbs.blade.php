@@ -13,7 +13,7 @@
                 @if($loop->last || empty($item['url']))
                     <span class="font-medium text-ink-hi truncate" @if($loop->last) aria-current="page" @endif>{{ $item['label'] }}</span>
                 @else
-                    <a href="{{ $item['url'] }}" class="hover:text-accent-hover transition-colors truncate">{{ $item['label'] }}</a>
+                    <a href="{{ $item['url'] }}" class="hover:text-accent-ink transition-colors truncate">{{ $item['label'] }}</a>
                 @endif
             </li>
         @endforeach

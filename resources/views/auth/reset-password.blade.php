@@ -11,7 +11,7 @@
                   get score() { return [this.len, this.upp, this.num, this.sym].filter(Boolean).length; },
                   get label() { return ['', 'Weak', 'Fair', 'Good', 'Strong'][this.score]; },
                   get tone()  { return ['bg-surface-3', 'bg-danger', 'bg-warning', 'bg-accent', 'bg-success'][this.score]; },
-                  get toneText() { return ['text-ink-low', 'text-danger', 'text-warning', 'text-accent-hover', 'text-success'][this.score]; }
+                  get toneText() { return ['text-ink-low', 'text-danger', 'text-warning', 'text-accent-ink', 'text-success'][this.score]; }
               }">
             @csrf
             <input type="hidden" name="token" value="{{ $request->route('token') }}">
@@ -55,7 +55,7 @@
         </form>
 
         <p class="mt-6 text-center text-caption text-ink-low">
-            <a href="{{ route('login') }}" class="font-semibold text-accent-hover hover:underline">Back to sign in</a>
+            <a href="{{ route('login') }}" class="font-semibold text-accent-ink hover:underline">Back to sign in</a>
         </p>
     </x-auth-shell>
 </x-guest-layout>

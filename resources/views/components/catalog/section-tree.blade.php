@@ -16,7 +16,7 @@
         <div class="flex items-center gap-1">
             <a href="{{ route('category', $railSection->slug) }}"
                class="flex-1 rounded-control px-2 py-2 text-caption font-bold uppercase tracking-wide transition-colors
-                      {{ $section?->id === $railSection->id ? 'text-accent-hover' : 'text-ink-hi hover:bg-surface-2' }}">
+                      {{ $section?->id === $railSection->id ? 'text-accent-ink' : 'text-ink-hi hover:bg-surface-2' }}">
                 {{ $railSection->name }}
             </a>
             <button @click="expanded = !expanded" :aria-expanded="expanded ? 'true' : 'false'"
@@ -36,7 +36,7 @@
                               {{ $brand?->id === $railBrand->id ? 'bg-accent/15' : 'hover:bg-surface-2' }}">
                         <x-catalog.artwork :image="$railBrand->image" :name="$railBrand->name" ratio="aspect-square"
                                            class="w-7 flex-shrink-0 rounded-chip" :width="28" :height="28" />
-                        <span class="min-w-0 flex-1 truncate text-caption {{ $brand?->id === $railBrand->id ? 'font-semibold text-accent-hover' : 'text-ink-mid' }}">{{ $railBrand->name }}</span>
+                        <span class="min-w-0 flex-1 truncate text-caption {{ $brand?->id === $railBrand->id ? 'font-semibold text-accent-ink' : 'text-ink-mid' }}">{{ $railBrand->name }}</span>
                         <span class="flex-shrink-0 rounded-chip bg-surface-2 px-1.5 py-0.5 text-meta font-semibold text-ink-low">{{ $count }}</span>
                     </a>
                 </li>

@@ -29,7 +29,7 @@
                 ['Come back and shop', 'Your cart is still here, and checkout opens the moment you are confirmed.'],
             ] as $index => [$step, $detail])
                 <li class="flex gap-3">
-                    <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-meta font-bold text-accent-hover" aria-hidden="true">{{ $index + 1 }}</span>
+                    <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-accent/15 text-meta font-bold text-accent-ink" aria-hidden="true">{{ $index + 1 }}</span>
                     <span>
                         <span class="block text-caption font-semibold text-ink-hi">{{ $step }}</span>
                         <span class="block text-meta leading-relaxed text-ink-low">{{ $detail }}</span>
@@ -60,12 +60,12 @@
 
         <p class="mt-4 text-meta leading-relaxed text-ink-low">
             Wrong address?
-            <button type="submit" form="verify-logout" class="text-accent-hover underline underline-offset-2 hover:text-accent">Log out</button>
+            <button type="submit" form="verify-logout" class="text-accent-ink underline underline-offset-2 hover:text-accent">Log out</button>
             and sign up with the one you use — your codes are delivered to it.
         </p>
 
         <p class="mt-5 border-t border-surface-3 pt-4 text-meta text-ink-low">
-            Still stuck? <a href="{{ route('contact') }}" class="text-accent-hover underline underline-offset-2 hover:text-accent">Message our support team</a> and we will confirm it for you.
+            Still stuck? <a href="{{ route('contact') }}" class="text-accent-ink underline underline-offset-2 hover:text-accent">Message our support team</a> and we will confirm it for you.
         </p>
     </x-auth-shell>
 </x-guest-layout>

@@ -7,7 +7,7 @@
 @section('content')
 
 <div class="mx-auto max-w-2xl px-4 py-section text-center sm:px-6 lg:px-8 lg:py-section-lg">
-    <p class="text-meta font-bold uppercase tracking-widest text-accent-hover">Error 404</p>
+    <p class="text-meta font-bold uppercase tracking-widest text-accent-ink">Error 404</p>
     <h1 class="mt-3 text-title md:text-display font-extrabold text-ink-hi">This page doesn't exist</h1>
     <p class="mx-auto mt-2 max-w-md text-body text-ink-mid">
         The product or page you were after may have moved, or is no longer on sale.

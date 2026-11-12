@@ -184,10 +184,10 @@
                                 <div id="region-filter-menu" x-show="open" x-cloak
                                      class="absolute left-0 md:left-auto md:right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
                                     <a href="{{ request()->fullUrlWithQuery(['region' => null, 'page' => null]) }}"
-                                       class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeRegion ? 'text-ink-mid' : 'font-semibold text-accent-hover' }}">🌐 All regions</a>
+                                       class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeRegion ? 'text-ink-mid' : 'font-semibold text-accent-ink' }}">🌐 All regions</a>
                                     @foreach($regionFilters as $regionOption)
                                         <a href="{{ request()->fullUrlWithQuery(['region' => $regionOption['code'], 'page' => null]) }}"
-                                           class="flex items-center justify-between gap-2 rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeRegion === $regionOption['code'] ? 'font-semibold text-accent-hover' : 'text-ink-mid' }}">
+                                           class="flex items-center justify-between gap-2 rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeRegion === $regionOption['code'] ? 'font-semibold text-accent-ink' : 'text-ink-mid' }}">
                                             <span class="truncate">{{ $regionOption['flag'] }} {{ $regionOption['name'] }}</span>
                                             <span class="text-meta text-ink-low">{{ $regionOption['count'] }}</span>
                                         </a>
@@ -208,7 +208,7 @@
                                  class="absolute left-0 md:left-auto md:right-0 z-30 mt-2 w-52 rounded-card border border-surface-3 bg-surface-1 p-1 shadow-hover">
                                 @foreach(\App\Services\CatalogBrowser::SORTS as $key => $label)
                                     <a href="{{ request()->fullUrlWithQuery(['sort' => $key, 'page' => null]) }}"
-                                       class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeSort === $key ? 'font-semibold text-accent-hover' : 'text-ink-mid' }}">{{ $label }}</a>
+                                       class="block rounded-control px-3 py-2 text-caption transition-colors hover:bg-surface-2 {{ $activeSort === $key ? 'font-semibold text-accent-ink' : 'text-ink-mid' }}">{{ $label }}</a>
                                 @endforeach
                             </div>
                         </div>

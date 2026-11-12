@@ -337,7 +337,7 @@
                     </div>
                 </dl>
 
-                <a href="{{ route('cart') }}" class="mt-4 block text-center text-caption text-ink-low transition-colors hover:text-accent-hover">
+                <a href="{{ route('cart') }}" class="mt-4 block text-center text-caption text-ink-low transition-colors hover:text-accent-ink">
                     &larr; Back to cart
                 </a>
 

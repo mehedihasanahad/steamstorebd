@@ -13,7 +13,7 @@
                   get score() { return [this.len, this.upp, this.num, this.sym].filter(Boolean).length; },
                   get label() { return ['', 'Weak', 'Fair', 'Good', 'Strong'][this.score]; },
                   get tone()  { return ['bg-surface-3', 'bg-danger', 'bg-warning', 'bg-accent', 'bg-success'][this.score]; },
-                  get toneText() { return ['text-ink-low', 'text-danger', 'text-warning', 'text-accent-hover', 'text-success'][this.score]; }
+                  get toneText() { return ['text-ink-low', 'text-danger', 'text-warning', 'text-accent-ink', 'text-success'][this.score]; }
               }">
             @csrf
 
@@ -65,7 +65,7 @@
 
         <p class="mt-6 text-center text-caption text-ink-low">
             Already have an account?
-            <a href="{{ route('login') }}" class="font-semibold text-accent-hover hover:underline">Sign in</a>
+            <a href="{{ route('login') }}" class="font-semibold text-accent-ink hover:underline">Sign in</a>
         </p>
     </x-auth-shell>
 </x-guest-layout>

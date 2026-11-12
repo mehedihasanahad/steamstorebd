@@ -29,7 +29,7 @@
         <x-ui.button :href="route('home')" variant="secondary" size="lg" class="flex-1">Browse the catalog</x-ui.button>
     </div>
 
-    <p class="mt-5 text-meta text-ink-low">Need help? <a href="{{ route('contact') }}" class="text-accent-hover hover:underline">Contact us</a></p>
+    <p class="mt-5 text-meta text-ink-low">Need help? <a href="{{ route('contact') }}" class="text-accent-ink hover:underline">Contact us</a></p>
 </div>
 
 @endsection

@@ -13,7 +13,7 @@
             <x-auth-password autocomplete="current-password">
                 <x-slot:action>
                     @if(Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="text-meta text-accent-hover hover:underline">Forgot password?</a>
+                        <a href="{{ route('password.request') }}" class="text-meta text-accent-ink hover:underline">Forgot password?</a>
                     @endif
                 </x-slot:action>
             </x-auth-password>
@@ -29,7 +29,7 @@
 
         <p class="mt-6 text-center text-caption text-ink-low">
             Don't have an account?
-            <a href="{{ route('register') }}" class="font-semibold text-accent-hover hover:underline">Create one</a>
+            <a href="{{ route('register') }}" class="font-semibold text-accent-ink hover:underline">Create one</a>
         </p>
     </x-auth-shell>
 </x-guest-layout>

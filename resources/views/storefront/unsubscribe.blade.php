@@ -57,7 +57,7 @@
 
         <p class="mt-6 border-t border-surface-3 pt-5 text-caption text-ink-low">
             Changed your mind, or landed here by accident?
-            <a href="{{ route('home') }}" class="text-accent-hover hover:underline">Back to the store</a>
+            <a href="{{ route('home') }}" class="text-accent-ink hover:underline">Back to the store</a>
         </p>
     </div>
 </div>
